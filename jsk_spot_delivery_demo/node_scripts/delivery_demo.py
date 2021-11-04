@@ -13,7 +13,7 @@ import PyKDL
 
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToGoal
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageGoal
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, Float32
 from geometry_msgs.msg import PoseArray, PoseStamped, Quaternion
 
 from spot_ros_client.libspotros import SpotRosClient
@@ -91,6 +91,29 @@ class TaskList:
 def stand_straight(spot_client):
     spot_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1.0))
 
+def is_battery_low(threshold_spot=30,threshold_laptop=30):
+    msg_spot_battery = rospy.wait_for_message('/spot/status/battery_percentage',Float32,timeout=rospy.Duration(5))
+    try:
+        msg_laptop_battery = rospy.wait_for_message('/spot/status/laptop_battery_percentage',Float32,timeout=rospy.Duration(5))
+    except rospy.ROSException:
+        rospy.logwarn('')
+        msg_laptop_battery = None
+
+    if msg_spot_battery.data < threshold_spot:
+        rospy.loginfo('Spot Battery percentage ({}%) is lower than threshold: {} %'.format(
+                        msg_spot_battery.data,
+                        threshold_spot))
+        return True
+
+    if msg_laptop_battery is not None and msg_laptop_battery.data < threshold_laptop:
+        rospy.loginfo('Laptop Battery percentage ({}%) is lower than threshold: {} %'.format(
+                        msg_laptop_battery.data,
+                        threshold_laptop))
+        return True
+
+    return False
+
+
 data_speech_recongition_client = None
 data_spot_ros_client = None
 data_sound_client = None
@@ -102,7 +125,7 @@ def main():
 
     rospy.init_node('delivery_demo')
 
-    sm = smach.StateMachine(outcomes=[''])
+    sm = smach.StateMachine(outcomes=['Finished'])
 
     global data_speech_recongition_client
     global data_spot_ros_client
@@ -125,10 +148,24 @@ def main():
     data_task_list = TaskList()
     data_task_executing = None
 
+    class GoBackToHome(smach.State):
+
+        def __init__(self):
+            smach.State.__init__(self, outcomes=['finished'])
+
+        def execute(self, userdata):
+            rospy.loginfo('Going Back to Home')
+
+            home_id = rospy.get_param('~home_id', 'eng2_73B2')
+            data_spot_ros_client.execute_behaviors(home_id, blocking=True)
+
+            return 'finished'
+
+
     class Ready(smach.State):
 
         def __init__(self):
-            smach.State.__init__(self, outcomes=['task_executing', 'strolling'])
+            smach.State.__init__(self, outcomes=['task_executing', 'strolling', 'go_back_to_home'])
 
         def execute(self, userdata):
             rospy.loginfo('Ready')
@@ -136,13 +173,16 @@ def main():
             if data_task_list.length() > 0 or data_task_executing is not None:
                 return 'task_executing'
 
+            if is_battery_low():
+                return 'go_back_to_home'
+
             return 'strolling'
 
 
     class Strolling(smach.State):
 
         def __init__(self):
-            smach.State.__init__(self, outcomes=['approaching', 'strolling'])
+            smach.State.__init__(self, outcomes=['approaching', 'ready'])
 
         def execute(self, userdata):
             rospy.loginfo('Strolling')
@@ -162,7 +202,7 @@ def main():
                 if get_nearest_person_pose() is not None:
                     return 'approaching'
 
-            return 'strolling'
+            return 'ready'
 
 
     class Approaching(smach.State):
@@ -272,12 +312,15 @@ def main():
             return result.success
 
     with sm:
+        smach.StateMachine.add('GoBackToHome', GoBackToHome(),
+                               transitions={'finished':'Finished'})
         smach.StateMachine.add('Ready', Ready(),
                                transitions={'task_executing':'TaskExecuting',
-                                            'strolling':'Strolling'})
+                                            'strolling':'Strolling',
+                                            'go_back_to_home':'GoBackToHome'})
         smach.StateMachine.add('Strolling',Strolling(),
                                transitions={'approaching':'Approaching',
-                                            'strolling':'Strolling'})
+                                            'ready':'Ready'})
         smach.StateMachine.add('Approaching',Approaching(),
                                transitions={'ready':'Ready',
                                             'task_asking':'TaskAsking'})

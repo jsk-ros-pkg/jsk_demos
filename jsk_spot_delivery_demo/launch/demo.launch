@@ -10,10 +10,12 @@
         if="$(arg launch_demo)">
         <rosparam>
             list_node_strolling:
+                - eng2_JSK_Entrance
                 - eng2_73B2
                 - eng2_73A2
-                - eng2_73B1
                 - eng2_73A4
+            home_id:
+                - eng2_73B2
         </rosparam>
 
         <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
@@ -51,7 +53,7 @@
         <rosparam subst_value="true">
             frame_id_robot: 'body'
             label_person: 0
-            dist_visible: 5.0
+            dist_visible: 2.0
             timeout_observation: 5.0
         </rosparam>
     </node>
