@@ -334,6 +334,7 @@ def main():
 
     rospy.loginfo('initialized')
 
+    sm.set_initial_state('Ready')
     outcome = sm.execute()
 
     rospy.loginfo('outcome: {}'.format(outcome))

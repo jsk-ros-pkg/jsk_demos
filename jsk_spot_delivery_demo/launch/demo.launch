@@ -7,6 +7,7 @@
         type="delivery_demo.py"
         name="delivery_demo"
         output="screen"
+        required="true"
         if="$(arg launch_demo)">
         <rosparam>
             list_node_strolling:
