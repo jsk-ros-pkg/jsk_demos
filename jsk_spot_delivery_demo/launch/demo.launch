@@ -14,8 +14,7 @@
                 - eng2_73B2
                 - eng2_73A2
                 - eng2_73A4
-            home_id:
-                - eng2_73B2
+            home_id: eng2_73B2
         </rosparam>
 
         <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />

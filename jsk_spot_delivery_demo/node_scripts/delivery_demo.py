@@ -157,6 +157,7 @@ def main():
             rospy.loginfo('Going Back to Home')
 
             home_id = rospy.get_param('~home_id', 'eng2_73B2')
+            rospy.loginfo('home_id: {}'.format(home_id))
             data_spot_ros_client.execute_behaviors(home_id, blocking=True)
 
             return 'finished'
