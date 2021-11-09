@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (load "package://spoteus/spot-interface.l")
+(load "package://jsk_image_capture/euslisp/jsk-image-capture-utils.l")
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
@@ -28,7 +29,8 @@
           paranoma-height
           lookup-angle
           change-body-duration
-          bark-sound))
+          bark-sound
+          video-directory))
 (defmethod watchdog-interface
   (:init
    (&rest args)
@@ -55,7 +57,13 @@
      (setq luminance 0)
      (setq battery-temp 0)
      (setq ypr-euler '(0 0 0))
+     (setq video-directory (ros::get-param "~video_directory" "/tmp"))
      ))
+  (:capture-image (image-file-name)
+                  (let ((image-topic "/spot_recognition/object_detection_image")
+                        (file-name (format nil "~A/~A" video-directory image-file-name)))
+                    (capture-image image-topic file-name)
+                    ))
   (:spot-status-battery-states-callback  (msg)   ;; overwrite
                                          (send-super :spot-status-battery-states-callback msg)
                                          (setq battery-temp (apply #'max (coerce (send (elt (send msg :battery_states) 0) :temperatures) cons)))
@@ -178,6 +186,8 @@
           ((max-person-height 0)
            (target-person nil)
            (human-height-threshold (send *ri* :get-val 'human-height-threshold))
+           (image-file-name nil)
+           (current-time (unix:localtime))
            target-rpy-euler)
         ;; workaround to handle the smaller bbox height when robot look up (head up).
         (if (< (elt (send *ri* :get-val 'ypr-euler) 1) (* (send *ri* :get-val 'lookup-angle) 0.5))
@@ -195,6 +205,16 @@
                 (progn
                   (setq target-rpy-euler  (list 0  (send *ri* :get-val 'lookup-angle)  (- (+ rel-yaw-angle  (elt (send *ri* :get-val 'ypr-euler) 0)) (send *ri* :get-val 'yaw-offset))))
                   (ros::ros-debug "find good person to look at: target-rpy-euler: ~A, rel-yaw: ~A body yaw: ~A, yaw offset: ~A" target-rpy-euler rel-yaw-angle (elt (send *ri* :get-val 'ypr-euler) 0) (send *ri* :get-val 'yaw-offset))
+                  (setq image-file-name
+                        (format nil "~A-~A-~A-~A-~A-~A.jpg"
+                                (+ 1900 (elt current-time 5))
+                                (+ 4 (elt current-time 4))
+                                (elt current-time 3)
+                                (elt current-time 2)
+                                (elt current-time 1)
+                                (elt current-time 0)
+                                ))
+                  (send *ri* :capture-image image-file-name)
                   (send *ri* :play-sound (send *ri* :get-val 'bark-sound)))
               (setq target-rpy-euler '(0 0 0)))))
         (send* *ri* :body-pose target-rpy-euler))
