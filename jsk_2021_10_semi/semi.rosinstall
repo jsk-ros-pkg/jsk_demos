@@ -70,3 +70,21 @@
     uri: http://github.com/k-okada/libqicore-release.git
     version: melodic-devel
 
+### copied from https://github.com/sktometometo/jsk_robot/blob/develop/spot/jsk_spot_robot/jsk_spot_user.rosinstall
+- git:
+    local-name: spot-ros
+    uri: https://github.com/sktometometo/spot_ros.git
+    version: develop/spot
+
+### https://github.com/sktometometo/jsk_robot/blob/develop/spot/jsk_kinova_robot/jsk_kinova.rosinstall
+# ros_kortex is updating to v2.3.X in master branch
+# but the internal firmware in JSK kinova is still ver2.2.0
+# we need to use it until firmware is updated.
+- git:
+    local-name: ros_kortex
+    uri: https://github.com/708yamaguchi/ros_kortex
+    version: develop/spot
+- git:
+    local-name: ros_kortex_vision
+    uri: https://github.com/Kinovarobotics/ros_kortex_vision
+    version: master
