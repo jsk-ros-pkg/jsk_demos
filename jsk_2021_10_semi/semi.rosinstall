@@ -2,6 +2,10 @@
     local-name: jsk_robot
     uri: https://github.com/jsk-ros-pkg/jsk_robot.git
     version: master
+- git:
+    local-name: jsk_pr2eus
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus.git
+    version: master
 ##
 ## https://raw.githubusercontent.com/jsk-ros-pkg/jsk_robot/102f74f702891a7cbcc16c1779cda563c26758f4/jsk_naoqi_robot/pepper.rosinstall
 ## 
