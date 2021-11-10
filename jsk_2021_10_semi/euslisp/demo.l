@@ -13,11 +13,15 @@
   (fetch-init)
   )
 
+(when (not (boundp '*spotkinova*))
+  (require "package://spotkinovaeus/spotkinova.l")
+  (setq *spotkinova* (spotkinova)))
+
 (when (not (boundp '*pr2*))
   (require "package://pr2eus/pr2.l")
   (setq *pr2* (pr2)))
 
-(objects (list *room73b2* *nao* *fetch* *pr2*))
+(objects (list *room73b2* *nao* *fetch* *pr2* *spotkinova*))
 
 (defun wait-for-human ()
   ;;(send *pr2* :move-to (make-coords :pos #f(5000 0 0) :rpy (float-vector pi 0 0)) :world)
