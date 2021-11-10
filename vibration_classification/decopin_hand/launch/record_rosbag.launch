@@ -1,0 +1,39 @@
+<launch>
+
+<!-- see /home/leus/ros/indigo/src/start-jsk/jsk_apc/jsk_arc2017_baxter/launch/setup/include/record.launch -->
+
+<!-- USAGE -->
+<!-- roslaunch decopin_hand record_rosbag.launch filename:=$HOME/.ros/rosbag/si2019/hoge.bag -->
+
+<!-- for fetch robot -->
+
+  <arg name="filename" />
+  <node name="rosbag_record"
+        pkg="rosbag" type="record"
+        args="-O $(arg filename)
+              -b 0
+
+              /tf
+              /tf_static
+              /joint_states
+              /map
+
+              /head_camera/rgb/camera_info
+              /head_camera/rgb/image_raw/compressed
+              /head_camera/depth/camera_info
+              /head_camera/depth/image_raw/compressedDepth
+
+              /dynamixel_workbench/joint_states
+
+              /microphone/wave
+              /microphone/sound_spec
+              /microphone/volume
+              /microphone/spectrogram
+              /microphone/spectrogram_subtracted
+
+              /object_class_by_image
+              "
+
+        output="screen">
+  </node>
+</launch>
