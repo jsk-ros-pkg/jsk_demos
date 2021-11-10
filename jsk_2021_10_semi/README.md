@@ -13,6 +13,10 @@ wstool merge https://raw.githubusercontent.com/k-okada/jsk_demos/jsk_2021_10_sem
 wstool update
 rosdep install --from-paths . --ignore-src -y -r
 cd ..
+git clone https://github.com/k-okada/jsk_demos -b jsk_2021_10_semi
+cd src
+ln -sf ../jsk_demos/jsk_2021_10_semi/ .
+cd ..
 catkin build -vi
 source devel/setup.bash
 ```
