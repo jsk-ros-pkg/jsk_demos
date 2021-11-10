@@ -1,7 +1,8 @@
 #!/usr/bin/env roseus
 
 (load "package://spoteus/spot-interface.l")
-(load "package://jsk_image_capture/euslisp/jsk-image-capture-utils.l")
+(load "package://image_view2/euslisp/image-capture-utils.l")
+(load "package://gdrive_ros/euslisp/gdrive-ros-utils.l")
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
@@ -30,7 +31,9 @@
           lookup-angle
           change-body-duration
           bark-sound
-          video-directory))
+          video-directory
+          gdrive-parents-path
+          list-upload-queue))
 (defmethod watchdog-interface
   (:init
    (&rest args)
@@ -58,11 +61,24 @@
      (setq battery-temp 0)
      (setq ypr-euler '(0 0 0))
      (setq video-directory (ros::get-param "~video_directory" "/tmp"))
+     (setq gdrive-parents-path (ros::get-param "~gdrive_parents_path"))
+     (setq list-upload-queue (list))
      ))
+  (:upload-images ()
+                  (let (res)
+                    (dolist (upload-item list-upload-queue)
+                      (ros::ros-info "Upload file ~A" (elt upload-item 0))
+                      (setq res (upload-file (elt upload-item 0) (elt upload-item 1) gdrive-parents-path))
+                      )
+                    (setq list-upload-queue nil)
+                    )
+                  )
   (:capture-image (image-file-name)
                   (let ((image-topic "/spot_recognition/object_detection_image")
                         (file-name (format nil "~A/~A" video-directory image-file-name)))
+                    (ros::ros-info "Capture a image to ~A" file-name)
                     (capture-image image-topic file-name)
+                    (setq list-upload-queue (append list-upload-queue (list (list file-name image-file-name))))
                     ))
   (:spot-status-battery-states-callback  (msg)   ;; overwrite
                                          (send-super :spot-status-battery-states-callback msg)
@@ -139,6 +155,7 @@
 
 (defun func-rest (userdata-alist)
   (let ((ret nil))
+    (send *ri* :upload-images)
     (while (not ret)
       (ros::spin-once)
       (send *ri* :spin-once)

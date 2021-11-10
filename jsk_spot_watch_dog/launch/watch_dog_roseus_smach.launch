@@ -30,7 +30,8 @@
     <param name="temp_threshold_stand" value="$(arg temp_threshold_stand)" />
   </node>
 
-  <node name="image_capture_server" pkg="jsk_image_capture" type="image_capture_server" output="screen"/>
+  <node name="image_capture_server" pkg="image_view2" type="image_capture_server" output="screen"/>
+
 </launch>
 
 
