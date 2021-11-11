@@ -68,7 +68,7 @@
                   (let (res)
                     (dolist (upload-item list-upload-queue)
                       (ros::ros-info "Upload file ~A" (elt upload-item 0))
-                      (setq res (upload-file (elt upload-item 0) (elt upload-item 1) gdrive-parents-path))
+                      (setq res (upload-file (elt upload-item 0) (elt upload-item 1) :parents-path gdrive-parents-path))
                       )
                     (setq list-upload-queue nil)
                     )
