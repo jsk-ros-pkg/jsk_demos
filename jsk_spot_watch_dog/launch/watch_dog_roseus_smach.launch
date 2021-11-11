@@ -2,6 +2,7 @@
   <arg name="input_image" default="/spot/camera/back/image"/>
   <arg name="luminance_threshold" default="60" />
   <arg name="rest_time_per_hour" default="10" /> # min
+  <arg name="report_mail_address" default="spot@jsk.imi.i.u-tokyo.ac.jp" />
 
   # person attention
   <arg name="panorama_image" default="/dual_fisheye_to_panorama/output/quater" />
@@ -28,6 +29,7 @@
     <param name="bark_sound" value="/var/lib/robot/bark.wav" />
     <param name="temp_threshold_sit" value="$(arg temp_threshold_sit)" />
     <param name="temp_threshold_stand" value="$(arg temp_threshold_stand)" />
+    <param name="report_mail_address" value="$(arg report_mail_address)" />
   </node>
 
   <node name="image_capture_server" pkg="image_view2" type="image_capture_server" output="screen"/>

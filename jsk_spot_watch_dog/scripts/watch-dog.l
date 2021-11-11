@@ -3,6 +3,7 @@
 (load "package://spoteus/spot-interface.l")
 (load "package://image_view2/euslisp/image-capture-utils.l")
 (load "package://gdrive_ros/euslisp/gdrive-ros-utils.l")
+(load "package://jsk_robot_startup/euslisp/email-topic-client.l")
 
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
@@ -33,7 +34,8 @@
           bark-sound
           video-directory
           gdrive-parents-path
-          list-upload-queue))
+          list-upload-queue
+          report-mail-address))
 (defmethod watchdog-interface
   (:init
    (&rest args)
@@ -63,14 +65,22 @@
      (setq video-directory (ros::get-param "~video_directory" "/tmp"))
      (setq gdrive-parents-path (ros::get-param "~gdrive_parents_path" "/watch_dog_demo/person_images"))
      (setq list-upload-queue (list))
+     (setq report-mail-address (ros::get-param "~report_mail_address"))
+     (init-mail)
      ))
   (:upload-images ()
-                  (let (res)
+                  (let (res (mail-body ""))
                     (dolist (upload-item list-upload-queue)
                       (ros::ros-info "Upload file ~A" (elt upload-item 0))
                       (setq res (upload-file (elt upload-item 0) (elt upload-item 1) :parents-path gdrive-parents-path))
+                      (if (elt res 0)
+                          (setq mail-body (concatenate mail-body (format nil "~A: ~A~%" (elt upload-item 1) (elt res 2))))
+                        nil)
                       )
                     (setq list-upload-queue nil)
+                    (send-mail (format nil "Watch Dog Demo Report")
+                               report-mail-address
+                               mail-body)
                     )
                   )
   (:capture-image (image-file-name)
