@@ -61,7 +61,7 @@
      (setq battery-temp 0)
      (setq ypr-euler '(0 0 0))
      (setq video-directory (ros::get-param "~video_directory" "/tmp"))
-     (setq gdrive-parents-path (ros::get-param "~gdrive_parents_path"))
+     (setq gdrive-parents-path (ros::get-param "~gdrive_parents_path" "/watch_dog_demo/person_images"))
      (setq list-upload-queue (list))
      ))
   (:upload-images ()
@@ -223,7 +223,7 @@
                   (setq target-rpy-euler  (list 0  (send *ri* :get-val 'lookup-angle)  (- (+ rel-yaw-angle  (elt (send *ri* :get-val 'ypr-euler) 0)) (send *ri* :get-val 'yaw-offset))))
                   (ros::ros-debug "find good person to look at: target-rpy-euler: ~A, rel-yaw: ~A body yaw: ~A, yaw offset: ~A" target-rpy-euler rel-yaw-angle (elt (send *ri* :get-val 'ypr-euler) 0) (send *ri* :get-val 'yaw-offset))
                   (setq image-file-name
-                        (format nil "~A-~A-~A-~A-~A-~A.jpg"
+                        (format nil "watchdog-demo-~A-~A-~A-~A-~A-~A.jpg"
                                 (+ 1900 (elt current-time 5))
                                 (+ 4 (elt current-time 4))
                                 (elt current-time 3)
