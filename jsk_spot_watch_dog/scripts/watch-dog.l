@@ -251,6 +251,7 @@
 
 (defun func-dark (userdata-alist)
   (let ((ret nil))
+    (send *ri* :upload-images)
     (while (not ret)
       (ros::spin-once)
       (send *ri* :spin-once)
