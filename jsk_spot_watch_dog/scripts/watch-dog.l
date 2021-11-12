@@ -77,10 +77,12 @@
                           (setq mail-body (concatenate string mail-body (format nil "~A : ~A ~%" (elt upload-item 1) (elt res 2))))
                         nil)
                       )
+                    (if list-upload-queue
+                        (send-mail (format nil "Watch Dog Demo Report")
+                                   report-mail-address
+                                   mail-body)
+                        nil)
                     (setq list-upload-queue nil)
-                    (send-mail (format nil "Watch Dog Demo Report")
-                               report-mail-address
-                               mail-body)
                     (ros::ros-info "Sent mail to ~A : ~A" report-mail-address mail-body)
                     )
                   )
