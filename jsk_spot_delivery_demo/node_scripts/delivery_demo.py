@@ -26,16 +26,19 @@ from jsk_robot_startup.email_topic_client import EmailTopicClient
 import smach
 import smach_ros
 
+
 def calc_distance(pose):
     return pose.position.x ** 2 + pose.position.y ** 2 + pose.position.z ** 2
 
+
 def convert_msg_point_to_kdl_vector(point):
-    return PyKDL.Vector(point.x,point.y,point.z)
+    return PyKDL.Vector(point.x, point.y, point.z)
+
 
 def get_nearest_person_pose():
     try:
-        msg = rospy.wait_for_message('~people_pose_array', PoseArray,
-                                     timeout=rospy.Duration(5))
+        msg = rospy.wait_for_message(
+            '~people_pose_array', PoseArray, timeout=rospy.Duration(5))
     except rospy.ROSException as e:
         rospy.logwarn('Timeout exceede: {}'.format(e))
         return None
@@ -66,6 +69,7 @@ class Task:
         self.sender = sender
         self.num_trial = 0
 
+
 class TaskList:
 
     def __init__(self):
@@ -89,27 +93,31 @@ class TaskList:
         self.lock.release()
         return length
 
-def stand_straight(spot_client):
-    spot_client.pubBodyPose(0,Quaternion(x=0,y=0,z=0,w=1.0))
 
-def is_battery_low(threshold_spot=30,threshold_laptop=30):
-    msg_spot_battery = rospy.wait_for_message('/spot/status/battery_percentage',Float32,timeout=rospy.Duration(5))
+def stand_straight(spot_client):
+    spot_client.pubBodyPose(0, Quaternion(x=0, y=0, z=0, w=1.0))
+
+
+def is_battery_low(threshold_spot=30, threshold_laptop=30):
+    msg_spot_battery = rospy.wait_for_message(
+        '/spot/status/battery_percentage', Float32, timeout=rospy.Duration(5))
     try:
-        msg_laptop_battery = rospy.wait_for_message('/spot/status/laptop_battery_percentage',Float32,timeout=rospy.Duration(5))
+        msg_laptop_battery = rospy.wait_for_message(
+            '/spot/status/laptop_battery_percentage', Float32, timeout=rospy.Duration(5))
     except rospy.ROSException:
         rospy.logwarn('')
         msg_laptop_battery = None
 
     if msg_spot_battery.data < threshold_spot:
         rospy.loginfo('Spot Battery percentage ({}%) is lower than threshold: {} %'.format(
-                        msg_spot_battery.data,
-                        threshold_spot))
+            msg_spot_battery.data,
+            threshold_spot))
         return True
 
     if msg_laptop_battery is not None and msg_laptop_battery.data < threshold_laptop:
         rospy.loginfo('Laptop Battery percentage ({}%) is lower than threshold: {} %'.format(
-                        msg_laptop_battery.data,
-                        threshold_laptop))
+            msg_laptop_battery.data,
+            threshold_laptop))
         return True
 
     return False
@@ -122,9 +130,10 @@ data_image_capture_client = None
 data_gdrive_ros_client = None
 data_email_topic_client = None
 data_list_node_strolling = None
-data_task_list_= None
+data_task_list_ = None
 data_task_executing = None
 data_parents_path = None
+
 
 def main():
 
@@ -150,7 +159,8 @@ def main():
     # read only
     data_speech_recongition_client = SpeechRecognitionClient()
     data_spot_ros_client = SpotRosClient()
-    data_sound_client = SoundClient(sound_action='/robotsound_jp', sound_topic='/robotsound_jp')
+    data_sound_client = SoundClient(
+        sound_action='/robotsound_jp', sound_topic='/robotsound_jp')
     data_image_capture_client = ImageCaptureClient()
     data_gdrive_ros_client = GDriveROSClient()
     data_email_topic_client = EmailTopicClient()
@@ -176,11 +186,11 @@ def main():
 
             return 'finished'
 
-
     class Ready(smach.State):
 
         def __init__(self):
-            smach.State.__init__(self, outcomes=['task_executing', 'strolling', 'go_back_to_home'])
+            smach.State.__init__(
+                self, outcomes=['task_executing', 'strolling', 'go_back_to_home'])
 
         def execute(self, userdata):
             rospy.loginfo('Ready')
@@ -192,7 +202,6 @@ def main():
                 return 'go_back_to_home'
 
             return 'strolling'
-
 
     class Strolling(smach.State):
 
@@ -219,11 +228,10 @@ def main():
 
             return 'ready'
 
-
     class Approaching(smach.State):
 
         def __init__(self):
-            smach.State.__init__(self, outcomes=['ready','task_asking'])
+            smach.State.__init__(self, outcomes=['ready', 'task_asking'])
 
         def execute(self, userdata):
 
@@ -242,15 +250,16 @@ def main():
                 elif calc_distance(pose.pose) < 1.0:
                     break
                 else:
-                    pos = PyKDL.Vector(pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
-                    theta = math.atan2(pos[1],pos[0])
+                    pos = PyKDL.Vector(
+                        pose.pose.position.x, pose.pose.position.y, pose.pose.position.z)
+                    theta = math.atan2(pos[1], pos[0])
                     pos = pos - 0.5 * pos / pos.Norm()
                     x = pos[0]
                     y = pos[1]
-                    data_spot_ros_client.trajectory(x, y, theta, 2, blocking=True)
+                    data_spot_ros_client.trajectory(
+                        x, y, theta, 2, blocking=True)
 
             return 'task_asking'
-
 
     class TaskAsking(smach.State):
 
@@ -277,8 +286,8 @@ def main():
             image_topic = rospy.get_param('~capture_image_topic')
             image_directory = rospy.get_param('~image_directory', '/tmp')
             image_file_name = 'delivery_demo_{}-{}-{}.jpg'
-            full_path_name = '{}/{}'.format(image_directory,image_file_name)
-            data_image_capture_client.capture( image_topic, full_path_name)
+            full_path_name = '{}/{}'.format(image_directory, image_file_name)
+            data_image_capture_client.capture(image_topic, full_path_name)
 
             # ask
             success, target_node_id, content, sender = self.ask_task()
@@ -287,16 +296,17 @@ def main():
 
             # Upload file and send mail
             ret = data_gdrive_ros_client.upload_file(
-                                            full_path_name,
-                                            image_file_name,
-                                            data_parents_path)
-            receiver_address = rospy.get_param('~receiver_address','spot@jsk.imi.i.u-tokyo.ac.jp')
+                full_path_name,
+                image_file_name,
+                data_parents_path)
+            receiver_address = rospy.get_param(
+                '~receiver_address', 'spot@jsk.imi.i.u-tokyo.ac.jp')
 
             mail_body = 'Delivery Task Asking Report\n' \
-                      + 'success: {}\n'.format(success) \
-                      + 'target_node_id: {}\n'.format(target_node_id) \
-                      + 'content: {}\n'.format(content) \
-                      + 'sender: {}\n'.format(sender) 
+                + 'success: {}\n'.format(success) \
+                + 'target_node_id: {}\n'.format(target_node_id) \
+                + 'content: {}\n'.format(content) \
+                + 'sender: {}\n'.format(sender)
 
             if ret[0]:
                 mail_body = mail_body + 'url: {}'.format(ret[2])
@@ -304,14 +314,13 @@ def main():
                 mail_body = mail_body + 'Failed to upload a file.'
 
             data_email_topic_client.send_mail(
-                    'JSK Spot Delivery Demo: Task Asking Report',
-                    receiver_address,
-                    mail_body,
-                    attached_files=[]
-                    )
+                'JSK Spot Delivery Demo: Task Asking Report',
+                receiver_address,
+                mail_body,
+                attached_files=[]
+            )
 
             return 'ready'
-
 
     class TaskExecuting(smach.State):
 
@@ -336,16 +345,15 @@ def main():
             # else: execute data_task_executing
 
             success = self.do_deliver_to(
-                                data_task_executing.target_node_id,
-                                data_task_executing.content,
-                                data_task_executing.sender
-                                        )
+                data_task_executing.target_node_id,
+                data_task_executing.content,
+                data_task_executing.sender
+            )
             if success:
                 data_task_executing = None
                 return 'task_asking'
             else:
                 return 'ready'
-
 
         def do_deliver_to(self, target_node_id, content, sender):
 
@@ -360,23 +368,22 @@ def main():
 
     with sm:
         smach.StateMachine.add('GoBackToHome', GoBackToHome(),
-                               transitions={'finished':'Finished'})
+                               transitions={'finished': 'Finished'})
         smach.StateMachine.add('Ready', Ready(),
-                               transitions={'task_executing':'TaskExecuting',
-                                            'strolling':'Strolling',
-                                            'go_back_to_home':'GoBackToHome'})
-        smach.StateMachine.add('Strolling',Strolling(),
-                               transitions={'approaching':'Approaching',
-                                            'ready':'Ready'})
-        smach.StateMachine.add('Approaching',Approaching(),
-                               transitions={'ready':'Ready',
-                                            'task_asking':'TaskAsking'})
-        smach.StateMachine.add('TaskAsking',TaskAsking(),
-                               transitions={'ready':'Ready'})
-        smach.StateMachine.add('TaskExecuting',TaskExecuting(),
-                               transitions={'ready':'Ready',
-                                            'task_asking':'TaskAsking'})
-
+                               transitions={'task_executing': 'TaskExecuting',
+                                            'strolling': 'Strolling',
+                                            'go_back_to_home': 'GoBackToHome'})
+        smach.StateMachine.add('Strolling', Strolling(),
+                               transitions={'approaching': 'Approaching',
+                                            'ready': 'Ready'})
+        smach.StateMachine.add('Approaching', Approaching(),
+                               transitions={'ready': 'Ready',
+                                            'task_asking': 'TaskAsking'})
+        smach.StateMachine.add('TaskAsking', TaskAsking(),
+                               transitions={'ready': 'Ready'})
+        smach.StateMachine.add('TaskExecuting', TaskExecuting(),
+                               transitions={'ready': 'Ready',
+                                            'task_asking': 'TaskAsking'})
 
     rospy.loginfo('initialized')
 
