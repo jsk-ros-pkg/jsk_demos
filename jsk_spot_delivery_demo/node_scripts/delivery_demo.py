@@ -4,34 +4,35 @@
 import math
 import random
 import threading
-
+import PyKDL
+# ROS Libraries
 import actionlib
 import rospy
 import PyKDL
 import tf2_ros
-import PyKDL
-
+# ROS Messsages
 from jsk_spot_delivery_demo.msg import DeliverToAction, DeliverToGoal
 from jsk_spot_delivery_demo.msg import PickupPackageAction, PickupPackageGoal
 from std_msgs.msg import Bool, Float32
 from geometry_msgs.msg import PoseArray, PoseStamped, Quaternion
-
+# Client Libraries
 from spot_ros_client.libspotros import SpotRosClient
 from sound_play.libsoundplay import SoundClient
 from ros_speech_recognition import SpeechRecognitionClient
-
+from image_view2.image_capture_utils import ImageCaptureClient
+from gdrive_ros.gdrive_ros_client import GDriveROSClient
+from jsk_robot_startup.email_topic_client import EmailTopicClient
+# SMACH
 import smach
 import smach_ros
 
 def calc_distance(pose):
-
     return pose.position.x ** 2 + pose.position.y ** 2 + pose.position.z ** 2
 
 def convert_msg_point_to_kdl_vector(point):
     return PyKDL.Vector(point.x,point.y,point.z)
 
 def get_nearest_person_pose():
-
     try:
         msg = rospy.wait_for_message('~people_pose_array', PoseArray,
                                      timeout=rospy.Duration(5))
@@ -117,9 +118,13 @@ def is_battery_low(threshold_spot=30,threshold_laptop=30):
 data_speech_recongition_client = None
 data_spot_ros_client = None
 data_sound_client = None
+data_image_capture_client = None
+data_gdrive_ros_client = None
+data_email_topic_client = None
 data_list_node_strolling = None
 data_task_list_= None
 data_task_executing = None
+data_parents_path = None
 
 def main():
 
@@ -130,9 +135,13 @@ def main():
     global data_speech_recongition_client
     global data_spot_ros_client
     global data_sound_client
+    global data_image_capture_client
+    global data_gdrive_ros_client
+    global data_email_topic_client
     global data_list_node_strolling
     global data_task_list
     global data_task_executing
+    global data_parents_path
 
     #
     tf_buffer = tf2_ros.Buffer()
@@ -142,9 +151,14 @@ def main():
     data_speech_recongition_client = SpeechRecognitionClient()
     data_spot_ros_client = SpotRosClient()
     data_sound_client = SoundClient(sound_action='/robotsound_jp', sound_topic='/robotsound_jp')
+    data_image_capture_client = ImageCaptureClient()
+    data_gdrive_ros_client = GDriveROSClient()
+    data_email_topic_client = EmailTopicClient()
     data_list_node_strolling = rospy.get_param('~list_node_strolling', [])
+    data_parents_path = rospy.get_param('~parents_path', '/spot_delivery_demo')
 
     # read/write
+    data_capture_image_list = []
     data_task_list = TaskList()
     data_task_executing = None
 
@@ -259,10 +273,42 @@ def main():
 
             global data_task_list
 
+            #
+            image_topic = rospy.get_param('~capture_image_topic')
+            image_directory = rospy.get_param('~image_directory', '/tmp')
+            image_file_name = 'delivery_demo_{}-{}-{}.jpg'
+            full_path_name = '{}/{}'.format(image_directory,image_file_name)
+            data_image_capture_client.capture( image_topic, full_path_name)
+
             # ask
             success, target_node_id, content, sender = self.ask_task()
             if success:
                 data_task_list.append(Task(target_node_id, content, sender))
+
+            # Upload file and send mail
+            ret = data_gdrive_ros_client.upload_file(
+                                            full_path_name,
+                                            image_file_name,
+                                            data_parents_path)
+            receiver_address = rospy.get_param('~receiver_address','spot@jsk.imi.i.u-tokyo.ac.jp')
+
+            mail_body = 'Delivery Task Asking Report\n' \
+                      + 'success: {}\n'.format(success) \
+                      + 'target_node_id: {}\n'.format(target_node_id) \
+                      + 'content: {}\n'.format(content) \
+                      + 'sender: {}\n'.format(sender) 
+
+            if ret[0]:
+                mail_body = mail_body + 'url: {}'.format(ret[2])
+            else:
+                mail_body = mail_body + 'Failed to upload a file.'
+
+            data_email_topic_client.send_mail(
+                    'JSK Spot Delivery Demo: Task Asking Report',
+                    receiver_address,
+                    mail_body,
+                    attached_files=[]
+                    )
 
             return 'ready'
 
