@@ -247,7 +247,7 @@
                   (send *ri* :capture-image image-file-name)
                   (send *ri* :play-sound (send *ri* :get-val 'bark-sound)))
               (setq target-rpy-euler '(0 0 0)))))
-        (send* *ri* :body-pose target-rpy-euler))
+        (send *ri* :body-pose target-rpy-euler))
       (unix::usleep (floor (* (send *ri* :get-val 'change-body-duration) 1000000))) ;; single thred, so consider the image luminance calculation (~0.2s)
       )
     ret))
