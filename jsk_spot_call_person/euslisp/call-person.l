@@ -72,9 +72,10 @@
           (format nil "~Aさんを~Aに呼びに行きます" calling-name room) :wait t)
 
     ;; TODO navigate
-    (setq msg (instance spot_behavior_manager_msgs::LeadPersonActionGoal :init))
-    (send (send msg :goal) :target_node_id "eng2_73A4")
-    (ros::publish "/spot_behavior_manager_server/execute_behaviors/goal" msg)
+    ;; (setq msg (instance spot_behavior_manager_msgs::LeadPersonActionGoal :init))
+    ;; (send (send msg :goal) :target_node_id "eng2_73A4")
+    ;; (ros::publish "/spot_behavior_manager_server/execute_behaviors/goal" msg)
+    (send *ri* :go-to-spot room)
 
     (send *ri* :speak-jp
           (concatenate string caller-name "さん" caller-name "さんが呼んでいます") :wait t)
