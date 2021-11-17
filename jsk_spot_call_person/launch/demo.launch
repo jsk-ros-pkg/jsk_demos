@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="jsk_spot_call_person"
+        type="call-person.l"
+        name="call-person"
+        output="screen">
+  </node>
+</launch>
