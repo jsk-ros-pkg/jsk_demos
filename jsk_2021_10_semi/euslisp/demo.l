@@ -39,9 +39,8 @@
   (send *irtviewer* :draw-objects)
   )
 
-(defun write_I()
-  
-  )
+;; (send *fetch* :rarm :move-end-pos #f(50 0 50) :local :rotation-axis t :debug-view t)
+;; (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
 
 (defun move-forward ()
   (send *pr2* :translate #f(100 0 0 )))
@@ -60,3 +59,10 @@
 	:debug-view t)
   (objects (list *room73b2* *nao* *fetch* *pr2* (send *pr2* :rarm :end-coords))))
 
+(defun write_I()
+  (send *fetch* :rarm :move-end-pos #f(0 0 10) :local :rotation-axis t :debug-view t)
+  (send *fetch* :rarm :move-end-pos #f(10 10 0) :local :rotation-axis t :debug-view t)
+  (send *fetch* :rarm :move-end-pos #f(0 0 -10) :local :rotation-axis t :debug-view t)
+  (send *fetch* :rarm :move-end-pos #f(10 0 0) :local :rotation-axis t :debug-view t)
+  (send *irtviewer* :draw-objects)
+  )
