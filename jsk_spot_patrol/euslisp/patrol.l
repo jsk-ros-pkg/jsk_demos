@@ -38,6 +38,8 @@
   )
 
 (defun eng2-81C1-behavior ()
+  (send *ri* :speak-jp "ゴミ捨て場を見に行きます" :wait t)
+  (send *ri* :go-to-spot "eng2_8Ftrashcan_front")
   (send *ri* :speak-jp "8 1 C1の巡回をします" :wait t)
   (send *ri* :go-to-spot "eng2_81C1")
   (send *ri* :speak-jp "巡回しています" :wait t)
