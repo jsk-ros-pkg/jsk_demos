@@ -1,0 +1,7 @@
+<launch>
+  <node pkg="jsk_spot_patrol"
+        type="patrol.l"
+        name="patrol_demo"
+        output="screen">
+  </node>
+</launch>
