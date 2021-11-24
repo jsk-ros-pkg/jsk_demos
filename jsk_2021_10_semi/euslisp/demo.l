@@ -13,15 +13,11 @@
   (fetch-init)
   )
 
-(when (not (boundp '*spotkinova*))
-  (require "package://spotkinovaeus/spotkinova.l")
-  (setq *spotkinova* (spotkinova)))
-
 (when (not (boundp '*pr2*))
   (require "package://pr2eus/pr2.l")
   (setq *pr2* (pr2)))
 
-(objects (list *room73b2* *nao* *fetch* *pr2* *spotkinova*))
+(objects (list *room73b2* *nao* *fetch* *pr2*))
 
 (defun wait-for-human ()
   ;;(send *pr2* :move-to (make-coords :pos #f(5000 0 0) :rpy (float-vector pi 0 0)) :world)
@@ -37,32 +33,95 @@
   (send *fetch* :rarm :move-end-rot -90 :z :local :debug-view t)
   (send *fetch* :rarm :move-end-rot -90 :x :local :debug-view t)
   (send *irtviewer* :draw-objects)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
   )
 
 ;; (send *fetch* :rarm :move-end-pos #f(50 0 50) :local :rotation-axis t :debug-view t)
 ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
 
-(defun move-forward ()
-  (send *pr2* :translate #f(100 0 0 )))
+(defun write-x-y-z (x y z &key (debug-view t)) ;; 
+  ;;(send *fetch* :rarm :move-end-pos (float-vector x y z) :local :rotation-axis t :debug-view debug-view)
+  (let ((base-pos (float-vector 750 0 850)))
+    ;;(send *fetch* :reset-pose)
+    (send *fetch* :rarm :inverse-kinematics
+	  (send (make-cascoords :pos (v+ base-pos (float-vector x y z))) :transform *fetch* :parent)
+	  :rotation-axis t
+	  :look-at-target t
+	  :use-torso nil
+	  :debug-view debug-view)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)))
 
-;; (send dest :draw-on :flush t :size 1000)
+;;(defun write_I()
+  ;;(send *fetch* :rarm :move-end-pos #f(0 0 50) :local :rotation-axis t :debug-view t)
+  ;;(send *fetch* :rarm :move-end-pos #f(50 50 0) :local :rotation-axis t :debug-view t)
+  ;;(send *fetch* :rarm :move-end-pos #f(0 0 -50) :local :rotation-axis t :debug-view t)
+  ;;(send *fetch* :rarm :move-end-pos #f(50 0 0) :local :rotation-axis t :debug-view t)
+  ;;(write-x-y-z 50 0 -50)
+  ;;(write-x-y-z -50 0 0)
+  ;;(write-x-y-z 0 50 0)
+  ;;(write-x-y-z 0 -50 50)
+  ;;)
 
-(defun move-arms () ;; まずは体の位置を基準に腕を動かす
-  (setq dest (send *pr2* :copy-coords)) ;; pr2の座標
-  (send dest :translate #f(700 -200 1000)) ;; (2400 200 700)
-  (send *pr2* :rarm :inverse-kinematics
-	dest
-	:link-list (send *pr2* :link-list (send *pr2* :rarm :end-coords :parent))
-	:move-target (send *pr2* :rarm :end-coords)
-	:rotation-axis nil
-	:thre 30
-	:debug-view t)
-  (objects (list *room73b2* *nao* *fetch* *pr2* (send *pr2* :rarm :end-coords))))
+(defun write-line (command-list) ;; defun write_line (command_list):
+  (ros::ros-warn "command-list ~A" command-list)
+  (when (car command-list) ;; car x == x[0]
+    (send *fetch* :rarm :move-end-pos (float-vector (elt (car command-list) 0)
+						    (elt (car command-list) 1)
+						    50)
+	  :local :rotation-axis t :debug-view nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation))
+  (dolist (command command-list) ;;   for command in command_list: ;; for i in [1,2,3]:
+    (ros::ros-warn "    command ~A" command)
+    (write-x-y-z
+     (elt command 0) ;; command[0]
+     (elt command 1) ;; command[1]
+     0
+     :debug-view nil
+     )
+    );; dolist
+  (send *fetch* :rarm :move-end-pos #f(0 0 50) :local :rotation-axis t :debug-view nil)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+  (send *ri* :wait-interpolation)
+  ) ;; defun
+
+
+;;(defun write-I ()
+  ;;(write-line (list  (list 0 50)))
+  ;;(write-x-y-z 0 -25 0 :debug-view nil)
+ ;; (write-line (list  (list -50 0)))
+  ;;(write-x-y-z 0 25 0 :debug-view nil)
+  ;;(write-line (list  (list 0 50)))
+  ;;)
+
+
+(defun move-x-y (x y) ;; 
+  ;;(send *fetch* :rarm :move-end-pos (float-vector x y z) :local :rotation-axis t :debug-view debug-view)
+  ;;(let ((base-pos (float-vector 750 0 850)))
+    ;;(send *fetch* :reset-pose)
+    (send *fetch* :rarm :move-end-pos #f(0 0 50) :local :rotation-axis t :debug-view nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+    (send *fetch* :rarm :move-end-pos (float-vector x y 0) :local :rotation-axis t :debug-view nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+    (send *fetch* :rarm :move-end-pos #f(0 0 -50) :local :rotation-axis t :debug-view nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+    )
+(defun line-x-y (x y)
+   (send *fetch* :rarm :move-end-pos (float-vector x y 0) :local :rotation-axis t :debug-view nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+    )
 
 (defun write_I()
-  (send *fetch* :rarm :move-end-pos #f(0 0 10) :local :rotation-axis t :debug-view t)
-  (send *fetch* :rarm :move-end-pos #f(10 10 0) :local :rotation-axis t :debug-view t)
-  (send *fetch* :rarm :move-end-pos #f(0 0 -10) :local :rotation-axis t :debug-view t)
-  (send *fetch* :rarm :move-end-pos #f(10 0 0) :local :rotation-axis t :debug-view t)
-  (send *irtviewer* :draw-objects)
+  (line-x-y 0 -50)
+  ;;(move-x-y (-25 0))
   )
