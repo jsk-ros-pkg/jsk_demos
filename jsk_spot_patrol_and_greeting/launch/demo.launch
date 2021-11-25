@@ -3,7 +3,7 @@
         pkg="jsk_spot_patrol_and_greeting"
         type="demo.l"
         name="jsk_spot_patrol_and_greeting_demo"
-        required="false"
+        required="true"
         output="screen"
         >
         <rosparam subst_value="true">
