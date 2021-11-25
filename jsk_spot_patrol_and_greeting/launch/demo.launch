@@ -1,0 +1,21 @@
+<launch>
+    <node
+        pkg="jsk_spot_patrol_and_greeting"
+        type="demo.l"
+        name="jsk_spot_patrol_and_greeting_demo"
+        required="false"
+        >
+        <rosparam subst_value="true">
+            patrol_list:
+                - eng2_73B2
+                - eng2_JSKEntrance
+                - eng2_73A2
+                - eng2_7FElevator
+                - eng2_73B1
+            home_id: eng2_73B2
+            dock_id: 520
+        </rosparam>
+    </node>
+
+    <node name="image_capture_server" pkg="image_view2" type="image_capture_server" output="screen"/>
+</launch>
