@@ -4,6 +4,7 @@
         type="demo.l"
         name="jsk_spot_patrol_and_greeting_demo"
         required="false"
+        output="screen"
         >
         <rosparam subst_value="true">
             patrol_list:
@@ -14,6 +15,7 @@
                 - eng2_73B1
             home_id: eng2_73B2
             dock_id: 520
+            receiver_address: "spot@jsk.imi.i.u-tokyo.ac.jp"
         </rosparam>
     </node>
 

@@ -41,16 +41,19 @@
 (defun main ()
   (ros::roseus "spot-patrol-and-greeting")
   (spot-init)
+  (init-mail)
   (send *ri* :undock)
 
   (setq patrol-list (ros::get-param "~patrol_list" nil))
   (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
+  (setq receiver-address (ros::get-param "~receiver_address"))
   (setq dock-id (ros::get-param "~dock_id" 520))
 
   (dolist (target-id patrol-list)
     (setq ret (send *ri* :go-to-spot target-id))
     (if ret
       (progn
+        (ros::ros-info "Success to reach ~A" target-id)
         (setq current-time (unix:localtime))
         (setq image-file-name
               (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A-at-~A.jpg"
@@ -64,12 +67,13 @@
                       ))
         (capture-snapshot image-file-name target-id)
         )
-      nil)
+      (ros::ros-warn "Failed to reach ~A" target-id))
     )
-  (upload-images "sktometometo@gmail.com")
-
   (send *ri* :go-to-spot home-id)
   (send *ri* :dock dock-id)
+  (ros::ros-info "sending a mail")
+  (upload-images receiver-address)
   )
 
 (main)
+(exit)
