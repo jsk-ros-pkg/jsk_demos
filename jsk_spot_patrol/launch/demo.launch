@@ -1,7 +1,19 @@
 <launch>
+  <!-- <node pkg="jsk_spot_patrol" -->
+  <!--       type="patrol.l" -->
+  <!--       name="patrol_demo" -->
+  <!--       output="screen"> -->
+  <!-- </node> -->
+
   <node pkg="jsk_spot_patrol"
-        type="patrol.l"
-        name="patrol_demo"
+        type="mailbox.l"
+        name="mailbox checking"
         output="screen">
+  </node>
+
+  <node name="image_capture_server"
+        pkg="image_view2"
+        type="image_capture_server"
+        output="screen" >
   </node>
 </launch>
