@@ -11,10 +11,12 @@
                        &key
                        (image-topic "/spot_recognition/object_detection_image")
                        (video-directory "/tmp"))
-  (let ((file-name (format nil "~A/~A" video-directory image-file-name)))
+  (let (success (file-name (format nil "~A/~A" video-directory image-file-name)))
     (ros::ros-info "Capture a image to ~A" file-name)
-    (capture-image image-topic file-name)
-    (setq *list-upload* (append *list-upload* (list (list file-name image-file-name text))))
+    (setq success (capture-image image-topic file-name))
+    (if success
+        (setq *list-upload* (append *list-upload* (list (list file-name image-file-name text))))
+      nil)
     ))
 
 (defun upload-images (report-mail-address
