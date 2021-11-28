@@ -70,14 +70,13 @@
   ;; start a recording task
   (setq current-time (unix:localtime))
   (setq video-file-name
-        (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A-at-~A.avi"
+        (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A.avi"
                 (+ 1900 (elt current-time 5))
                 (+ 4 (elt current-time 4))
                 (elt current-time 3)
                 (elt current-time 2)
                 (elt current-time 1)
                 (elt current-time 0)
-                target-id
                 ))
   (setq video-file-path (concatenate string video-directory video-file-name))
   (call-start-record-service video-audio-topic-name video-image-topic-name video-file-path video-frame-rate)
