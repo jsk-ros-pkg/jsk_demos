@@ -102,7 +102,7 @@
                 (elt current-time 0)
                 ))
   (setq video-file-path (concatenate string video-directory video-file-name))
-  (start-record
+  (start-recording
     video-audio-topic-name
     video-image-topic-name
     video-file-path
