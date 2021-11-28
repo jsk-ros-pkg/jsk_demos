@@ -81,7 +81,13 @@
                 (elt current-time 0)
                 ))
   (setq video-file-path (concatenate string video-directory video-file-name))
-  (call-start-record-service video-audio-topic-name video-image-topic-name video-file-path video-frame-rate)
+  (ros::ros-errro "video-file-path : ~A" video-file-path)
+  (ros::ros-errro "video-frame-rate : ~A" video-frame-rate)
+  (call-start-record-service
+    video-audio-topic-name
+    video-image-topic-name
+    video-file-path
+    video-frame-rate)
 
   ;; undock
   (send *ri* :undock)
