@@ -18,6 +18,4 @@
             receiver_address: "spot@jsk.imi.i.u-tokyo.ac.jp"
         </rosparam>
     </node>
-
-    <node name="image_capture_server" pkg="image_view2" type="image_capture_server" output="screen"/>
 </launch>
