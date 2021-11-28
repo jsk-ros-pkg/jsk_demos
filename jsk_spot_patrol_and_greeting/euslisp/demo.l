@@ -48,7 +48,7 @@
     (ros::ros-info "Upload file ~A" video-path)
     (setq res (upload-file video-path video-name :parents-path gdrive-parents-path))
     (if (elt res 0)
-        (format nil "~A : ~A ~%" video-name video-path)
+        (format nil "~A : ~A ~%" video-name (elt res 2))
       "")
   ))
 
