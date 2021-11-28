@@ -16,6 +16,10 @@
             home_id: eng2_73B2
             dock_id: 520
             receiver_address: "spot@jsk.imi.i.u-tokyo.ac.jp"
+            video_directory: "/tmp/"
+            video_audio_topic_name: "/audio"
+            video_image_topic_name: "/dual_fisheye_to_panorama/output/quater/throttled"
+            video_frame_rate: 1
         </rosparam>
     </node>
 </launch>

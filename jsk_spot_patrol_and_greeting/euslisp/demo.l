@@ -56,7 +56,6 @@
   (ros::roseus "spot-patrol-and-greeting")
   (spot-init)
   (init-mail)
-  (send *ri* :undock)
 
   (setq patrol-list (ros::get-param "~patrol_list" nil))
   (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
@@ -82,6 +81,9 @@
                 ))
   (setq video-file-path (concatenate string video-directory video-file-name))
   (call-start-record-service video-audio-topic-name video-image-topic-name video-file-path video-frame-rate)
+
+  ;; undock
+  (send *ri* :undock)
 
   (dolist (target-id patrol-list)
     (setq ret (send *ri* :go-to-spot target-id))
