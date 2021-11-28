@@ -52,6 +52,29 @@
       "")
   ))
 
+(defun start-recording (audio-topic-name
+                        image-topic-name
+                        file-path
+                        frame-rate)
+  (let (success)
+    (setq success (call-start-record-service
+                     audio-topic-name
+                     image-topic-name
+                     file-path
+                     frame-rate))
+    (if success
+        (ros::ros-info "Succeed to start recording to ~A" file-path)
+      (ros::ros-error "Failed to start recording to ~A" file-path))
+    ))
+
+(defun stop-recording (video-file-path)
+  (let (success)
+    (setq success (call-stop-record-service video-file-path))
+    (if success
+        (ros::ros-info "Succeed to stop recording to ~A" video-file-path)
+      (ros::ros-error "Failed to stop recording to ~A" video-file-path))
+    ))
+
 (defun main ()
   (ros::roseus "spot-patrol-and-greeting")
   (spot-init)
@@ -79,7 +102,7 @@
                 (elt current-time 0)
                 ))
   (setq video-file-path (concatenate string video-directory video-file-name))
-  (call-start-record-service
+  (start-record
     video-audio-topic-name
     video-image-topic-name
     video-file-path
@@ -112,7 +135,7 @@
   (send *ri* :dock dock-id)
 
   ;; stop a recording task
-  (call-stop-recording-service video-file-path)
+  (stop-recording video-file-path)
 
   (setq whole-mail-body (format nil "Patrol results ~%"))
   (setq mail-body-images (upload-images))
