@@ -66,6 +66,8 @@
   (setq video-audio-topic-name (ros::get-param "~video_audio_topic_name"))
   (setq video-image-topic-name (ros::get-param "~video_image_topic_name"))
   (setq video-frame-rate (ros::get-param "~video_frame_rate"))
+  (if (stringp video-frame-rate)
+    (ros::ros-error "video-frame-rate is string"))
 
   ;; start a recording task
   (setq current-time (unix:localtime))
