@@ -44,18 +44,23 @@
 
     (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
     (setq dock-id (floor (ros::get-param "~dock_id" 520)))
+    (setq use-docking-station (ros::get-param "~use_docking_station" false))
     (setq receiver-address (ros::get-param "~receiver_address"))
     (setq media-directory (ros::get-param "~media_directory" "/tmp"))
 
     ;;; First go back to home target id
+    (ros::ros-info "Trying to go to ~A" home-id)
     (setq success (send *ri* :go-to-spot home-id))
 
     ;; Abort if failed to read home
     (if (not success)
       (progn
-        (ros::ros-error "Failed to reach home position.")
+        (ros::ros-error "Failed to reach home position ~A" home-id)
         (send-resque-mail receiver-address media-directory)
         (return-from main nil)))
+
+    (if (not use-docking-station)
+      (return-from mail t))
 
     ;; Then try to dock
     (setq success (send *ri* :dock dock-id))
