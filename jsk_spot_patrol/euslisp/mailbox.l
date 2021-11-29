@@ -41,6 +41,20 @@
     (ros::ros-info "Sent mail to ~A" report-mail-address)
     ))
 
+(defun speech-recognition (text &optional (duration 5))
+  "args: text (string)"
+  (let ((start nil) (tm nil))
+    (setq start (send (ros::time-now) :sec))
+    (while (or (< duration (- tm start))
+               (not (string= text
+                             (elt
+                              (send
+                               (one-shot-subscribe
+                                "/speech_to_text_jp"
+                                speech_recognition_msgs::SpeechRecognitionCandidates)
+                               :transcript) 0))))
+      (setq tm (send (ros::time-now) :now)))))
+
 (defun main ()
   (spot-init)
   ;;(send *ri* :undock)
@@ -78,7 +92,10 @@
                      :rpy (float-vector 0 0 0)))
   (send *ri* :body-pose (send *spot* :copy-worldcoords))
 
+  (send *ri* :speak-jp "JSK宛の荷物を取ってください" :wait t)
+  (speech-recognition "はい")
+  (send *ri* :speak-jp "載せ終わったら載せましたと言ってください" :wait t)
+  (speech-recogtnition "乗せました" 20)
+
   (send *ri* :go-to-spot home-id)
   (send *ri* :dock dock-id))
-
-
