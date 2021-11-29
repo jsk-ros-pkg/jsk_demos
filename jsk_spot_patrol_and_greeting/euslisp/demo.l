@@ -84,7 +84,7 @@
   (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
   (setq receiver-address (ros::get-param "~receiver_address"))
   (setq dock-id (ros::get-param "~dock_id" 520))
-  (setq video-directory (ros::get-param "~video_directory" "/tmp/"))
+  (setq media-directory (ros::get-param "~media_directory" "/tmp/"))
 
   (setq video-audio-topic-name (ros::get-param "~video_audio_topic_name"))
   (setq video-image-topic-name (ros::get-param "~video_image_topic_name"))
@@ -101,7 +101,7 @@
                 (elt current-time 1)
                 (elt current-time 0)
                 ))
-  (setq video-file-path (concatenate string video-directory video-file-name))
+  (setq video-file-path (concatenate string media-directory video-file-name))
   (start-recording
     video-audio-topic-name
     video-image-topic-name
@@ -127,7 +127,7 @@
                       (elt current-time 0)
                       target-id
                       ))
-        (capture-snapshot image-file-name target-id)
+        (capture-snapshot image-file-name target-id :image-directory media-directory)
         )
       (ros::ros-warn "Failed to reach ~A" target-id))
     )

@@ -17,9 +17,9 @@
             dock_id: 520
             receiver_address: "spot@jsk.imi.i.u-tokyo.ac.jp"
             video_directory: "/tmp/"
-            video_audio_topic_name: "/audio"
-            video_image_topic_name: "/dual_fisheye_to_panorama/output/quater"
-            video_frame_rate: 3
+            video_audio_topic_name: /audio
+            video_image_topic_name: /dual_fisheye_to_panorama/output/quater
+            video_frame_rate: 2
         </rosparam>
     </node>
 </launch>
