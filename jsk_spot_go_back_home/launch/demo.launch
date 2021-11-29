@@ -1,8 +1,13 @@
 <launch>
+    <arg name="home_id" default="$(optenv SPOT_HOME_ID eng2_73b2)"/>
+    <arg name="use_docking_station" default="$(optenv USE_DOCKING_STATION true)"/>
+    <arg name="docking_station_id" default="$(optenv DOCKING_STATION_ID 520)"/>
+
     <node pkg="jsk_spot_go_back_home" type="demo.l" name="jsk_spot_go_back_home" output="screen" required="true">
-        <rosparam>
-            home_id: eng2_73B2
-            dock_id: 520
+        <rosparam subst_value="true">
+            home_id: $(arg home_id)
+            use_docking_station: $(arg use_docking_station)
+            dock_id: $(arg docking_station_id)
             receiver_address: spot@jsk.imi.i.u-tokyo.ac.jp
             media_directory: /tmp
         </rosparam>
