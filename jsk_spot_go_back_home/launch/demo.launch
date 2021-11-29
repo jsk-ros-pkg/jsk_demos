@@ -1,0 +1,10 @@
+<launch>
+    <node pkg="jsk_spot_go_back_home" type="demo.l" name="jsk_spot_go_back_home" output="screen" required="true">
+        <rosparam>
+            home_id: eng2_73B2
+            dock_id: 520
+            receiver_address: spot@jsk.imi.i.u-tokyo.ac.jp
+            media_directory: /tmp
+        </rosparam>
+    </node>
+</launch>
