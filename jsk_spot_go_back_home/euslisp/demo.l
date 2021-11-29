@@ -44,7 +44,7 @@
 
     (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
     (setq dock-id (floor (ros::get-param "~dock_id" 520)))
-    (setq use-docking-station (ros::get-param "~use_docking_station" false))
+    (setq use-docking-station (ros::get-param "~use_docking_station" nil))
     (setq receiver-address (ros::get-param "~receiver_address"))
     (setq media-directory (ros::get-param "~media_directory" "/tmp"))
 
