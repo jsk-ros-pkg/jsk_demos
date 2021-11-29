@@ -1,6 +1,25 @@
 #!/usr/bin/env roseus
 
 (load "package://spoteus/spot-interface.l")
+(load "package://image_view2/euslisp/image-capture-utils.l")
+(load "package://gdrive_ros/euslisp/gdrive-ros-utils.l")
+(load "package://jsk_robot_startup/euslisp/email-topic-client.l")
+
+(ros::roseus "patrol")
+(setq *list-upload* nil)
+
+(defun taking-picture (place)
+  (setq img (one-shot-subscribe "/dual_fisheye_to_panorama/output"
+                                  sensor_msgs::Image :timeout 1000))
+  (if img
+    (progn
+      (ros::ros-info "taking a picture of ~A" place)
+      (send *ri* :speak-jp "写真を撮ります" :wait t)
+      (play-sound (pathname (ros::resolve-ros-path
+                             "package://jsk_pr2_startup/jsk_pr2_lifelog/camera.wav")))
+      (write-image-file (format nil "/tmp/~A.jpg" place) (ros::sensor_msgs/Image->image img))
+      )
+    (ros::ros-error "fail saving image and tweeting"))))
 
 (defun eng2-7FEvFront-behavior ()
   (send *ri* :speak-jp "巡回しています" :wait t)
@@ -47,6 +66,13 @@
   (send *ri* :speak-jp "81C1の巡回を終わります" :wait t)
   (send *ri* :speak-en "I finished patroling 8 1 c 1" :wait t)
   )
+
+(defun mechoffice-behavior ()
+  (send *ri* :go-to-spot "eng2_Mech_Office")
+  (send *ri* :go-to-spot "eng2_Mailbox"))
+
+(defun mailbox-behavior ()
+  (send *ri* :go-to-spot "eng2_Mailbox"))
 
 (defun hongo-maingate-behavior ()
   (send *ri* :go-to-spot "HongoMainGate"))
