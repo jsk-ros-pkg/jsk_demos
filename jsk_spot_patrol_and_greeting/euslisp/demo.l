@@ -61,7 +61,8 @@
                      audio-topic-name
                      image-topic-name
                      file-path
-                     frame-rate))
+                     frame-rate
+                     :audio-format "wave"))
     (if success
         (ros::ros-info "Succeed to start recording to ~A" file-path)
       (ros::ros-error "Failed to start recording to ~A" file-path))
