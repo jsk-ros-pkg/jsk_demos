@@ -41,6 +41,18 @@
     (ros::ros-info "Sent mail to ~A" report-mail-address)
     ))
 
+(defun upload-video (video-path
+                     video-name
+                     &key
+                       (gdrive-parents-path "/checking_mailbox/video"))
+  (let (res)
+    (ros::ros-info "Upload file ~A" video-path)
+    (setq res (upload-file video-path video-name :parents-path gdrive-parents-path))
+    (if (elt res 0)
+        (format nil "~A : ~A ~%" video-name (elt res 2))
+        "")
+    ))
+
 (defun speech-recognition (text &optional (duration 5))
   "args: text (string)"
   (let ((start nil) (tm nil))
