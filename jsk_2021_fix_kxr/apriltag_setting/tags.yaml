@@ -19,7 +19,9 @@
 #   ]
 standalone_tags:
   [
-    {id: 000, size: 0.014, name: test_000},
+    {id: 000, size: 0.0075, name: test_000},
+    {id: 001, size: 0.0075, name: test_001},
+    {id: 002, size: 0.0075, name: test_002},
   ]
 # ## Tag bundle definitions
 # ### Remarks
