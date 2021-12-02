@@ -3,6 +3,7 @@
 (load "package://image_view2/euslisp/image-capture-utils.l")
 (load "package://gdrive_ros/euslisp/gdrive-ros-utils.l")
 (load "package://jsk_robot_startup/euslisp/email-topic-client.l")
+(load "package://jsk_spot_patrol/euslisp/speech_recognition.l")
 
 (setq *list-upload* nil)
 
@@ -70,6 +71,7 @@
 (defun main ()
   (spot-init)
   ;;(send *ri* :undock)
+  (setq speech-recog-result (instance speech-recognition-client :init))
 
   (setq target-id "eng2_Mailbox")
   (setq home-id (ros::get-param "~home_id" "eng2_73B2"))
@@ -106,11 +108,27 @@
                      :rpy (float-vector 0 0 0)))
   (send *ri* :body-pose (send *spot* :copy-worldcoords))
 
-  (send *ri* :speak-jp "JSK宛の荷物を取ってください" :wait t)
-  (speech-recognition "はい")
-  (send *ri* :speak-jp "載せ終わったら載せましたと言ってください" :wait t)
-  (speech-recogtnition "乗せました" 20)
+  (send *ri* :speak-jp "助けてくれる人を探しています" :wait t)
+  (setq hoge nil)
+  (while (not hoge)
+    (send *ri* :speak-jp "助けてくれる人を探しています" :wait t)
+    (send *ri* :speak-jp "助けてくれる人は僕に声をかけてください" :wait t)
+    (send *ri* :speak-jp "僕を助けてください" :wait t)
+    (setq hoge (send speech-recog-result :recognize)))
+  (send *ri* :speak-jp "助けてくれる人が見つかりました" :wait t)
 
+  (send *ri* :speak-jp "岡田先生宛の郵便物を取ってください" :wait t)
+
+  (string= "はい" (send speech-recog-result :recognize))
+  (send *ri* :speak-jp "載せ終わったら返事をしてください" :wait t)
+  (string= "はい" (send speech-recog-result :recognize))
+  ;; のせました
+  ;; 受け取りました
+  (send *ri* :speak-jp (format nil "~A 郵便物を届けに来ました" "岡田先生") :wait t)
+  (send *ri* :speak-jp "受け取ってください" :wait t)
+  (send *ri* :speak-jp "受け取ったら受け取りましたと言ってください" :wait t)
+  (string= "受け取りました" (send speech-recog-result :recognize))
+  (send *ri* :speak-jp "ありがとうございます" :wait t)
   (send *ri* :go-to-spot home-id)
   (send *ri* :dock dock-id))
 
