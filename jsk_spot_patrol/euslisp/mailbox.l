@@ -110,18 +110,20 @@
 
   (send *ri* :speak-jp "助けてくれる人を探しています" :wait t)
   (setq hoge nil)
-  (while (not hoge)
+  (setq duration (send (instance ros::time :now) :sec))
+  (while (> 5 (- (send (instance ros::time :now) :sec) duration))
     (send *ri* :speak-jp "助けてくれる人を探しています" :wait t)
-    (send *ri* :speak-jp "助けてくれる人は僕に声をかけてください" :wait t)
-    (send *ri* :speak-jp "僕を助けてください" :wait t)
+    (ros::ros-info "1111")
+    ;;(send *ri* :speak-jp "助けてくれる人は僕に声をかけてください" :wait t)
+    ;;(send *ri* :speak-jp "僕を助けてください" :wait t)
     (setq hoge (send speech-recog-result :recognize)))
   (send *ri* :speak-jp "助けてくれる人が見つかりました" :wait t)
 
   (send *ri* :speak-jp "岡田先生宛の郵便物を取ってください" :wait t)
 
-  (string= "はい" (send speech-recog-result :recognize))
+  (string= "はい" (elt (send speech-recog-result :recognize) 0))
   (send *ri* :speak-jp "載せ終わったら返事をしてください" :wait t)
-  (string= "はい" (send speech-recog-result :recognize))
+  (string= "はい" (elt (send speech-recog-result :recognize) 0))
   ;; のせました
   ;; 受け取りました
   (send *ri* :speak-jp (format nil "~A 郵便物を届けに来ました" "岡田先生") :wait t)
@@ -131,6 +133,7 @@
   (send *ri* :speak-jp "ありがとうございます" :wait t)
   (send *ri* :go-to-spot home-id)
   (send *ri* :dock dock-id))
+
 
 ;; memo of kinova-face-camera-front-pose
 ;; #f(28.3015 81.8334 -160.021 -27.723 82.1618 -160.021 32.7776 80.807 -160.021 -32.405 80.9873 -160.021 0.011719 -16.0895 75.154 90.698 6.25143 89.9037)
