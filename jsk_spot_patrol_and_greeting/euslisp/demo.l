@@ -6,6 +6,8 @@
 (load "package://audio_video_recorder/euslisp/audio-video-recorder-client.l")
 (load "package://jsk_robot_startup/euslisp/email-topic-client.l")
 
+(ros::load-ros-manifest "std_srvs")
+
 (setq *list-upload* nil)
 
 (defun capture-snapshot (image-file-name text
@@ -33,6 +35,19 @@
       )
     mail-body
   ))
+
+(defun greeting ()
+  (let (ret res)
+    ;;
+    (setq ret (ros::wait-for-service "~greeting" 1))
+    (if (not ret)
+      (progn
+        (ros::ros-error "No server found.")
+        (return-from greeting nil)))
+    ;;
+    (setq res (ros::service-call "~greeting" (instance std_srvs::TriggerRequest :init) t))
+    (send res :success)
+    ))
 
 (defun report-mail (report-mail-address mail-body)
   (send-mail (format nil "Patrol And Greeting Demo Report")
@@ -86,22 +101,24 @@
   (setq receiver-address (ros::get-param "~receiver_address"))
   (setq dock-id (ros::get-param "~dock_id" 520))
   (setq media-directory (ros::get-param "~media_directory" "/tmp/"))
+  (setq duration-spot-stay (ros::get-param "~duration_spot_stay" 30))
 
   (setq video-audio-topic-name (ros::get-param "~video_audio_topic_name"))
   (setq video-image-topic-name (ros::get-param "~video_image_topic_name"))
   (setq video-frame-rate (floor (ros::get-param "~video_frame_rate")))
 
   ;; start a recording task
-  (setq current-time (unix:localtime))
-  (setq video-file-name
+  (let ((current-date-time (unix:localtime)))
+      (setq video-file-name
         (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A.avi"
-                (+ 1900 (elt current-time 5))
-                (+ 4 (elt current-time 4))
-                (elt current-time 3)
-                (elt current-time 2)
-                (elt current-time 1)
-                (elt current-time 0)
+                (+ 1900 (elt current-date-time 5))
+                (+ 4 (elt current-date-time 4))
+                (elt current-date-time 3)
+                (elt current-date-time 2)
+                (elt current-date-time 1)
+                (elt current-date-time 0)
                 ))
+      )
   (setq video-file-path (concatenate string media-directory video-file-name))
   (start-recording
     video-audio-topic-name
@@ -113,22 +130,30 @@
   (send *ri* :undock)
 
   (dolist (target-id patrol-list)
+    (ros::ros-info "Going to ~A" target-id)
     (setq ret (send *ri* :go-to-spot target-id))
     (if ret
-      (progn
+      (let* ((deadline (ros::time+ (ros::time-now) (ros::time 30))))
         (ros::ros-info "Success to reach ~A" target-id)
-        (setq current-time (unix:localtime))
-        (setq image-file-name
-              (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A-at-~A.jpg"
-                      (+ 1900 (elt current-time 5))
-                      (+ 4 (elt current-time 4))
-                      (elt current-time 3)
-                      (elt current-time 2)
-                      (elt current-time 1)
-                      (elt current-time 0)
-                      target-id
-                      ))
-        (capture-snapshot image-file-name target-id :image-directory media-directory)
+        (ros::ros-info "(ros::time-now) : ~A" (ros::time-now))
+        (ros::ros-info "deadline : ~A" deadline)
+        (ros::ros-info "(ros::time< (ros::time-now) deadline) : ~A" (ros::time< (ros::time-now) deadline))
+        (while (ros::time< (ros::time-now) deadline)
+            (greeting)
+            (send *ri* :go-to-spot target-id)
+            (unix::sleep 5)
+            )
+        ;(setq image-file-name
+        ;      (format nil "patrol-and-greeting-demo-~A-~A-~A-~A-~A-~A-at-~A.jpg"
+        ;              (+ 1900 (elt current-time 5))
+        ;              (+ 4 (elt current-time 4))
+        ;              (elt current-time 3)
+        ;              (elt current-time 2)
+        ;              (elt current-time 1)
+        ;              (elt current-time 0)
+        ;              target-id
+        ;              ))
+        ;(capture-snapshot image-file-name target-id :image-directory media-directory)
         )
       (ros::ros-warn "Failed to reach ~A" target-id))
     )
