@@ -118,13 +118,7 @@ class GreetingActionServer:
         file_url = ret[2]
 
         # Send a mail
-        mail_title = 'Greeting Demo {}-{}-{}-{}-{}-{}'.format(
-            current.year,
-            current.month,
-            current.day,
-            current.hour,
-            current.minute,
-            current.second)
+        mail_title = 'Greeting Demo'
         mail_body = '{}\n{} : {}'.format(message, file_name, file_url)
         self.email_client.send_mail(
             mail_title,
