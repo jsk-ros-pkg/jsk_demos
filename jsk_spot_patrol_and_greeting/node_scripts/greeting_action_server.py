@@ -109,10 +109,11 @@ class GreetingActionServer:
             return False
 
         # Uploading
+        rospy.sleep(1)
         ret = self.gdrive_client.upload_file(
             file_path, file_name, parents_path=self.parents_path)
         if not ret[0]:
-            rospy.logerr('failed to upload a image {}'.format(file_path))
+            rospy.logerr('failed to upload a image {} : {}'.format(file_path, ret[1]))
             return False
         file_url = ret[2]
 
