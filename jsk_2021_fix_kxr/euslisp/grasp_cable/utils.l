@@ -12,6 +12,10 @@
 
 (objects (list *robot*))
 
+(defvar *marker-000*)
+(defvar *marker-001*)
+(defvar *marker-002*)
+
 (send *robot* :reset-pose)
 (send *robot* :rarm :move-end-pos #f(-500 0 0))
 (send *robot* :larm :move-end-pos #f(-500 0 0))
@@ -54,4 +58,21 @@
     (send *ri* :start-grasp :rarm)
     (unix:sleep 2)
     (send *ri* :stop-grasp :rarm)
-    (unix:sleep 2)
+    (unix:sleep 2)))
+
+
+(defun check-camera ()
+  (let ((base-to-marker-000 nil)
+	(base-to-marker-001 nil)
+	(base-to-marker-002 nil)
+	(stamp nil)
+	(ret nil))
+    (ros::ros-info "grasp cable")
+    (setq stamp (ros::time-now))
+    (setq marker-name "cable_front")
+    (when (send *tfl* :wait-for-transform "dual_arm_base" "test_000" stamp 5)
+      (setq *marker-000* (send *tfl* :lookup-transform "dual_arm_base" "test_000" stamp)))
+    (when (send *tfl* :wait-for-transform "dual_arm_base" "test_000" stamp 5)
+      (setq *marker-001* (send *tfl* :lookup-transform "dual_arm_base" "test_001" stamp)))
+    (when (send *tfl* :wait-for-transform "dual_arm_base" "test_001" stamp 5)
+      (setq *marker-002* (send *tfl* :lookup-transform "dual_arm_base" "test_002" stamp)))))
