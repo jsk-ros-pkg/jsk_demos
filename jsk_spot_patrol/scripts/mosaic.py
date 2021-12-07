@@ -105,8 +105,8 @@ def start_node():
     # y = 50
     # width = 400
     # height = 400
-    x = rospy.get_param("~x", 2000)
-    y = rospy.get_param("~y", 50)
+    x = rospy.get_param("~target_x", 2000)
+    y = rospy.get_param("~target_y", 50)
     width = rospy.get_param("~width", 1000)
     height = rospy.get_param("~height", 1000)
     ratio = 0.1
