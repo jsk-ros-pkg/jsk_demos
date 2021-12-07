@@ -45,7 +45,7 @@ def mosaic_area(msg, x=50, y=50, width=500, height=400, ratio=0.1):
     except Exception as err:
         print err
 
-def mosaic_area_around(msg, x=100, y=100, width=300, height=300, ratio=0.1):
+def mosaic_area_around(msg):
     try:
         max_width = msg.width
         max_height = msg.height
@@ -85,20 +85,32 @@ def mosaic_area_around(msg, x=100, y=100, width=300, height=300, ratio=0.1):
             dst[y+height:max_height, x:x+width], None, fx=ratio, fy=ratio, interpolation=cv2.INTER_NEAREST
         )
         large = cv2.resize(
-            small, dst[y+height:480, x:x+width].shape[:2][::-1], interpolation=cv2.INTER_NEAREST
+            small, dst[y+height:max_height, x:x+width].shape[:2][::-1], interpolation=cv2.INTER_NEAREST
         )
         dst[y+height:max_height, x:x+width] = large
-        # cv2.imshow('image', large)
-        # cv2.imshow('image_area', dst)
+        cv2.imshow('image', large)
+        cv2.imshow('image_area', dst)
         cv2.waitKey(1)
     except Exception as err:
         print err
 
 def start_node():
+    global x, y, width, height,ratio
     rospy.init_node('img_proc')
     rospy.loginfo('img_proc node started')
     #rospy.Subscriber("/kinova_wrist_camera/color/image_raw", Image, mosaic)
-    rospy.Subscriber("/kinova_wrist_camera/color/image_raw", Image, mosaic_area_around)
+    #rospy.Subscriber("/kinova_wrist_camera/color/image_raw", Image, mosaic_area_around)
+    rospy.Subscriber("/dual_fisheye_to_panorama/output", Image, mosaic_area_around)
+    # x = 50
+    # y = 50
+    # width = 400
+    # height = 400
+    x = rospy.get_param("~x", 2000)
+    y = rospy.get_param("~y", 50)
+    width = rospy.get_param("~width", 1000)
+    height = rospy.get_param("~height", 1000)
+    ratio = 0.1
+    print "hoge"
     rospy.spin()
 
 if __name__ == '__main__':
