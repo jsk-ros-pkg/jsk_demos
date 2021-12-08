@@ -19,9 +19,7 @@
 #   ]
 standalone_tags:
   [
-    {id: 000, size: 0.0075, name: test_000},
-    {id: 001, size: 0.0075, name: test_001},
-    {id: 002, size: 0.0075, name: test_002},
+    {id: 002, size: 0.0153, name: rarm_elbow_p_servo},
   ]
 # ## Tag bundle definitions
 # ### Remarks
