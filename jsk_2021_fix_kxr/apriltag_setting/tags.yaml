@@ -19,7 +19,13 @@
 #   ]
 standalone_tags:
   [
-    {id: 002, size: 0.0153, name: rarm_elbow_p_servo},
+  {id: 2, size: 0.0153, name: 'rarm_elbow_p_servo'},
+  {id: 3, size: 0.0153, name: 'rarm_shoulder_r_servo'},
+  {id: 4, size: 0.0153, name: 'rleg_ankle_r_servo'},
+  {id: 8, size: 0.0052, name: 'rarm_elbow_p_cable_r1'},
+  {id: 9, size: 0.0052, name: 'rarm_elbow_p_cable_r2'},
+  {id: 10, size: 0.0052, name: 'rarm_elbow_p_cable_l1'},
+  {id: 11, size: 0.0052, name: 'rarm_elbow_p_cable_l2'},
   ]
 # ## Tag bundle definitions
 # ### Remarks
