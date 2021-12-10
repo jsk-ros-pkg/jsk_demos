@@ -1,21 +1,25 @@
 #!/usr/bin/env roseus
 
 ;;; parameters for cable
-(setq *front-of-cable-pose*
+(setq *rarm-elbow-p-to-inter1-pose*
     (make-cascoords
-        :pos #f(1.07 -100.66 -39.27)
-        :rpy #f(1.563 0.025 3.122)
+        :pos #f(-168.038 -3.379 89.959)
+        :rpy #f(0.042 -0.008 1.539)
         ))
-(setq *cable-front-to-pre-grasp-pose*
+(setq *rarm-elbow-p-to-inter2-pose*
     (make-cascoords
-        :pos #f(-37.691 11.443 -7.628)
-        :rpy #f(-1.374 0.172 1.421)
+        :pos #f(-141.254 -5.393 -96.748)
+        :rpy #f(0.024 -0.937 -0.027)
         ))
-
-(setq *cable-front-to-grasp-pose*
+(setq *rarm-elbow-p-to-pre-grasp-pose*
     (make-cascoords
-        :pos #f(-21.262 11.534 -8.893)
-        :rpy #f(-1.401 0.177 1.409)
+        :pos #f(-28.257 -2.82 -95.35)
+        :rpy #f(-2.973 -1.515 2.986)
+        ))
+(setq *rarm-elbow-p-to-grasp-pose*
+    (make-cascoords
+        :pos #f(-24.612 4.967 -27.886)
+        :rpy #f(-2.962 -1.494 3.004)
         ))
 
 (setq *cable-frame* "cable-frame")
