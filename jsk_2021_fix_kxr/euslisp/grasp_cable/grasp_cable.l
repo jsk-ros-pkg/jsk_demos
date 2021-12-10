@@ -52,4 +52,4 @@
 (send *robot* :rarm_joint1 :joint-angle 30)
 (send *robot* :rarm :inverse-kinematics search-tag-pose)
 
-(search-servo-tag "rpov-rarm_elbow_p_servo")
+(rarm-search-servo-tag "rpov-rarm_elbow_p_servo")

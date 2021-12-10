@@ -7,11 +7,56 @@
 
 (ros::load-ros-manifest "apriltag_ros")
 
-(defvar *marker-000*)
-(defvar *marker-001*)
-(defvar *marker-002*)
+;;; check if an id exists in target-list
+(defun id-in-list (id target-list)
+  (dolist (x target-list)
+    (if (eq id x)
+	(return-from id-in-list t)
+      nil))
+  nil)
 
-(defun srearch-servo-tag (marker-name)
+(defun marker-name-to-id (marker-name)
+    (if (string= marker-name "rpov-rarm_elbow_p_servo")
+	(print 2))
+    (if (string= marker-name "lpov-rarm_elbow_p_servo")
+	(print 2)))
+
+(defun rarm-srearch-servo-tag (marker-name)
+  (let ((detection-results-msg nil)
+	(target-id nil)
+	(id-list nil)
+	(base-to-search-pose nil)
+	(count 0))
+    (ros::ros-info "searching tag...")
+    (setq target-id (marker-name-to-id marker-name))
+    (while t
+      (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
+      (when detection-results-msg
+	(ros::ros-info "Got a message")
+	(setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+	(if (id-in-list tesrget-id)
+	    (progn
+	      (ros::ros-info "target-marker was found")
+	      (return from rarm-srearch-servo-tag t))
+	  (progn
+	    (setq count (+ count 1))
+	    (case count
+		  (1
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-1*))
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (2
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-2*))
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (3
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-3*))
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (4
+		   (ros::ros-info "Can't find tag")
+		   (return from rarm-srearch-servo-tag t)))))))))
+  
   
 
 (defun larm-grasp-rarm-elbow-p-servo-from-below ()
