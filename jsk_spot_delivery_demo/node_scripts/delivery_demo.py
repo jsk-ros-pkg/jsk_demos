@@ -283,7 +283,7 @@ def main():
             global data_task_list
 
             #
-            image_topic = rospy.get_param('~capture_image_topic')
+            image_topic = rospy.get_param('~capture_image_topic', '/dual_fisheye_to_panorama/output')
             image_directory = rospy.get_param('~image_directory', '/tmp')
             image_file_name = 'delivery_demo_{}-{}-{}.jpg'
             full_path_name = '{}/{}'.format(image_directory, image_file_name)

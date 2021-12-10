@@ -11,7 +11,7 @@
         if="$(arg launch_demo)">
         <rosparam>
             list_node_strolling:
-                - eng2_JSK_Entrance
+                - eng2_JSKEntrance
                 - eng2_73B2
                 - eng2_73A2
                 - eng2_73A4
