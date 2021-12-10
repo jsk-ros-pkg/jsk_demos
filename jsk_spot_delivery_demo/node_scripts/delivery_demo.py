@@ -201,7 +201,7 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('Ready')
 
-            rospy.logwarn('task_list : {}'.format(data_task_list))
+            rospy.logwarn('task_list length : {}'.format(data_task_list).length())
             if data_task_list.length() > 0 or data_task_executing is not None:
                 return 'task_executing'
 
