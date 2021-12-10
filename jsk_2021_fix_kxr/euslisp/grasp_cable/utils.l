@@ -11,6 +11,9 @@
 (defvar *marker-001*)
 (defvar *marker-002*)
 
+(defun srearch-servo-tag (marker-name)
+  
+
 (defun larm-grasp-rarm-elbow-p-servo-from-below ()
   (let ((base-to-marker-origin nil)
 	(base-to-inter1-pose nil)
@@ -24,7 +27,8 @@
     (setq stamp (ros::time-now))
     (setq marker-name "lpov-rarm_elbow_p_servo")
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
-      (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp)))
+      (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp))
+      (setq *base-to-rarm-elbow-p-servo* base-to-marker-origin))
     (setq base-to-inter1-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter1-pose*))
     (setq base-to-inter2-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter2-pose*))
     (setq base-to-pre-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-pre-grasp-pose*))

@@ -1,6 +1,31 @@
 #!/usr/bin/env roseus
 
-;;; parameters for cable
+(defvar *base-to-rarm-elbow-p-servo*)
+
+
+
+;;; parameters
+(setq *rarm-elbow-p-to-search-cable-pose*
+    (make-cascoords
+        :pos #f(-3.797 -98.159 34.853)
+        :rpy #f(1.549 0.916 3.105)
+        ))
+(setq *rarm-elbow-p-to-search-tag-pose-1*
+    (make-cascoords
+        :pos #f(1.133 -85.27 61.446)
+        :rpy #f(1.581 1.228 3.132)
+        ))
+(setq *rarm-elbow-p-to-search-tag-pose-2*
+    (make-cascoords
+        :pos #f(1.898 -42.878 78.671)
+        :rpy #f(-1.931 1.548 -0.355)
+        ))
+(setq *rarm-elbow-p-to-search-tag-pose-3*
+    (make-cascoords
+        :pos #f(2.51 -45.813 49.055)
+        :rpy #f(-1.675 1.106 -0.081)
+        ))
+
 (setq *rarm-elbow-p-to-inter1-pose*
     (make-cascoords
         :pos #f(-168.038 -3.379 89.959)

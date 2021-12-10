@@ -23,6 +23,7 @@
 
 ;;before rarm grasp kxr
 (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(341.012 -147.428 1370.354) :rpy (float-vector 1.222 1.551 -0.386))) :translation-axis t :rotation-axis t)
+(send *robot* :larm_joint1 :joint-angle -30)
 (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(227.932 139.233 1435.999) :rpy (float-vector -0.09 1.312 2.977))) :translation-axis t :rotation-axis t)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
@@ -33,9 +34,22 @@
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
-;grasp kxr
-(send *ri* start-grasp :rarm)
+;;grasp kxr
+(send *ri* :start-grasp :rarm)
 (unix:sleep 1)
 
 ;;grasp elbow from below
 (larm-grasp-rarm-elbow-p-servo-from-below)
+
+(send *ri* :stop-grasp :rarm)
+
+;;prepare to grasp cable
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(341.012 -147.428 1430.354) :rpy (float-vector 1.222 1.551 -0.386))) :translation-axis t :rotation-axis t)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+(setq search-tag-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-cable-pose*))
+(send *robot* :rarm_joint1 :joint-angle 30)
+(send *robot* :rarm :inverse-kinematics search-tag-pose)
+
+(search-servo-tag "rpov-rarm_elbow_p_servo")
