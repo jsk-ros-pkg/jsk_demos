@@ -271,7 +271,7 @@ def main():
     class TaskAsking(smach.State):
 
         def __init__(self):
-            smach.State.__init__(sel.length()f, outcomes=['ready'])
+            smach.State.__init__(sel.length(), outcomes=['ready'])
             self.actionclient_pickup_package = actionlib.SimpleActionClient(
                 '~pickup_package', PickupPackageAction)
             self.actionclient_pickup_package.wait_for_server(rospy.Duration(5))
