@@ -201,6 +201,7 @@ def main():
         def execute(self, userdata):
             rospy.loginfo('Ready')
 
+            rospy.logwarn('task_list : {}'.format(data_task_list))
             if data_task_list.length() > 0 or data_task_executing is not None:
                 return 'task_executing'
 
@@ -299,6 +300,8 @@ def main():
             success, target_node_id, content, sender = self.ask_task()
             if success:
                 data_task_list.append(Task(target_node_id, content, sender))
+                rospy.logwarn('add task')
+            rospy.logwarn('task_list : {}'.format(data_task_list))
 
             # Upload file and send mail
             ret = data_gdrive_ros_client.upload_file(
