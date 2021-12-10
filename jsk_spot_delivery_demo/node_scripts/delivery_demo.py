@@ -227,8 +227,9 @@ def main():
             # Searching a person.
             timeout = rospy.Time.now() + rospy.Duration(30)
             rate = rospy.Rate(5)
+            rospy.loginfo('Searching person')
             while not rospy.is_shutdown() and rospy.Time.now() < timeout:
-                rospy.loginfo('Searching person')
+                rospy.logdebug('Searching person')
                 rate.sleep()
                 if get_nearest_person_pose() is not None:
                     return 'approaching'
