@@ -167,6 +167,12 @@ def main():
     data_list_node_strolling = rospy.get_param('~list_node_strolling', [])
     data_parents_path = rospy.get_param('~parents_path', '/spot_delivery_demo')
 
+    # undock and stand
+    data_spot_ros_client.claim()
+    data_spot_ros_client.power_on()
+    data_spot_ros_client.undock()
+    data_spot_ros_client.stand()
+
     # read/write
     data_capture_image_list = []
     data_task_list = TaskList()
