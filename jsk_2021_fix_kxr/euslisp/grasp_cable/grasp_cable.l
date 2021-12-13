@@ -51,5 +51,7 @@
 (setq search-tag-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-cable-pose*))
 (send *robot* :rarm_joint1 :joint-angle 30)
 (send *robot* :rarm :inverse-kinematics search-tag-pose)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
 
 (rarm-search-servo-tag "rpov-rarm_elbow_p_servo")

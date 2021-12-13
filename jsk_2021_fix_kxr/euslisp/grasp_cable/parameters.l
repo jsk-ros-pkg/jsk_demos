@@ -1,7 +1,7 @@
 #!/usr/bin/env roseus
 
 (defvar *base-to-rarm-elbow-p-servo*)
-
+(defvar *target-id*)
 
 
 ;;; parameters

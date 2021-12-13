@@ -17,47 +17,51 @@
 
 (defun marker-name-to-id (marker-name)
     (if (string= marker-name "rpov-rarm_elbow_p_servo")
-	(print 2))
+	(setq *target-id* 2)
     (if (string= marker-name "lpov-rarm_elbow_p_servo")
-	(print 2)))
+	(setq *target-id* 2))))
 
-(defun rarm-srearch-servo-tag (marker-name)
+(defun rarm-search-servo-tag (marker-name)
   (let ((detection-results-msg nil)
 	(target-id nil)
 	(id-list nil)
 	(base-to-search-pose nil)
 	(count 0))
     (ros::ros-info "searching tag...")
-    (setq target-id (marker-name-to-id marker-name))
+    (marker-name-to-id marker-name)
+    (setq target-id *target-id*)
+    (format t "target-id is ~d~%" target-id)
     (while t
       (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
       (when detection-results-msg
 	(ros::ros-info "Got a message")
 	(setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
-	(if (id-in-list tesrget-id)
+	(print id-list)
+	(if (id-in-list target-id id-list)
 	    (progn
 	      (ros::ros-info "target-marker was found")
-	      (return from rarm-srearch-servo-tag t))
+	      (return-from rarm-search-servo-tag t))
 	  (progn
 	    (setq count (+ count 1))
 	    (case count
 		  (1
 		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-1*))
+		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (2
 		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-2*))
+		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (3
 		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-3*))
+		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (4
 		   (ros::ros-info "Can't find tag")
-		   (return from rarm-srearch-servo-tag t)))))))))
-  
-  
+		   (return-from rarm-search-servo-tag nil)))))))))
 
 (defun larm-grasp-rarm-elbow-p-servo-from-below ()
   (let ((base-to-marker-origin nil)
