@@ -28,9 +28,7 @@
 	(base-to-search-pose nil)
 	(count 0))
     (ros::ros-info "searching tag...")
-    (marker-name-to-id marker-name)
-    (setq target-id *target-id*)
-    (format t "target-id is ~d~%" target-id)
+    (setq target-id (marker-name-to-servo-id marker-name))
     (while t
       (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
       (when detection-results-msg
@@ -45,17 +43,17 @@
 	    (setq count (+ count 1))
 	    (case count
 		  (1
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-1*))
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-1*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (2
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-2*))
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-2*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (3
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-3*))
+		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-3*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
@@ -109,19 +107,73 @@
 #|
 memo to get parameters
 (send *robot* :angle-vector (send *ri* :state :potentio-vector))
-(setq btgp (send *robot* :larm :end-coords))
+(setq btgp (send *robot* :rarm :end-coords))
 (setq param (send (send (send base-to-marker-origin :inverse-transformation) :copy-worldcoords) :transform (send btgp :copy-worldcoords)))
 (setq test (send (send base-to-marker-origin :copy-worldcoords) :transform param))
-(setq param (send (send marker-to-base :copy-worldcoords) :transform (send btgp :copy-worldcoords)))
-
 |#
-(defun rarm-grasp-cable (servo-name)
+
+(defun rarm-grasp-cable (servo-name side)
   (let ((base-to-marker-origin nil)
 	(base-to-pre-prasp-pose nil)
 	(base-to-grasp-pose nil)
+	(cable-id-list nil)
+	(target-id-f nil)
+	(target-id-b nil
+	(grasp-cable-id nil)
+	(grasp-cable-side nil)
 	(stamp nil)
 	(ret nil))
-    (ros::ros-info "grasp cable")
+    (ros::ros-info "searching cable...")
+    (setq cable-id-list (servo-name-to-cable-id-list servo-name))
+    (if (string= side "right")
+	(progn
+	  (setq target-id-f (elt cable-id-list 0))
+	  (setq taregt-id-b (elt cable-id-list 1)))
+      (progn
+	  (setq target-id-f (elt cable-id-list 2))
+	  (setq taregt-id-b (elt cable-id-list 3))))
+    
+    (while t
+      (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
+      (when detection-results-msg
+	(ros::ros-info "Got a message")
+	(setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+	(if (id-in-list target-id-f id-list)
+	    (progn
+	      (ros::ros-info "front-marker was found")
+	      (setq grasp-cable-side "front")
+	      (return)))
+	(if (id-in-list target-id-b id-list)
+	    (progn
+	      (ros::ros-info "back-marker was found")
+	      (setq grasp-cable-side "back")
+	      (return)))
+	(setq count (+ count 1))
+	(case count ;;12/14 restart from here
+	      (1
+	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-cable-pose-1*))
+	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+	       (send *ri* :wait-interpolation))
+	      (2
+	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-2*))
+	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+	       (send *ri* :wait-interpolation))
+	      (3
+	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-3*))
+	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+	       (send *ri* :wait-interpolation))
+		  (4
+		   (ros::ros-info "Can't find tag")
+		   (return-from rarm-search-servo-tag nil)))))))))
+
+
+
+
+    
+    (ros::ros-info "start to grasp cable")
     (setq stamp (ros::time-now))
     (setq marker-name "cable_front")
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)

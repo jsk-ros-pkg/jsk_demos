@@ -14,7 +14,6 @@
 
 (objects (list *robot*))
 
-
 (send *robot* :reset-pose)
 (send *robot* :rarm :move-end-pos #f(-500 0 100))
 (send *robot* :larm :move-end-pos #f(-500 0 100))
@@ -48,10 +47,22 @@
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
-(setq search-tag-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-cable-pose*))
+(setq search-tag-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-cable-pose*))
 (send *robot* :rarm_joint1 :joint-angle 30)
 (send *robot* :rarm :inverse-kinematics search-tag-pose)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
 (rarm-search-servo-tag "rpov-rarm_elbow_p_servo")
+(setq stamp (ros::time-now))
+(when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
+  (setq *base-to-rarm-elbow-p-servo* (send *tfl* :lookup-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp)))
+
+(setq search-tag-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-cable-pose*))
+(send *robot* :rarm_joint1 :joint-angle 30)
+(send *robot* :rarm :inverse-kinematics search-tag-pose)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
+
+;;<TODO recognize which cable is missing>
+(rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
