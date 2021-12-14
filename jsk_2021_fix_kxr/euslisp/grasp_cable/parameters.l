@@ -22,32 +22,32 @@
        :rpy #f(1.549 0.916 3.105)
        ))
 (setq *servo-to-search-cable-pose-1*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(-1.162 -91.94 18.84)
         :rpy #f(0.205 1.494 1.799)
         ))
 (setq *servo-to-search-cable-pose-2*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(-17.376 -144.684 -6.541)
         :rpy #f(-1.561 0.409 3.087)
         )) 
 (setq *servo-to-search-cable-pose-3*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(44.827 -95.802 12.263)
         :rpy #f(2.19 0.856 3.056)
         ))
 (setq *cable-front-to-pre-grasp-pose-1*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(-57.691 22.526 17.675)
         :rpy #f(-1.655 0.272 1.413)
         )) 
 (setq *cable-front-to-pre-grasp-pose-2*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(-39.479 16.61 12.343)
         :rpy #f(-1.365 0.367 1.57)
         ))
 (setq *cable-front-to-grasp-pose*
-      (gmake-cascoords
+      (make-cascoords
         :pos #f(-16.344 21.751 16.114)
         :rpy #f(-1.45 0.449 1.552)
         ))
