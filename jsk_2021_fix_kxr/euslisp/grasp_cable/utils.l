@@ -118,21 +118,25 @@ memo to get parameters
 	(base-to-grasp-pose nil)
 	(cable-id-list nil)
 	(target-id-f nil)
-	(target-id-b nil
+	(target-id-b nil)
 	(grasp-cable-id nil)
 	(grasp-cable-side nil)
 	(stamp nil)
 	(ret nil))
+    (setq stamp (ros::time-now))
+    (when (send *tfl* :wait-for-transform "dual_arm_base" servo-name stamp 5)
+      (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" servo-name stamp)))
     (ros::ros-info "searching cable...")
     (setq cable-id-list (servo-name-to-cable-id-list servo-name))
     (if (string= side "right")
 	(progn
+	  (ros::ros-info "target is right cable")
 	  (setq target-id-f (elt cable-id-list 0))
 	  (setq taregt-id-b (elt cable-id-list 1)))
       (progn
-	  (setq target-id-f (elt cable-id-list 2))
-	  (setq taregt-id-b (elt cable-id-list 3))))
-    
+	(ros::ros-info "target is right cable")
+	(setq target-id-f (elt cable-id-list 2))
+	(setq taregt-id-b (elt cable-id-list 3))))
     (while t
       (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
       (when detection-results-msg
@@ -149,58 +153,76 @@ memo to get parameters
 	      (setq grasp-cable-side "back")
 	      (return)))
 	(setq count (+ count 1))
-	(case count ;;12/14 restart from here
+	(case count
 	      (1
-	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-cable-pose-1*))
-	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (setq base-to-search-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-search-cable-pose-1*))
+	       (setq ret (send *robot* :rarm :inverse-kinematics base-to-search-pose))
+	       (if (not ret) (ros::ros-error "IK-failed") nil)
 	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 	       (send *ri* :wait-interpolation))
 	      (2
-	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-2*))
-	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (setq base-to-search-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-search-cable-pose-2*))
+	       (setq ret (send *robot* :rarm :inverse-kinematics base-to-search-pose))
+	       (if (not ret) (ros::ros-error "IK-failed") nil)
 	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 	       (send *ri* :wait-interpolation))
 	      (3
-	       (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *rarm-elbow-p-to-search-tag-pose-3*))
-	       (send *robot* :rarm :inverse-kinematics base-to-search-pose)
+	       (setq base-to-search-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-search-cable-pose-3*))
+	       (setq ret (send *robot* :rarm :inverse-kinematics base-to-search-pose))
+	       (if (not ret) (ros::ros-error "IK-failed") nil)
 	       (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 	       (send *ri* :wait-interpolation))
-		  (4
-		   (ros::ros-info "Can't find tag")
-		   (return-from rarm-search-servo-tag nil)))))))))
-
-
-
-
+	      (4
+	       (ros::ros-info "Can't find cable")
+	       (return-from rarm-grasp-cable nil)))))
     
     (ros::ros-info "start to grasp cable")
     (setq stamp (ros::time-now))
-    (setq marker-name "cable_front")
+    (setq buf (subseq servo-name 0 (- (length servo-name) 5)))
+    (setq s (subseq side 0 1))
+    (setq p (subseq grasp-cable-side 0 1))
+    (setq marker-name (format nil "~A~A~A~A~A" buf "cable_" s "_" p))
+    (setq stamp (ros::time-now))
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
       (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp)))
-    (setq base-to-pre-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-front-to-pre-grasp-pose*))
-    (setq base-to-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-front-to-grasp-pose*))
+    (if (string= grasp-cable-side "front")
+	(progn
+	  (setq base-to-pre-grasp-pose-1 (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-front-to-pre-grasp-pose-1*))
+	  (setq base-to-pre-grasp-pose-2 (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-front-to-pre-grasp-pose-2*))
+	  (setq base-to-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-front-to-grasp-pose*)))
+      (progn
+        (setq base-to-pre-grasp-pose-1 (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-back-to-pre-grasp-pose-1*))
+	(setq base-to-pre-grasp-pose-2 (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-back-to-pre-grasp-pose-2*))
+	(setq base-to-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *cable-back-to-grasp-pose*))))
 
-    ;pre-grasp-pose
+    (send *robot* :rarm :move-end-pos #f(-30 0 20))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    
+    ;;pre-grasp-poses
     (send *ri* :start-grasp :rarm)
     (unix:sleep 1)
     (send *ri* :stop-grasp :rarm :width 0.02)
     (unix:sleep 1)
     
-    (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose)
+    (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-1)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-2)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    ;grasp-pose
+    ;;grasp-pose
     (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
     (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
     (send *ri* :wait-interpolation)
 
+    ;;grasp
     (send *ri* :start-grasp :rarm)
-    (unix:sleep 2)
-    (send *ri* :stop-grasp :rarm)
     (unix:sleep 2)))
 
+(defun rarm-insert-cable (servo-name)
+  (let ()
 
 (defun check-camera ()
   (let ((base-to-marker-000 nil)
