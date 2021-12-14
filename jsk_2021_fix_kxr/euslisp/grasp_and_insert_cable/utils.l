@@ -43,17 +43,17 @@
 	    (setq count (+ count 1))
 	    (case count
 		  (1
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-1*))
+		   (setq base-to-search-pose (send (send *base_to_rarm_elbow_p_servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-1*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (2
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-2*))
+		   (setq base-to-search-pose (send (send *base_to_rarm_elbow_p_servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-2*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
 		  (3
-		   (setq base-to-search-pose (send (send *base-to-rarm-elbow-p-servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-3*))
+		   (setq base-to-search-pose (send (send *base_to_rarm_elbow_p_servo* :copy-worldcoords) :transform *servo-to-search-tag-pose-3*))
 		   (send *robot* :rarm :inverse-kinematics base-to-search-pose)
 		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
 		   (send *ri* :wait-interpolation))
@@ -75,7 +75,7 @@
     (setq marker-name "lpov-rarm_elbow_p_servo")
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
       (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp))
-      (setq *base-to-rarm-elbow-p-servo* base-to-marker-origin))
+      (setq *base_to_rarm_elbow_p_servo* base-to-marker-origin))
     (setq base-to-inter1-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter1-pose*))
     (setq base-to-inter2-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter2-pose*))
     (setq base-to-pre-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-pre-grasp-pose*))
@@ -221,8 +221,17 @@ memo to get parameters
     (send *ri* :start-grasp :rarm)
     (unix:sleep 2)))
 
-(defun rarm-insert-cable (servo-name)
-  (let ()
+(defun rarm-insert-cable (servo-name side)
+  (let ((base-to-marker-origin nil)
+	(base-to-pre-prasp-pose nil)
+	(base-to-grasp-pose nil)
+	(cable-id-list nil)
+	(stamp nil)
+	(ret nil))
+    *base_to_rarm_elbow_p_servo*
+    (setq buf (subseq servo-name 5 (length servo-name)))
+    (setq base-to-marker-origin (format nil "~A~A~A" "*base_to_" buf "*"))
+    
 
 (defun check-camera ()
   (let ((base-to-marker-000 nil)

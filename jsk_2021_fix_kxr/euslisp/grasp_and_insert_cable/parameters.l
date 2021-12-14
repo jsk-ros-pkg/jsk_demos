@@ -1,6 +1,6 @@
 #!/usr/bin/env roseus
 
-(defvar *base-to-rarm-elbow-p-servo*)
+(defvar *base_to_rarm_elbow_p_servo*)
 (defvar *target-id*)
 (defvar *target-id-list*)
 
@@ -51,22 +51,22 @@
         :pos #f(-16.344 21.751 16.114)
         :rpy #f(-1.45 0.449 1.552)
         ))
-(setq *servo-to-slide-insert-cable-inter-pose*
+(setq *servo-to-slide-insert-right-cable-inter-pose*
       (make-cascoords
         :pos #f(-16.344 21.751 16.114)
         :rpy #f(-1.45 0.449 1.552)
         ))
-(setq *servo-to-slide-insert-cable-pose*
+(setq *servo-to-slide-insert-right-cable-pose*
       (make-cascoords
         :pos #f(-7.11 -32.813 17.233)
         :rpy #f(0.099 0.936 2.891)
         ))
-(setq *servo-to-lower-insert-cable-pre-pose*
+(setq *servo-to-lower-insert-right-cable-pre-pose*
       (make-cascoords
         :pos #f(0.313 -29.084 14.451)
         :rpy #f(0.076 0.952 2.952)
         ))
-(setq *servo-to-lower-insert-cable-pose*
+(setq *servo-to-lower-insert-right-cable-pose*
       (make-cascoords
         :pos #f(3.789 -31.211 10.625)
         :rpy #f(0.111 0.946 2.953)
