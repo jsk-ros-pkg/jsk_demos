@@ -1,14 +1,14 @@
 #!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
-(require "package://jsk_2021_fix_kxr/euslisp/grasp_cable/parameters.l")
-(require "package://jsk_2021_fix_kxr/euslisp/grasp_cable/utils.l")
+(require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/parameters.l")
+(require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/utils.l")
 
 (ros::roseus-add-msgs "std_msgs")
 
 (ros::load-ros-manifest "apriltag_ros")
 
-(ros::roseus "grasp_cable")
+(ros::roseus "grasp_and_insert_cable")
 
 (dual_panda-init)
 
