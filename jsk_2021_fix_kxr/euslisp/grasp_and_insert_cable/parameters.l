@@ -53,14 +53,15 @@
         ))
 (setq *servo-to-slide-insert-right-cable-inter-pose*
       (make-cascoords
-        :pos #f(-16.344 21.751 16.114)
-        :rpy #f(-1.45 0.449 1.552)
+        :pos #f(34.757 -12.996 42.748)
+        :rpy #f(-2.515 1.479 -2.446)
         ))
 (setq *servo-to-slide-insert-right-cable-pose*
       (make-cascoords
-        :pos #f(-7.11 -32.813 17.233)
-        :rpy #f(0.099 0.936 2.891)
+        :pos #f(33.3 -13.281 37.626)
+        :rpy #f(-1.774 1.482 -1.652)
         ))
+
 (setq *servo-to-lower-insert-right-cable-pre-pose*
       (make-cascoords
         :pos #f(0.313 -29.084 14.451)

@@ -223,11 +223,21 @@ memo to get parameters
 
 (defun rarm-insert-cable (servo-name side)
   (let ((base-to-marker-origin nil)
-	(base-to-pre-prasp-pose nil)
-	(base-to-grasp-pose nil)
+	(base-to-pre-insert-pose nil)
+	(base-to-insert-pose nil)
 	(cable-id-list nil)
 	(stamp nil)
 	(ret nil))
-    *base_to_rarm_elbow_p_servo*
     (setq buf (subseq servo-name 5 (length servo-name)))
-    (setq base-to-marker-origin (format nil "~A~A~A" "*base_to_" buf "*"))
+    (setq base-to-marker-origin (eval (read-from-string (format nil "~A~A~A" "*base_to_" buf "*"))))
+
+    (setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-inter-pose*))
+    (setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-pose*))
+
+    ;;set hand
+    (send *robot* :rarm :inverse-kinematics base-to-pre-insert-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *robot* :rarm :inverse-kinematics base-to-insert-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)

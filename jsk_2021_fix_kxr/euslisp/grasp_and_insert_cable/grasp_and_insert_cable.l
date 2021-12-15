@@ -4,8 +4,13 @@
 (require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/parameters.l")
 (require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/utils.l")
 
+(ros::roseus-add-msgs "franka_msgs")
+(ros::roseus-add-msgs "franka_gripper")
 (ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-msgs "sensor_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
 
+(ros::load-ros-manifest "franka_msgs")
 (ros::load-ros-manifest "apriltag_ros")
 
 (ros::roseus "grasp_and_insert_cable")
@@ -13,6 +18,21 @@
 (dual_panda-init)
 
 (objects (list *robot*))
+
+(send *ri* :set-joint-pd-gain "larm_joint1" 1000 30)
+(send *ri* :set-joint-pd-gain "larm_joint2" 1000 30)
+(send *ri* :set-joint-pd-gain "larm_joint3" 1000 30)
+(send *ri* :set-joint-pd-gain "larm_joint4" 1000 30)
+(send *ri* :set-joint-pd-gain "larm_joint5" 500 15)
+(send *ri* :set-joint-pd-gain "larm_joint6" 300 15)
+(send *ri* :set-joint-pd-gain "larm_joint7" 100 10)
+(send *ri* :set-joint-pd-gain "rarm_joint1" 1000 30)
+(send *ri* :set-joint-pd-gain "rarm_joint2" 1000 30)
+(send *ri* :set-joint-pd-gain "rarm_joint3" 1000 30)
+(send *ri* :set-joint-pd-gain "rarm_joint4" 1000 30)
+(send *ri* :set-joint-pd-gain "rarm_joint5" 500 15)
+(send *ri* :set-joint-pd-gain "rarm_joint6" 300 15)
+(send *ri* :set-joint-pd-gain "rarm_joint7" 100 10)
 
 (send *robot* :reset-pose)
 (send *robot* :rarm :move-end-pos #f(-500 0 100))
@@ -57,7 +77,7 @@
 
 (setq stamp (ros::time-now))
 (when (send *tfl* :wait-for-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp 5)
-  (setq *base-to-rarm-elbow-p-servo* (send *tfl* :lookup-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp)))
+  (setq *base_to_rarm_elbow_p_servo* (send *tfl* :lookup-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp)))
 
 ;;<TODO recognize which cable is missing>
 (rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
