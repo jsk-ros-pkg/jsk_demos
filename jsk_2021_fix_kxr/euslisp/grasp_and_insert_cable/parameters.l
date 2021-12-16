@@ -14,6 +14,7 @@
   (if (string= servo-name "rarm_elbow_p_servo")
       (return-from servo-name-to-cable-id-list (list 8 9 10 11))))
 
+(setq *null-wrench* #f(0 0 0 0 0 0))
 
 ;;; parameters
 (setq *servo-to-search-cable-pose*

@@ -241,3 +241,38 @@ memo to get parameters
     (send *robot* :rarm :inverse-kinematics base-to-insert-pose)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    
+    ;;get corret wrench and set as wrench-init
+    (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+    (while (equal wrench-init *null-wrench*)
+      (ros::ros-info "Couldn't get correct wrench")
+      (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
+
+    (setq i 0)
+    (setq z-lim 3)
+    (setq base-stroke #f(0.5 0 0))
+    (while (< i 30)
+      (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+      (setq wrench-diff (v- wrench wrench-init))
+      (setq diff-z (elt wrench-diff 2))
+      (if (> diff-z z-lim)
+	  (progn
+	    (ros::ros-info "detect contacting to serface of servo")
+	    (return))
+	(progn
+	  (ros::ros-info "still hanging in the air")
+	  (send *robot* :rarm :move-end-pos base-stroke)
+	  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+	  (send *ri* :wait-interpolation)
+	  (setq i (+ i 1))
+	  (setq stroke (* (elt base-stroke 0) i))
+	  (ros::ros-info (format nil "stroke is ~A" stroke)))))))
+
+#|
+(setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
+(send *robot* :rarm :move-end-pos base-stroke)
+(send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+(send *ri* :wait-interpolation)
+(setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+(setq wrench-diff (v- wrench wrench-init))
+|#
