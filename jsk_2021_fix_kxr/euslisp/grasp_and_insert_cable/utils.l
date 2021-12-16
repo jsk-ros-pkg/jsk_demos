@@ -230,9 +230,13 @@ memo to get parameters
 	(ret nil))
     (setq buf (subseq servo-name 5 (length servo-name)))
     (setq base-to-marker-origin (eval (read-from-string (format nil "~A~A~A" "*base_to_" buf "*"))))
-
-    (setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-inter-pose*))
-    (setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-pose*))
+    (if (string= side "right")
+	(progn
+	  (setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-inter-pose*))
+	  (setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-pose*)))
+      (progn
+	(setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-inter-pose*))
+	(setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-pose*))))
 
     ;;set hand
     (send *robot* :rarm :inverse-kinematics base-to-pre-insert-pose)
@@ -246,6 +250,7 @@ memo to get parameters
     (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
     (while (equal wrench-init *null-wrench*)
       (ros::ros-info "Couldn't get correct wrench")
+      ;;TODO escape from singular pose
       (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
 
     (setq i 0)
@@ -266,11 +271,22 @@ memo to get parameters
 	  (send *ri* :wait-interpolation)
 	  (setq i (+ i 1))
 	  (setq stroke (* (elt base-stroke 0) i))
-	  (ros::ros-info (format nil "stroke is ~A" stroke)))))))
+	  (ros::ros-info (format nil "stroke is ~A" stroke)))))
+
+    ;;start to insert cable
+    
+
+    ))
 
 #|
 (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
 (send *robot* :rarm :move-end-pos base-stroke)
+(send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+(send *ri* :wait-interpolation)
+(setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+(setq wrench-diff (v- wrench wrench-init))
+
+(send *robot* :rarm :move-end-pos #f(0 0 -1))
 (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
 (send *ri* :wait-interpolation)
 (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
