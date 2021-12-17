@@ -17,6 +17,7 @@ class TrashLift():
         self.trash_wait = None
 
     def trashmark_callback(self, msg):
+        self.trashmark_detected = True
         print "hoge"
 
     def run_initial(self):
@@ -27,11 +28,11 @@ class TrashLift():
         roslaunch_cli_args = [roslaunch_path]
         roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(
             roslaunch_cli_args)
-        self.roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+        self.trashmark_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
             uuid,
             roslaunch_file
             )
-        self.roslaunch_parent.start()
+        self.trashmark_roslaunch_parent.start()
 
         # self.trash_wait = rospy.wait_for_message(
         #     '/kinova_wrist_camera/color/ObjectDetection',
@@ -42,17 +43,31 @@ class TrashLift():
             # '/kinova_wrist_camera/color/ObjectDetection',
             ObjectDetection,
             self.trashmark_callback)
-        rospy.spin()
 
+    def run_main(self):
+
+        # launch recognition of trashmark
+        uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+        roslaunch_path = rospkg.RosPack().get_path('jsk_spot_take_out_trash') +\
+            '/launch/demo.launch'
+        roslaunch_cli_args = [roslaunch_path]
+        roslaunch_file = roslaunch.rlutil.resolve_launch_arguments(
+            roslaunch_cli_args)
+        self.demo_roslaunch_parent = roslaunch.parent.ROSLaunchParent(
+            uuid,
+            roslaunch_file
+            )
         rate = rospy.Rate(1)
         while not rospy.is_shutdown():
             rate.sleep()
-            rospy.loginfo('target detected')
+            if self.trashmark_detected:
+                rospy.loginfo('target detected')
+                self.trashmark_roslaunch_parent.shutdown()
+                self.demo_roslaunch_parent.start()
 
     def run_final(self, start_node, end_node):
 
         rospy.logdebug('run_final() called')
-        self.roslaunch_parent.shutdown()
 
 
 if __name__ == '__main__':
