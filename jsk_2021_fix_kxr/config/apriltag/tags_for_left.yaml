@@ -19,9 +19,13 @@
 #   ]
 standalone_tags:
   [
+  {id: 1, size: 0.0295, name: 'lpov-body_back'},
   {id: 2, size: 0.0152, name: 'lpov-rarm_elbow_p_servo'},
   {id: 3, size: 0.0152, name: 'lpov-rarm_shoulder_r_servo'},
   {id: 4, size: 0.0152, name: 'lpov-rleg_ankle_r_servo'},
+  {id: 5, size: 0.0152, name: 'lpov-larm_elbow_p_servo'},
+  {id: 6, size: 0.0152, name: 'lpov-larm_shoulder_r_servo'},
+  {id: 7, size: 0.0152, name: 'lpov-lleg_ankle_r_servo'},
   {id: 8, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_f'},
   {id: 9, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_b'},
   {id: 10, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l_f'},
