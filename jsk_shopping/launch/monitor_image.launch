@@ -1,0 +1,10 @@
+<launch>
+  <node name="monitor_image_publisher" pkg="jsk_perception" type="image_publisher.py">
+    <param name="_file_name" value="$(find jsk_shopping)/images/person-throwing-paper-to-a-trash-can.jpg" />
+  </node>
+
+  <node name="monitor_image_viewer" pkg="image_view" type="image_view">
+    <remap from="image" to="/monitor_image_publisher/output" />
+    <param name="autosize" value="true" />
+  </node>
+</launch>
