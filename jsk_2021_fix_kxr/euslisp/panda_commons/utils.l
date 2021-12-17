@@ -21,6 +21,21 @@
     (if (string= marker-name "lpov-rarm_elbow_p_servo")
 	(setq *target-id* 2))))
 
+(defun search-body ()
+  (let ()
+    
+    (send *robot* :reset-coop-pose)
+    (send *robot* :larm :move-end-pos #f(0 -80 0))
+    (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(230 -140.079 1500.936) :rpy (float-vector 3.1 2.1 0))) :translation-axis t :rotation-axis t)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;;recog marker here
+     
+    (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(230 -140.079 1500.936) :rpy (float-vector 3.1 1.7 0))) :translation-axis t :rotation-axis t)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
 (defun rarm-search-servo-tag (marker-name)
   (let ((detection-results-msg nil)
 	(target-id nil)
