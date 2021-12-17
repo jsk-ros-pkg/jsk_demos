@@ -22,10 +22,10 @@ standalone_tags:
   {id: 2, size: 0.0152, name: 'lpov-rarm_elbow_p_servo'},
   {id: 3, size: 0.0152, name: 'lpov-rarm_shoulder_r_servo'},
   {id: 4, size: 0.0152, name: 'lpov-rleg_ankle_r_servo'},
-  {id: 8, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r1'},
-  {id: 9, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r2'},
-  {id: 10, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l1'},
-  {id: 11, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l2'},
+  {id: 8, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_f'},
+  {id: 9, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_b'},
+  {id: 10, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l_f'},
+  {id: 11, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l_b'},
   ]
 # ## Tag bundle definitions
 # ### Remarks
