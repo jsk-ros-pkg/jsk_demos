@@ -1,8 +1,8 @@
 #!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
-(require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/parameters.l")
-(require "package://jsk_2021_fix_kxr/euslisp/grasp_and_insert_cable/utils.l")
+(require "package://jsk_2021_fix_kxr/euslisp/panda_commons/parameters.l")
+(require "package://jsk_2021_fix_kxr/euslisp/panda_commons/utils.l")
 
 (ros::roseus-add-msgs "franka_msgs")
 (ros::roseus-add-msgs "franka_gripper")
