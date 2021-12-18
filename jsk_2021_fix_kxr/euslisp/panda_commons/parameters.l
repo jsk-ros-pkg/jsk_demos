@@ -1,5 +1,7 @@
 #!/usr/bin/env roseus
 
+(defvar *base_to_body_front*)
+(defvar *base_to_body_back*)
 (defvar *base_to_rarm_elbow_p_servo*)
 (defvar *target-id*)
 (defvar *target-id-list*)

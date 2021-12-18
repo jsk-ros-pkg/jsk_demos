@@ -33,3 +33,5 @@
 (send *ri* :set-joint-pd-gain "rarm_joint5" 500 15)
 (send *ri* :set-joint-pd-gain "rarm_joint6" 300 15)
 (send *ri* :set-joint-pd-gain "rarm_joint7" 100 10)
+
+(setq search-body-result (search-body))

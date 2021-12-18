@@ -22,20 +22,52 @@
 	(setq *target-id* 2))))
 
 (defun search-body ()
-  (let ()
+  (let ((detection-results-msg nil)
+	(body-front-id 0)
+	(body-back-id 1)
+	(id-list nil))
     
+    (ros::ros-info "searching body tag...")    
     (send *robot* :reset-coop-pose)
     (send *robot* :larm :move-end-pos #f(0 -80 0))
     (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(230 -140.079 1500.936) :rpy (float-vector 3.1 2.1 0))) :translation-axis t :rotation-axis t)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    ;;recog marker here
-     
+    ;;recognize marker
+    (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
+    (when detection-results-msg
+      (ros::ros-info "Got a tag info")
+      (setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+      (if (id-in-list body-front-id id-list)
+	  (progn
+	    (ros::ros-info "body-front was found")
+	    (return-from search-body "front")))
+      (if (id-in-list body-back-id id-list)
+	  (progn
+	    (ros::ros-info "body-back was found")
+	    (return-from search-body "front"))))
+      
     (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(230 -140.079 1500.936) :rpy (float-vector 3.1 1.7 0))) :translation-axis t :rotation-axis t)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
+    (setq detection-results-msg (one-shot-subscribe "/right_tag_detections" apriltag_ros::AprilTagDetectionArray))
+    (when detection-results-msg
+      (ros::ros-info "Got a tag info")
+      (setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+      (if (id-in-list body-front-id id-list)
+	  (progn
+	    (ros::ros-info "body-front was found")
+	    (return-from search-body "front")))
+      (if (id-in-list body-back-id id-list)
+	  (progn
+	    (ros::ros-info "body-back was found")
+	    (return-from search-body "front"))))
+    
+    (ros::ros-info "couldn't find body")
+    (return-from search-body nil)))
+    
 (defun rarm-search-servo-tag (marker-name)
   (let ((detection-results-msg nil)
 	(target-id nil)
