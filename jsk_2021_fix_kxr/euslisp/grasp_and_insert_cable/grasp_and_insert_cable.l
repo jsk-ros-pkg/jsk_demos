@@ -83,3 +83,5 @@
 (rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
 
 (rarm-insert-cable "rpov-rarm_elbow_p_servo" "right")
+(rarm-insert-cable-test "rpov-rarm_elbow_p_servo" "right")
+
