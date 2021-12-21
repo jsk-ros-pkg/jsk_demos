@@ -61,7 +61,7 @@
         ))
 (setq *servo-to-slide-insert-right-cable-pose*
       (make-cascoords
-        :pos #f(33.3 -13.281 37.626)
+        :pos #f(28 -13.281 37.626)
         :rpy #f(-1.57 1.57 -1.57)
         ))
 
