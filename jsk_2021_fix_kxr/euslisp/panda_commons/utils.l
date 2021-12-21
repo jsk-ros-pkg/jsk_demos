@@ -21,6 +21,24 @@
     (if (string= marker-name "lpov-rarm_elbow_p_servo")
 	(setq *target-id* 2))))
 
+(defun move-rarm-x (delta)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (send :rarm :move-end-pos (float-vector delta 0 0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :wait-interpolation))
+
+(defun move-rarm-y (delta)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (send :rarm :move-end-pos (float-vector 0 delta 0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :wait-interpolation))
+
+(defun move-rarm-z (delta)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (send :rarm :move-end-pos (float-vector 0 0 delta))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :wait-interpolation))
+
 (defun search-body ()
   (let ((detection-results-msg nil)
 	(body-front-id 0)
@@ -358,7 +376,7 @@ memo to get parameters
       (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
 
     (setq i 0)
-    (setq z-lim 3)
+    (setq z-lim 4)
     (setq base-stroke #f(0.5 0 0))
     (while (< i 30)
       (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
@@ -381,7 +399,102 @@ memo to get parameters
     (send *robot* :rarm :move-end-pos #f(0 0 -8))
     (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
-    ))
+
+    (setq h_delta 1.5)
+    (steq i_delta 1.0)
+    (setq z-lim 3)
+    (setq total-insert 0)
+    (setq mode 1)
+    (while t
+      (setq wrench-pre (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+      (case mode
+	    (1
+	     (ros::ros-info "Move to +y")
+	     (move-rarm-y h_delta)
+	     (move-rarm-x i_delta)
+	     (unix:sleep 1)
+	     (setq wrench-tmp (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+	     (setq wrench-diff (v- wrench-tmp wrench-pre))
+	     (setq diff-z (elt wrench-diff 2))
+	     (if (< diff-z z-lim)
+		 (progn
+		   (ros::ros-info "Good")
+		   (setq total_insert (+ total_insert i_delta))
+		   (if (> h_delta 0.5)
+		       (setq h_delta (- h_delta 0.1)))
+		   (ros::ros-info (format nil "total_insert is ~A" total_insert))
+		   (ros::ros-info (format nil "Now h_delta is ~A" h_delta)))
+	       (progn
+		 (ros:ros-info "Bad")
+		 (move-rarm-y (- 0 h_delta))
+		 (move-rarm-x (- 0 i_delta))
+		 (setq mode 2))))
+	    (2
+	     (ros::ros-info "Move to -y")
+	     (move-rarm-y (- 0 h_delta))
+	     (move-rarm-x i_delta)
+	     (unix:sleep 1)
+	     (setq wrench-tmp (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+	     (setq wrench-diff (v- wrench-tmp wrench-pre))
+	     (setq diff-z (elt wrench-diff 2))
+	     (if (< diff-z z-lim)
+		 (progn
+		   (ros::ros-info "Good")
+		   (setq total_insert (+ total_insert i_delta))
+		   (if (> h_delta 0.5)
+		       (setq h_delta (- h_delta 0.1)))
+		   (ros::ros-info (format nil "total_insert is ~A" total_insert))
+		   (ros::ros-info (format nil "Now h_delta is ~A" h_delta)))
+	       (progn
+		 (ros:ros-info "Bad")
+		 (move-rarm-y h_delta)
+		 (move-rarm-x (- 0 i_delta))
+		 (setq mode 3))))
+	    (3
+	     (ros::ros-info "Move to +z")
+	     (move-rarm-z h_delta)
+	     (move-rarm-x i_delta)
+	     (unix:sleep 1)
+	     (setq wrench-tmp (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+	     (setq wrench-diff (v- wrench-tmp wrench-pre))
+	     (setq diff-z (elt wrench-diff 2))
+	     (if (< diff-z z-lim)
+		 (progn
+		   (ros::ros-info "Good")
+		   (setq total_insert (+ total_insert i_delta))
+		   (if (> h_delta 0.5)
+		       (setq h_delta (- h_delta 0.1)))
+		   (ros::ros-info (format nil "total_insert is ~A" total_insert))
+		   (ros::ros-info (format nil "Now h_delta is ~A" h_delta)))
+	       (progn
+		 (ros:ros-info "Bad")
+		 (move-rarm-y h_delta)
+		 (move-rarm-x (- 0 i_delta))
+		 (setq mode 4))))
+	    (4
+	     (ros::ros-info "Move to -z")
+	     (move-rarm-z (- 0 h_delta))
+	     (move-rarm-x i_delta)
+	     (unix:sleep 1)
+	     (setq wrench-tmp (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
+	     (setq wrench-diff (v- wrench-tmp wrench-pre))
+	     (setq diff-z (elt wrench-diff 2))
+	     (if (< diff-z z-lim)
+		 (progn
+		   (ros::ros-info "Good")
+		   (setq total_insert (+ total_insert i_delta))
+		   (if (> h_delta 0.5)
+		       (setq h_delta (- h_delta 0.1)))
+		   (ros::ros-info (format nil "total_insert is ~A" total_insert))
+		   (ros::ros-info (format nil "Now h_delta is ~A" h_delta)))
+	       (progn
+		 (ros:ros-info "Bad")
+		 (move-rarm-y h_delta)
+		 (move-rarm-x (- 0 i_delta))
+		 (setq mode 1)))))
+	      
+		 
+	    
 
 #|
 (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
