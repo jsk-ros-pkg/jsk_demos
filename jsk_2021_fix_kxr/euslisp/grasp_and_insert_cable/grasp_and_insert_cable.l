@@ -83,10 +83,4 @@
 ;;<TODO recognize which cable is missing>
 (rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
 
-(rarm-insert-cable "rpov-rarm_elbow_p_servo" "right")
 (rarm-insert-cable-test "rpov-rarm_elbow_p_servo" "right")
-
-(setq *servo-to-slide-insert-right-cable-pose*
-      (make-cascoords
-       :pos #f(33.3 -13.281 37.626)
-       :rpy #f(-1.57 1.57 -1.57)))
