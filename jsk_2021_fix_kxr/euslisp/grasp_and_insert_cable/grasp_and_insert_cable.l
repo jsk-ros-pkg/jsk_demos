@@ -81,6 +81,7 @@
   (setq *base_to_rarm_elbow_p_servo* (send *tfl* :lookup-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp)))
 
 ;;<TODO recognize which cable is missing>
+
 (rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
 
 (rarm-insert-cable-test "rpov-rarm_elbow_p_servo" "right")

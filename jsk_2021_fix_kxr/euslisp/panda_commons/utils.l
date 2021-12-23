@@ -244,6 +244,7 @@ memo to get parameters
 	      (4
 	       (ros::ros-info "Can't find cable")
 	       (return-from rarm-grasp-cable nil)))))
+    
     (setq base-to-search-pose (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *servo-to-cable-front-grasp-ready*))
     
     (ros::ros-info "start to grasp cable")
@@ -255,9 +256,11 @@ memo to get parameters
     (setq stamp (ros::time-now))
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
       (setq base-to-cable-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp)))
+    
     (send *robot* :rarm :move-end-pos #f(-20 0 30))
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    (send *robot* :rarm_joint1 :joint-angle 60)
     (send *robot* :rarm :inverse-kinematics base-to-search-pose)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
@@ -288,14 +291,36 @@ memo to get parameters
     (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+    (send *robot* :rarm :move-end-pos #f(2 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
 
     ;;grasp
     (send *ri* :start-grasp :rarm)
     (unix:sleep 2)
 
-    (setq self-coords (send *robot* :rarm :end-coords))
-    (setq target-pos (send (setq self-coords (send *robot* :rarm :end-coords)) :worldpos))
-    (send (setq target-coords (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert*)) :replace-pos target-pos)
+    (setq base-to-change-pose-1 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-1*))
+    (setq base-to-change-pose-2 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-2*))
+    (setq base-to-change-pose-3 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-3*))
+
+    (send *robot* :rarm :inverse-kinematics base-to-change-pose-1)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+    (send *robot* :rarm :inverse-kinematics base-to-change-pose-2)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *robot* :rarm :inverse-kinematics base-to-change-pose-3)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    
+    ;; (setq self-coords (send *robot* :rarm :end-coords))
+    ;; (setq target-pos (send (setq self-coords (send *robot* :rarm :end-coords)) :worldpos))
+    ;; (send (setq target-coords (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert*)) :replace-pos target-pos)
+    
+    ;; (send *robot* :rarm :inverse-kinematics target-coords)
+    ;; (send *robot* :rarm :move-end-pos #f(5 10 10))
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    ;; (send *ri* :wait-interpolation)
     ))
 
 (defun rarm-insert-cable (servo-name side)
@@ -420,11 +445,13 @@ memo to get parameters
     (setq total-insert 0)
     (setq total-insert-th 7.0)
     (setq mode 1)
-   (while t
+    (setq count 0)
+    (while t
       (setq wrench-pre (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
       (case mode
 	    (1
 	     (ros::ros-info "Move to +y")
+	     (setq count (+ count 1)) 
 	     (move-rarm-y h_delta)
 	     (move-rarm-x i_delta)
 	     (unix:sleep 1)
@@ -446,6 +473,7 @@ memo to get parameters
 	     (setq mode 2))
 	    (2
 	     (ros::ros-info "Move to -y")
+	     (setq count (+ count 1))
 	     (move-rarm-y (- 0 h_delta))
 	     (move-rarm-x i_delta)
 	     (unix:sleep 1)
@@ -467,6 +495,7 @@ memo to get parameters
 	     (setq mode 3))
 	    (3
 	     (ros::ros-info "Move to +z")
+	     (setq count (+ count 1))
 	     (move-rarm-z h_delta)
 	     (move-rarm-x i_delta)
 	     (unix:sleep 1)
@@ -488,6 +517,7 @@ memo to get parameters
 	     (setq mode 4))
 	    (4
 	     (ros::ros-info "Move to -z")
+	     (setq count (+ count 1))
 	     (move-rarm-z (- 0 h_delta))
 	     (move-rarm-x i_delta)
 	     (unix:sleep 1)
@@ -507,17 +537,26 @@ memo to get parameters
 		 (move-rarm-y h_delta)
 		 (move-rarm-x (- 0 i_delta))))
 	     (setq mode 1)))
-      (if (> total-insert total-insert-th)
+      (ros::ros-info (format nil "times of try is ~A" count))
+      (if (or (> total-insert total-insert-th) (> count 20))
 	  (progn
+	    (ros::ros-info "rushing")
 	    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 	    (send *robot* :rarm :move-end-pos #f(10 0 0))
 	    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 	    (send *ri* :wait-interpolation)
 	    (send *robot* :rarm :move-end-pos #f(-10 0 0))
 	    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-	    (send *ri* :wait-interpolation)))
-	    )
-	      
+	    (send *ri* :wait-interpolation)
+	    (return-from rarm-insert-cable t)))
+      ;; (setq f hoge)
+      ;; (if f
+      ;; 	  (progn
+      ;; 	    (ros::ros-info "success")
+      ;; 	    (return from rarm-insert-cable-test t))
+      ;; 	(progn
+      ;; 	  (return to start point)))
+      )))
 		 
 	    
 
@@ -534,4 +573,12 @@ memo to get parameters
 (send *ri* :wait-interpolation)
 (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
 (setq wrench-diff (v- wrench wrench-init))
+
+(setq cable-copy (send base-to-cable-marker-origin :copy-worldcoords))
+    (send cable-copy (send cable_origin :copy-worldcoords))
+    (setq cable-rpy (elt (rpy-angle (send cable-copy :rot)) 0))
+    (if (> (elt cable-rpy 0) 0.7)
+	(progn
+	  (rplaca)
+	  (send base-to-cable-marker-origin :rpy 0.7 (elt cable-rpy 1) (elt cable-rpy 2))
 |#

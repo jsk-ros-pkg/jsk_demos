@@ -18,6 +18,8 @@
 
 (setq *null-wrench* #f(0 0 0 0 0 0))
 
+
+
 ;;; parameters
 (setq *servo-to-search-cable-pose*
       (make-cascoords
@@ -47,31 +49,46 @@
 (setq *cable-front-to-pre-grasp-pose-1*
       (make-cascoords
         :pos #f(-45.691 22.526 27.675)
-        :rpy #f(-1.655 0.3 1.413)
+        :rpy #f(-1.655 0.5 1.413)
         )) 
 (setq *cable-front-to-pre-grasp-pose-2*
       (make-cascoords
         :pos #f(-39.479 16.61 12.343)
-        :rpy #f(-1.365 0.3 1.57)
+        :rpy #f(-1.365 0.5 1.57)
         ))
 (setq *cable-front-to-grasp-pose*
       (make-cascoords
-        :pos #f(-16.344 21.751 16.114)
-        :rpy #f(-1.45 0.449 1.552)
+        :pos #f(-16.344 21.751 10.114)
+        :rpy #f(-1.45 0.5 1.552)
         ))
 (setq *cable-front-change-pose-before-insert*
       (make-cascoords
         :pos #f(0 0 0)
         :rpy #f(0 1.57 0)
         ))
+(setq *cable-front-change-pose-before-insert-1*
+      (make-cascoords
+        :pos #f(17.295 -52.435 39.996)
+        :rpy #f(1.279 0.372 1.172)
+        ))
+(setq *cable-front-change-pose-before-insert-2*
+      (make-cascoords
+        :pos #f(17.353 -43.806 45.33)
+        :rpy #f(1.294 0.654 1.195)
+        ))
+(setq *cable-front-change-pose-before-insert-3*
+      (make-cascoords
+        :pos #f(22.596 -32.874 50.651)
+        :rpy #f(1.347 0.974 1.204)
+        ))
 (setq *servo-to-slide-insert-right-cable-inter-pose*
       (make-cascoords
-        :pos #f(34.757 -12.996 42.748)
+        :pos #f(34.757 -12.996 40.748)
         :rpy #f(-2.515 1.479 -2.446)
         ))
 (setq *servo-to-slide-insert-right-cable-pose*
       (make-cascoords
-        :pos #f(28 -13.281 37.626)
+        :pos #f(28 -13.281 35.626)
         :rpy #f(-1.57 1.57 -1.57)
         ))
 
