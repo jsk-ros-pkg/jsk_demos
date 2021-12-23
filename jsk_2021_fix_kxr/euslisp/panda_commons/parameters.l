@@ -21,6 +21,16 @@
 
 
 ;;; parameters
+(setq *body-back-to-larm-grasp-pose*
+      (make-cascoords
+       :pos #f(-124.991 17 -55)
+       :rpy #f(2.171 1.536 2.122)
+       ))
+(setq *body-back-to-rarm-grasp-pose*
+      (make-cascoords
+       :pos #f(124.456 17 -55)
+       :rpy #f(2.576 1.517 -0.646)
+       ))
 (setq *servo-to-search-cable-pose*
       (make-cascoords
        :pos #f(-3.797 -98.159 34.853)

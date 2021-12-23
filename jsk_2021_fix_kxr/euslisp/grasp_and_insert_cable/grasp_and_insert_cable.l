@@ -35,29 +35,42 @@
 (send *ri* :set-joint-pd-gain "rarm_joint7" 100 10)
 (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 
-(send *robot* :reset-pose)
-(send *robot* :rarm :move-end-pos #f(-500 0 100))
-(send *robot* :larm :move-end-pos #f(-500 0 100))
-(send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-(send *ri* :wait-interpolation)
-
-;;before rarm grasp kxr
-(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(341.012 -147.428 1370.354) :rpy (float-vector 1.222 1.551 -0.386))) :translation-axis t :rotation-axis t)
-(send *robot* :larm_joint1 :joint-angle -30)
-(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(227.932 139.233 1435.999) :rpy (float-vector -0.09 1.312 2.977))) :translation-axis t :rotation-axis t)
+(send *robot* :reset-coop-pose)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
+(while t
+  (setq found-body (search-body))
+  (if (= found-body "front")
+      (progn
+	(ros::ros-info "Try to reverse body")))
+  (if (= found-body "back")
+      (progn
+	(ros::ros-info "Recordind positon of kxr")
+	(setq stamp (ros::time-now))
+	(when (send *tfl* :wait-for-transform "dual_arm_base" "rpov-body_back" stamp 5)
+	  (setq *base_to_body_back* (send *tfl* :lookup-transform "dual_arm_base" "rpov-body_back" stamp)))
+	(return))))
 
-;;lower rarm
-(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(341.012 -147.428 1301.354) :rpy (float-vector 1.222 1.551 -0.386))) :translation-axis t :rotation-axis t)
+;;assume that KXR is facing down
+;;assume that KXR
+      
+
+
+;;set KXR to jig
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(308.472 -259.081 1212.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(305.157 -14.307 1212.274) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
-;;grasp kxr
-(send *ri* :start-grasp :rarm)
-(unix:sleep 1)
+(send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1210.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+(send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 169.619 1214.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
+(send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+(send *ri* :wait-interpolation)
 
+;;release KXR
+
+;;<recognize marker>
 ;;grasp elbow from below
 (larm-grasp-rarm-elbow-p-servo-from-below)
 

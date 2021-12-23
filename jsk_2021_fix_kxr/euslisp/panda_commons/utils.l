@@ -3,10 +3,6 @@
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/parameters.l")
 
-(ros::roseus-add-msgs "std_msgs")
-
-(ros::load-ros-manifest "apriltag_ros")
-
 ;;; check if an id exists in target-list
 (defun id-in-list (id target-list)
   (dolist (x target-list)
@@ -43,6 +39,7 @@
   (let ((detection-results-msg nil)
 	(body-front-id 0)
 	(body-back-id 1)
+	(found-id nil)
 	(id-list nil))
     
     (ros::ros-info "searching body tag...")    
@@ -60,11 +57,13 @@
       (if (id-in-list body-front-id id-list)
 	  (progn
 	    (ros::ros-info "body-front was found")
+	    (setq found-id body-front-id)
 	    (return-from search-body "front")))
       (if (id-in-list body-back-id id-list)
 	  (progn
 	    (ros::ros-info "body-back was found")
-	    (return-from search-body "front"))))
+	    (setq found-id body-front-id)
+	    (return-from search-body "back"))))
       
     (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(230 -140.079 1500.936) :rpy (float-vector 3.1 1.7 0))) :translation-axis t :rotation-axis t)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
