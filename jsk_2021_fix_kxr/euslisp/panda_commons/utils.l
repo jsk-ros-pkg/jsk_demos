@@ -339,63 +339,6 @@ memo to get parameters
       (progn
 	(setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-inter-pose*))
 	(setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-pose*))))
-    
-    ;;set hand
-    (send *robot* :rarm :inverse-kinematics base-to-pre-insert-pose)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    (send *robot* :rarm :inverse-kinematics base-to-insert-pose)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    
-    ;;get corret wrench and set as wrench-init
-    (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
-    (while (equal wrench-init *null-wrench*)
-      (ros::ros-info "Couldn't get correct wrench")
-      ;;TODO escape from singular pose
-      (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))
-
-    (setq i 0)
-    (setq z-lim 3)
-    (setq base-stroke #f(0.5 0 0))
-    (while (< i 30)
-      (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
-      (setq wrench-diff (v- wrench wrench-init))
-      (setq diff-z (elt wrench-diff 2))
-      (if (> diff-z z-lim)
-	  (progn
-	    (ros::ros-info "detect contacting to serface of servo")
-	    (return))
-	(progn
-	  (ros::ros-info "still hanging in the air")
-	  (send *robot* :rarm :move-end-pos base-stroke)
-	  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
-	  (send *ri* :wait-interpolation)
-	  (setq i (+ i 1))
-	  (setq stroke (* (elt base-stroke 0) i))
-	  (ros::ros-info (format nil "stroke is ~A" stroke)))))
-
-    ;;start to insert cable
-    
-
-    ))
-
-(defun rarm-insert-cable-test (servo-name side)
-  (let ((base-to-marker-origin nil)
-	(base-to-pre-insert-pose nil)
-	(base-to-insert-pose nil)
-	(cable-id-list nil)
-	(stamp nil)
-	(ret nil))
-    (setq buf (subseq servo-name 5 (length servo-name)))
-    (setq base-to-marker-origin (eval (read-from-string (format nil "~A~A~A" "*base_to_" buf "*"))))
-    (if (string= side "right")
-	(progn
-	  (setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-inter-pose*))
-	  (setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-pose*)))
-      (progn
-	(setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-inter-pose*))
-	(setq base-to-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-left-cable-pose*))))
 
     ;;set hand
     (send *robot* :rarm :inverse-kinematics base-to-pre-insert-pose)
