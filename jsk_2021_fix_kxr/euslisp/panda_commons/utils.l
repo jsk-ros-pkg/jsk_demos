@@ -1,7 +1,14 @@
 #!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
-(require "package://jsk_2021_fix_kxr/euslisp/panda_commons/parameters.l")
+(ros::roseus-add-msgs "franka_msgs")
+(ros::roseus-add-msgs "franka_gripper")
+(ros::roseus-add-msgs "std_msgs")
+(ros::roseus-add-msgs "sensor_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
+
+(ros::load-ros-manifest "franka_msgs")
+(ros::load-ros-manifest "apriltag_ros")
 
 ;;; check if an id exists in target-list
 (defun id-in-list (id target-list)
@@ -162,12 +169,53 @@
     (send *ri* :wait-interpolation)
 
     (send *robot* :larm :inverse-kinematics base-to-grasp-pose)
+    (send *robot* :larm :move-end-pos #f(-3 0 0))
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
     (send *ri* :start-grasp :larm)
-    (unix:sleep 1)))
+    (unix:sleep 1)
+    
+    (send *robot* :larm :move-end-pos #f(-3 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    ))
 
+(defun larm-release-rarm-elbow-p-servo-from-below ()
+  (let ((base-to-marker-origin nil)
+	(base-to-inter1-pose nil)
+	(base-to-inter2-pose nil)
+	(base-to-inter3-pose nil)
+	(base-to-pre-grasp-pose nil)
+	(base-to-grasp-pose nil)
+	(stamp nil)
+	(ret nil))
+    (ros::ros-info "start to release rarm-elbow-p-servo from below")
+    (setq stamp (ros::time-now))
+    (setq marker-name "lpov-rarm_elbow_p_servo")
+    (setq base-to-marker-origin *base_to_rarm_elbow_p_servo*)
+    (setq base-to-inter1-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter1-pose*))
+    (setq base-to-inter2-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-inter2-pose*))
+    (setq base-to-pre-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-pre-grasp-pose*))
+    (setq base-to-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rarm-elbow-p-to-grasp-pose*))
+
+    (send *ri* :stop-grasp :larm)
+    (unix:sleep 1)
+
+    (send *robot* :larm :inverse-kinematics base-to-pre-grasp-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    (send *robot* :larm :inverse-kinematics base-to-inter2-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    (send *robot* :larm :inverse-kinematics base-to-inter1-pose)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)))
+
+
+    
 #|
 memo to get parameters
 (send *robot* :angle-vector (send *ri* :state :potentio-vector))
@@ -498,7 +546,9 @@ memo to get parameters
       ;; 	    (return from rarm-insert-cable-test t))
       ;; 	(progn
       ;; 	  (return to start point)))
-      )))
+      )
+    
+    ))
 		 
 	    
 

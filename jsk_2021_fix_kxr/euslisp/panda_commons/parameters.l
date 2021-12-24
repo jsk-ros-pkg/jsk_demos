@@ -135,7 +135,7 @@
        ))
 (setq *rarm-elbow-p-to-inter2-pose*
       (make-cascoords
-       :pos #f(-141.254 -5.393 -96.748)
+       :pos #f(-160.254 -5.393 -96.748)
        :rpy #f(0.024 -0.937 -0.027)
        ))
 (setq *rarm-elbow-p-to-pre-grasp-pose*
