@@ -31,6 +31,24 @@
        :pos #f(124.456 17 -55)
        :rpy #f(2.576 1.517 -0.646)
        ))
+
+(setq *rarm_elbow_servo_p_search-pose-1*
+      (make-cascoords
+       :pos #f(0 0 -15)
+       :rpy #f(0 -0.3 0)
+       ))
+(setq *rarm_elbow_servo_p_search-pose-2*
+      (make-cascoords
+       :pos #f(25 0 35)
+       :rpy #f(0 0.5 0)
+       ))
+(setq *rarm_elbow_servo_p_search-pose-3*
+      (make-cascoords
+       :pos #f(30 30 0)
+       :rpy #f(-0.5 0 0)
+       ))
+
+
 (setq *servo-to-search-cable-pose*
       (make-cascoords
        :pos #f(-3.797 -98.159 34.853)
@@ -51,6 +69,7 @@
         :pos #f(13.83 -55.579 91.701)
         :rpy #f(-1.799 1.134 -0.262)
         ))
+
 (setq *servo-to-cable-front-grasp-ready*
       (make-cascoords
         :pos #f(34.974 -76.339 49.308)

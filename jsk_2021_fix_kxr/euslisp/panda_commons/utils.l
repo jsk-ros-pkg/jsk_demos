@@ -132,6 +132,48 @@
 		   (ros::ros-info "Can't find tag")
 		   (return-from rarm-search-servo-tag nil)))))))))
 
+(defun larm-search-rarm-elbow-p-servo-tag ()
+  (let ((detection-results-msg nil)
+	(target-id nil)
+	(id-list nil)
+	(base-to-search-pose nil)
+	(count 0))
+    (ros::ros-info "searching tag...")
+    (setq marker-name "lpov-rarm_elbow_p_servo")
+    (setq target-id (marker-name-to-servo-id marker-name))
+    (setq start-pose (send (send *robot* :larm :end-coords) :copy-worldcoords))
+    (while t
+      (setq detection-results-msg (one-shot-subscribe "/left_tag_detections" apriltag_ros::AprilTagDetectionArray))
+      (when detection-results-msg
+	(ros::ros-info "Got a message")
+	(setq id-list (mapcar #'(lambda (x) (elt (send x :id) 0)) (send detection-results-msg :detections)))
+	(print id-list)
+	(if (id-in-list target-id id-list)
+	    (progn
+	      (ros::ros-info "target-marker was found")
+	      (return-from larm-search-rarm-elbow-p-servo-tag t))
+	  (progn
+	    (setq count (+ count 1))
+	    (case count
+		  (1
+		   (setq base-to-search-pose (send (send start-pose :copy-worldcoords) :transform *rarm_elbow_servo_p_search-pose-1*))
+		   (send *robot* :larm :inverse-kinematics base-to-search-pose)
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (2
+		   (setq base-to-search-pose (send (send start-pose :copy-worldcoords) :transform *rarm_elbow_servo_p_search-pose-2*))
+		   (send *robot* :larm :inverse-kinematics base-to-search-pose)
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (3
+		   (setq base-to-search-pose (send (send start-pose :copy-worldcoords) :transform *rarm_elbow_servo_p_search-pose-3*))
+		   (send *robot* :larm :inverse-kinematics base-to-search-pose)
+		   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+		   (send *ri* :wait-interpolation))
+		  (4
+		   (ros::ros-info "Can't find tag")
+		   (return-from larm-search-rarm-elbow-p-servo-tag nil)))))))))
+
 (defun larm-grasp-rarm-elbow-p-servo-from-below ()
   (let ((base-to-marker-origin nil)
 	(base-to-inter1-pose nil)

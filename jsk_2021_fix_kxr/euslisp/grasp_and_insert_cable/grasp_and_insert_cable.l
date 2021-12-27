@@ -96,7 +96,8 @@
 (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
 (send *ri* :wait-interpolation)
 
-;;<recognize marker>
+(larm-search-rarm-elbow-p-servo-tag)
+
 ;;grasp elbow from below
 (larm-grasp-rarm-elbow-p-servo-from-below)
 
