@@ -1,4 +1,4 @@
-x#!/usr/bin/env roseus
+#!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 (ros::roseus-add-msgs "franka_msgs")
@@ -9,7 +9,7 @@ x#!/usr/bin/env roseus
 
 (ros::load-ros-manifest "franka_msgs")
 (ros::load-ros-manifest "apriltag_ros")
-
+(ros::load-ros-manifest "opencv_apps")
 ;;; check if an id exists in target-list
 (defun id-in-list (id target-list)
   (dolist (x target-list)
@@ -383,6 +383,24 @@ memo to get parameters
     (send *robot* :rarm :move-end-pos #f(2 0 0))
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
+
+    (return-from rarm-grasp-cable nil)
+    
+    (setq rects (send (one-shot-subscribe "/rarm_cable_terminal_detection/general_contours/rectangles" opencv_apps::RotatedRectArrayStamped) :rects))
+    (when rects
+      (progn
+	(setq l (length rects))
+	(setq i 0)
+	(setq max_i 0)
+	(setq size_max 0)
+	(setq size_buf 0)
+	(while (< i l)
+	  (setq size_buf (* (send (send (elt rects i) :size) :width) (send (send (elt rects i) :size) :height)))
+	  (if (> size_buf size_max)
+	      (progn
+		(setq size_max size_buf)
+		(setq max_i i)))
+	  (setq i (+ i 1)))))
 
     ;;grasp
     (send *ri* :start-grasp :rarm)
