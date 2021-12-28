@@ -1,4 +1,4 @@
-#!/usr/bin/env roseus
+x#!/usr/bin/env roseus
 
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 (ros::roseus-add-msgs "franka_msgs")
@@ -421,6 +421,9 @@ memo to get parameters
 	(ret nil))
     (setq buf (subseq servo-name 5 (length servo-name)))
     (setq base-to-marker-origin (eval (read-from-string (format nil "~A~A~A" "*base_to_" buf "*"))))
+    (setq stamp (ros::time-now))
+    (when (send *tfl* :wait-for-transform "dual_arm_base" servo-name stamp 5)
+      (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" servo-name stamp)))
     (if (string= side "right")
 	(progn
 	  (setq base-to-pre-insert-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *servo-to-slide-insert-right-cable-inter-pose*))

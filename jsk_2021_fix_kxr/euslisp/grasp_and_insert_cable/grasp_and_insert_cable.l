@@ -131,7 +131,7 @@
 
 (rarm-insert-cable "rpov-rarm_elbow_p_servo" "right")
 
-(send *ri* :stop-grasp :rarm :width 0.007)
+(send *ri* :stop-grasp :rarm :width 0.005)
 (unix:sleep 1)
 (send *robot* :rarm :move-end-pos #f(-30 0 30))
 (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
