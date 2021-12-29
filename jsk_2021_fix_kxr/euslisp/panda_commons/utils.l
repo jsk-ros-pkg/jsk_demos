@@ -366,7 +366,7 @@ memo to get parameters
     ;;pre-grasp-poses
     (send *ri* :start-grasp :rarm)
     (unix:sleep 1)
-    (send *ri* :stop-grasp :rarm :width 0.02)
+    (send *ri* :stop-grasp :rarm :width 0.01)
     (unix:sleep 1)
     
     (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-1)
@@ -384,27 +384,96 @@ memo to get parameters
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    (return-from rarm-grasp-cable nil)
-    
-    (setq rects (send (one-shot-subscribe "/rarm_cable_terminal_detection/general_contours/rectangles" opencv_apps::RotatedRectArrayStamped) :rects))
-    (when rects
-      (progn
-	(setq l (length rects))
-	(setq i 0)
-	(setq max_i 0)
-	(setq size_max 0)
-	(setq size_buf 0)
-	(while (< i l)
-	  (setq size_buf (* (send (send (elt rects i) :size) :width) (send (send (elt rects i) :size) :height)))
-	  (if (> size_buf size_max)
-	      (progn
-		(setq size_max size_buf)
-		(setq max_i i)))
-	  (setq i (+ i 1)))))
+    (setq goal_x 670)
+    (setq goal_y 650)
+    (setq robust_x 60)
+    (setq min_x (- goal_x (/ robust_x 2)))
+    (setq max_x (+ goal_x (/ robust_x 2)))
+    (setq min_y 630)
+    (setq max_y 675)
+    (setq k_x 0.13)
+    (setq k_y 0.116)
+    (setq fx 0)
+    (setq fy 0)
+    (while (< fx 3)
+      (setq rects (send (one-shot-subscribe "/rarm_cable_terminal_detection/general_contours/rectangles" opencv_apps::RotatedRectArrayStamped) :rects))
+      (when rects
+	(progn
+	  (setq l (length rects))
+	  (setq i 0)
+	  (setq max_i 0)
+	  (setq size_max 0)
+	  (setq size_buf 0)
 
-    ;;grasp
+	  (while (< i l)
+	    (setq size_buf (* (send (send (elt rects i) :size) :width) (send (send (elt rects i) :size) :height)))
+	    (if (> size_buf size_max)
+		(progn
+		  (setq size_max size_buf)
+		  (setq max_i i)))
+	    (ros::ros-info (format nil "fx:~A index:~A, size:~A" fx i size_buf))
+	    (setq i (+ i 1)))
+	  (setq x (send (send (elt rects max_i) :center) :x))
+	  (setq y (send (send (elt rects max_i) :center) :y))
+	  (ros::ros-info (format nil "x:~A, y:~A" x y))
+	  (if (or (< x min_x) (> x max_x))
+	      (progn
+		(setq delta_x (* k_x (- x goal_x)))
+		(setq fx 0))
+	    (progn
+	      (setq delta_x (* 0.4 (* k_x (- x goal_x))))
+	    (setq fx (+ fx 1))))
+	  (send *robot* :rarm :move-end-pos (float-vector 0 delta_x 0))
+	  (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
+	  (send *ri* :wait-interpolation)
+	  (unix:sleep 1))))
+    
+    (while (< fy 3)
+      (setq rects (send (one-shot-subscribe "/rarm_cable_terminal_detection/general_contours/rectangles" opencv_apps::RotatedRectArrayStamped) :rects))
+      (when rects
+	(progn
+	  (setq l (length rects))
+	  (setq i 0)
+	  (setq max_i 0)
+	  (setq size_max 0)
+	  (setq size_buf 0)
+
+	  (while (< i l)
+	    (setq size_buf (* (send (send (elt rects i) :size) :width) (send (send (elt rects i) :size) :height)))
+	    (if (> size_buf size_max)
+		(progn
+		  (setq size_max size_buf)
+		  (setq max_i i)))
+	    (ros::ros-info (format nil "fy:~A index:~A, size:~A" fy i size_buf))
+	    (setq i (+ i 1)))
+	  (setq x (send (send (elt rects max_i) :center) :x))
+	  (setq y (send (send (elt rects max_i) :center) :y))
+	  (ros::ros-info (format nil "x:~A, y:~A" x y))
+	  (cond
+	   ((< y min_y) (progn
+			  (setq delta_y (* 0.7 (* k_y (- y goal_y))))
+			  (setq fy 0)))
+	    ((> y max_y) (progn
+			   (setq delta_y (* 1.0 (* k_y (- y goal_y))))
+			   (setq fy 0)))
+	   (t (progn
+		(setq delta_y 0)
+		(setq fy (+ fy 1)))))
+	  (send *robot* :rarm :move-end-pos (float-vector 0 0 delta_y))
+	  (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
+	  (send *ri* :wait-interpolation)
+	  (unix:sleep 1))))
+
     (send *ri* :start-grasp :rarm)
-    (unix:sleep 2)
+    (unix:sleep 1)
+    (send *ri* :stop-grasp :rarm :width 0.003)
+    (unix:sleep 1)
+
+    (send *robot* :rarm :move-end-pos (float-vector 2 2 -4))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp :rarm)
+    (unix:sleep 1)
 
     (setq base-to-change-pose-1 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-1*))
     (setq base-to-change-pose-2 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-2*))
@@ -488,7 +557,7 @@ memo to get parameters
 	  (ros::ros-info (format nil "stroke is ~A" stroke)))))
 
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
-    (send *robot* :rarm :move-end-pos #f(0 0 -5))
+    (send *robot* :rarm :move-end-pos #f(0 0 -8))
     (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 

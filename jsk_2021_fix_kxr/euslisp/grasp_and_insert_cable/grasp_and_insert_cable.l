@@ -12,6 +12,7 @@
 
 (ros::load-ros-manifest "franka_msgs")
 (ros::load-ros-manifest "apriltag_ros")
+(ros::load-ros-manifest "opencv_apps")
 
 (ros::roseus "grasp_and_insert_cable")
 
