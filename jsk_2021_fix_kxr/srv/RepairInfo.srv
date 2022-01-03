@@ -1,0 +1,3 @@
+std_msgs/String input
+---
+std_msgs/String output

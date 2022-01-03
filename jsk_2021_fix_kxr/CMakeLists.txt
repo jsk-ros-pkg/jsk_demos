@@ -13,6 +13,11 @@ add_message_files(
   Repair.msg
   )
 
+add_service_files(
+  FILES
+  RepairInfo.srv
+  )
+
 generate_messages(
   DEPENDENCIES
   std_msgs
