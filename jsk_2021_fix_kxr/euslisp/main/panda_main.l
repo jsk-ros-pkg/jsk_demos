@@ -44,4 +44,4 @@
 (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
 (send req :action "send-servo-info")
 (setq res (ros::service-call "repair_reaction" req t))
-(setq joint_states (one-shot-subscribe "/puppet_joint_states" sensor_msgs::jointstate))
+(send (send res :joint_state) :effort)

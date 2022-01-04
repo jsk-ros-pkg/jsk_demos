@@ -1,3 +1,4 @@
 string action
 ---
 string result
+sensor_msgs/JointState joint_state

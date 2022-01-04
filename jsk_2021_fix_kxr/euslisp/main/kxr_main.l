@@ -7,8 +7,6 @@
 (send *ri* :hold-all)
 (init-publish)
 
-(ros::roseus "kxr_robot")
-
 (ros::roseus-add-msgs "std_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::load-ros-manifest "std_msgs")
@@ -59,7 +57,21 @@
 
 (defun send-servo-info ()
   (ros::ros-info "send-servo-info")
-  (joint-publish))
+  (setq msg (instance sensor_msgs::jointstate :init))
+  (send msg :name (send *robot* :joint-access-names))
+  (send *robot* :angle-vector (send *robot* :ri :read-angle-vector))
+  (send msg :effort (check-timeout-servo :ri t :name (send *robot* :name)))
+  (send msg :position (send *robot* :angle-vector))
+  (send *robot* :ri :real-orientation)
+  (send *robot* :ri :robot :angle-vector (send *robot* :angle-vector))
+  (send *robot* :ri :robot :draw-torque
+	((send *robot* :ri :viewer) . x::viewer)
+	:torque-vector (send *robot* :ri :read-torque-vector)
+	:flush nil :size 10.0)
+  (send *robot* :ri :viewer :draw-objects :flush t)
+  (send *robot* :ri :viewer :flush)
+  (send *irtviewer* :draw-objects :flush t)
+  msg)
 
 (defun repair_reaction (req)
   (let ((m (send req :response))
@@ -108,7 +120,7 @@
 	  (setq f 1)))
     (if (string= action "send-servo-info")
 	(progn
-	  (send-servo-info)
+	  (send m :joint_state (send-servo-info))
 	  (setq f 1)))
     
     
@@ -123,20 +135,3 @@
 (ros::advertise-service "repair_reaction" jsk_2021_fix_kxr::RepairInfo #'repair_reaction)
 (do-until-key
  (ros::spin-once))
-
-
-;; (defun servo-onoff()
-;;   (setq msg (send (one-shot-subscribe "/panda_order" std_msgs::String) :data))
-;;   (print msg)
-;;   (cond ((string-equal msg "rarm-free")
-;; 	 (progn
-;; 	   (send *ri* :rarm-free)))
-;; 	((string-equal msg "larm-free")
-;; 	 (progn
-;; 	   (send *ri* :larm-free)))
-;; 	((string-equal msg "rarm-hold")
-;; 	 (progn
-;; 	   (send *ri* :rarm-hold)))
-;; 	((string-equal msg "larm-hold")
-;; 	 (progn
-;; 	   (send *ri* :larm-hold)))))
