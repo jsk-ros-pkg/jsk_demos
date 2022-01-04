@@ -4,7 +4,7 @@
 (ros::roseus "client")
 
 (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
-(send req :action "hoge")
+(send req :action "rarm-free")
 (setq res (ros::service-call "repair_reaction" req t))
 
 
