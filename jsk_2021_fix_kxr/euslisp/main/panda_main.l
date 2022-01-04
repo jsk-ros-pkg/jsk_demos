@@ -37,6 +37,8 @@
 (send *ri* :set-joint-pd-gain "rarm_joint7" 100 10)
 (send *robot* :angle-vector (send *ri* :state :potentio-vector))
 
+(ros::ros-info "Start repairing")
+
 (send *robot* :reset-coop-pose)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
@@ -44,4 +46,18 @@
 (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
 (send req :action "send-servo-info")
 (setq res (ros::service-call "repair_reaction" req t))
-(send (send res :joint_state) :effort)
+(setq (send res :joint_state))
+(setq timeout-servo-list (make-timeout-servo-list joint_states))
+
+(while timeout-servo-list
+  (setq target )
+  (if (string= target "rarm-elbow-p-servo")
+      (progn
+	(ros::ros-info "target is rarm-elbow-p-servo")
+	(panda-repair-rarm-elbow-p-servo)))
+  (if (string= target "larm-elbow-p-servo")
+      (progn
+	(ros::ros-info "target is larm-elbow-p-servo")
+	(panda-repair-larn-elbow-p-servo))))
+
+(ros::ros-info "Finished repairing")

@@ -5,16 +5,8 @@
 (defvar *base_to_rarm_elbow_p_servo*)
 (defvar *target-id*)
 (defvar *target-id-list*)
-
-(defun marker-name-to-servo-id (marker-name)
-  (setq marker-name (subseq marker-name 5 (length marker-name)))
-  (if (string= marker-name "rarm_elbow_p_servo")
-      (return-from marker-name-to-servo-id 2)))
-
-(defun servo-name-to-cable-id-list (servo-name)
-  (setq servo-name (subseq servo-name 5 (length servo-name)))
-  (if (string= servo-name "rarm_elbow_p_servo")
-      (return-from servo-name-to-cable-id-list (list 8 9 10 11))))
+(defvar *reparing-servo-num*)
+(defvar *panda_order*)
 
 (setq *null-wrench* #f(0 0 0 0 0 0))
 

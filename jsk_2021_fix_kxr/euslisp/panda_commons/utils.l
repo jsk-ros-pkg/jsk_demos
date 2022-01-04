@@ -11,6 +11,17 @@
 (ros::load-ros-manifest "apriltag_ros")
 (ros::load-ros-manifest "opencv_apps")
 ;;; check if an id exists in target-list
+
+(defun marker-name-to-servo-id (marker-name)
+  (setq marker-name (subseq marker-name 5 (length marker-name)))
+  (if (string= marker-name "rarm_elbow_p_servo")
+      (return-from marker-name-to-servo-id 2)))
+
+(defun servo-name-to-cable-id-list (servo-name)
+  (setq servo-name (subseq servo-name 5 (length servo-name)))
+  (if (string= servo-name "rarm_elbow_p_servo")
+      (return-from servo-name-to-cable-id-list (list 8 9 10 11))))
+
 (defun id-in-list (id target-list)
   (dolist (x target-list)
     (if (eq id x)
@@ -23,6 +34,17 @@
 	(setq *target-id* 2)
     (if (string= marker-name "lpov-rarm_elbow_p_servo")
 	(setq *target-id* 2))))
+
+(defun make-timeout-servo-list (joint_states)
+  (setq timeout-servo-list '())
+  (setq count (- (length (send joint_states :name)) 1))
+  (while (> count -1)
+    (if (< (elt (send joint_states :effort) count) 0.1)
+	(progn
+	  (setq timeout-servo-list (cons (elt (send joint_states :name) count) *timeout-servo-list*))
+	  (setq *reparing-servo-num* count)))
+    (setq count (- count 1)))
+  timeout-servo-list)
 
 (defun move-rarm-x (delta)
   (send *robot* :angle-vector (send *ri* :state :potentio-vector))
