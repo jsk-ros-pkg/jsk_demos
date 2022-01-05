@@ -41,10 +41,16 @@
   (while (> count -1)
     (if (< (elt (send joint_states :effort) count) 0.1)
 	(progn
-	  (setq timeout-servo-list (cons (elt (send joint_states :name) count) *timeout-servo-list*))
-	  (setq *reparing-servo-num* count)))
+	  (if (not (string= (elt (send joint_states :name) count) "HEAD-NECK-Y"))
+	      (progn
+		(setq timeout-servo-list (cons (elt (send joint_states :name) count) timeout-servo-list))
+		(setq *reparing-servo-num* count)))))
     (setq count (- count 1)))
   timeout-servo-list)
+
+(defun decide-target-servo (timeout-servo-list)
+  (setq target-servo (elt timeout-servo-list 0))
+  target-servo)
 
 (defun move-rarm-x (delta)
   (send *robot* :angle-vector (send *ri* :state :potentio-vector))
