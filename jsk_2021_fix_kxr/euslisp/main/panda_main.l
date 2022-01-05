@@ -3,6 +3,8 @@
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/parameters.l")
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/utils.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rarm-elbow-p-servo.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-larm-elbow-p-servo.l")
 
 (ros::roseus-add-msgs "franka_msgs")
 (ros::roseus-add-msgs "franka_gripper")
@@ -59,7 +61,7 @@
 	(if (string-equal target "larm-elbow-p")
 	    (progn
 	      (ros::ros-info "target is larm-elbow-p-servo")
-	      (panda-repair-larn-elbow-p-servo))))
+	      (panda-repair-larm-elbow-p-servo))))
     (return-from nil)))
 
 (ros::ros-info "Finished repairing")
