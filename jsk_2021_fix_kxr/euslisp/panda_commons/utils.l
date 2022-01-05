@@ -698,16 +698,16 @@ memo to get parameters
 	    (send *robot* :rarm :move-end-pos #f(-10 0 0))
 	    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 	    (send *ri* :wait-interpolation)
-	    (return-from rarm-insert-cable t)))
-      ;; (setq f hoge)
-      ;; (if f
-      ;; 	  (progn
-      ;; 	    (ros::ros-info "success")
-      ;; 	    (return from rarm-insert-cable-test t))
-      ;; 	(progn
-      ;; 	  (return to start point)))
-      )
-    
+	    (send *ri* :stop-grasp :rarm :width 0.005)
+	    (unix:sleep 1)
+	    (send *robot* :rarm :move-end-pos #f(-30 0 30))
+	    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+	    (send *ri* :wait-interpolation)
+
+	    (send *robot* :rarm :move-end-pos #f(-70 0 0))
+	    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+	    (send *ri* :wait-interpolation)
+	    (return-from rarm-insert-cable t))))   
     ))
 		 
 	    
