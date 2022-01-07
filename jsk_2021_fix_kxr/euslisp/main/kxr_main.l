@@ -58,7 +58,7 @@
 (defun stand-pose ()
   (ros::ros-info "stand-pose")
   (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -30.0 0.0 -27.0 -27.0 0.0 30.0 0.0 -27.0 -27.0 0.0 10.0))
-  (send *ri* :angle-vector (send *robot* :angle-vector) 200))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300))
 
 (defun send-servo-info ()
   (ros::ros-info "send-servo-info")

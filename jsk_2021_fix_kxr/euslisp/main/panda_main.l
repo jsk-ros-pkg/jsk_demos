@@ -5,6 +5,9 @@
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/utils.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rarm-elbow-p-servo.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-larm-elbow-p-servo.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-set-rarm.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-return-rarm.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-release-kxr.l")
 
 (ros::roseus-add-msgs "franka_msgs")
 (ros::roseus-add-msgs "franka_gripper")
@@ -54,14 +57,34 @@
   (if timeout-servo-list
       (progn
 	(setq target (decide-target-servo timeout-servo-list))
-	(if (string-equal target "rarm-elbow-p")
+	(if (string-equal (subseq target 0 4) "rarm")
 	    (progn
-	      (ros::ros-info "target is rarm-elbow-p-servo")
-	      (panda-repair-rarm-elbow-p-servo)))
-	(if (string-equal target "larm-elbow-p")
+	      (ros::ros-info "Set rarm")
+	      (panda-set-rarm)
+	      (if (string-equal target "rarm-elbow-p")
+		  (progn
+		    (ros::ros-info "target is rarm-elbow-p-servo")
+		    (panda-repair-rarm-elbow-p-servo)))
+	      (if (string-equal target "rarm-gripper-r")
+		  (progn
+		    (ros::ros-info "target is rarm-gripper-r-servo")
+		    (panda-repair-rarm-gripper-r-servo))))
+	  (panda-return-rarm)
+	  )
+	(if (string-equal (subseq target 0 4) "larm")
 	    (progn
-	      (ros::ros-info "target is larm-elbow-p-servo")
-	      (panda-repair-larm-elbow-p-servo))))
+	      (ros::ros-info "Set larm")
+	      (panda-set-rarm)
+	      (if (string-equal target "larm-elbow-p")
+		  (progn
+		    (ros::ros-info "target is larm-elbow-p-servo")
+		    (panda-repair-rarm-elbow-p-servo)))
+	      (if (string-equal target "larm-gripper-r")
+		  (progn
+		    (ros::ros-info "target is larm-gripper-r-servo")
+		    (panda-repair-larm-gripper-r-servo))))))
     (return-from nil)))
+
+(panda-release-kxr)
 
 (ros::ros-info "Finished repairing")
