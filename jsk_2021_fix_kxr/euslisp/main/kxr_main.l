@@ -55,6 +55,16 @@
   (send *robot* :angle-vector #f(0.0 -10.0 40.0 -20.0 0.0 0.0 -10.0 40.0 -20.0 0.0 0.0 -90.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 200))
 
+(defun show-rleg-ankle-r-1 ()
+  (ros::ros-info "show-rleg-ankle-r-1")
+  (send *robot* :angle-vector  #f(0.0 20.0 50.0 -70.0 0.0 90.0 -10.0 70.0 -20.0 0.0 0.0 -90.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 200))
+
+(defun show-rleg-ankle-r-2 ()
+  (ros::ros-info "show-rleg-ankle-r-2")
+  (send *robot* :angle-vector #f(0.0 20.0 50.0 -70.0 0.0 90.0 -10.0 70.0 -20.0 0.0 -90.0 -180.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 200))
+
 (defun stand-pose ()
   (ros::ros-info "stand-pose")
   (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -30.0 0.0 -27.0 -27.0 0.0 30.0 0.0 -27.0 -27.0 0.0 10.0))
@@ -123,11 +133,18 @@
 	(progn
 	  (show-rarm-sholder-r)
 	  (setq f 1)))
+    (if (string= action "show-rleg-ankle-r-1")
+	(progn
+	  (show-rleg-ankle-r-1)
+	  (setq f 1)))
+    (if (string= action "show-rleg-ankle-r-2")
+	(progn
+	  (show-rleg-ankle-r-2)
+	  (setq f 1)))
     (if (string= action "send-servo-info")
 	(progn
 	  (send m :joint_state (send-servo-info))
 	  (setq f 1)))
-    
     
     (if (= f 1)
 	(progn
