@@ -68,9 +68,8 @@
 	      (if (string-equal target "rarm-gripper-r")
 		  (progn
 		    (ros::ros-info "target is rarm-gripper-r-servo")
-		    (panda-repair-rarm-gripper-r-servo))))
-	  (panda-return-rarm)
-	  )
+		    (panda-repair-rarm-gripper-r-servo)))
+	      (panda-return-rarm)))
 	(if (string-equal (subseq target 0 4) "larm")
 	    (progn
 	      (ros::ros-info "Set larm")
@@ -82,7 +81,16 @@
 	      (if (string-equal target "larm-gripper-r")
 		  (progn
 		    (ros::ros-info "target is larm-gripper-r-servo")
-		    (panda-repair-larm-gripper-r-servo))))))
+		    (panda-repair-larm-gripper-r-servo)))))
+	(if (string-equal (subseq target 0 4) "rleg")
+	    (progn
+	      (ros::ros-info "Set rleg")
+	      (panda-set-rleg)
+	      (if (string-equal target "rleg-ankle-r")
+		  (progn
+		    (ros::ros-info "target is rleg-ankle-r")
+		    (panda-repair-rleg-ankle-r)))
+	      (panda-return-rleg)))
     (return-from nil)))
 
 (panda-release-kxr)

@@ -3,6 +3,8 @@
 (defvar *base_to_body_front*)
 (defvar *base_to_body_back*)
 (defvar *base_to_rarm_elbow_p_servo*)
+(defvar *base_to_rleg_ankle_r_servo*)
+(defvar *base_to_rleg_ankle_r_servo_b*)
 (defvar *target-id*)
 (defvar *target-id-list*)
 (defvar *reparing-servo-num*)
@@ -13,6 +15,12 @@
 
 
 ;;; parameters
+
+(setq *servo-back-to-front*
+      (make-cascoords
+       :pos #f(-4 0 -25)
+       :rpy #f(0 3.14 0)
+       ))
 (setq *body-back-to-larm-grasp-pose*
       (make-cascoords
        :pos #f(-124.991 17 -55)
