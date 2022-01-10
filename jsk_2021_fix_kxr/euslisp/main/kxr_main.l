@@ -67,7 +67,7 @@
 
 (defun stand-pose ()
   (ros::ros-info "stand-pose")
-  (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -30.0 0.0 -27.0 -27.0 0.0 30.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -40.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 300))
 
 (defun send-servo-info ()
@@ -91,8 +91,8 @@
 (defun repair_reaction (req)
   (let ((m (send req :response))
 	(f 0))
-    (ros::ros-info (format nil "request is ~A" (send req :action)))
     (setq action (send req :action))
+    (ros::ros-info (format nil "request is ~A" action))
     (if (string= action "rarm-free")
 	(progn
 	  (rarm-free)
@@ -129,9 +129,9 @@
 	(progn
 	  (show-rarm-elbow-p)
 	  (setq f 1)))
-    (if (string= action "show-rarm-sholder-r")
+    (if (string= action "show-rarm-shoulder-r")
 	(progn
-	  (show-rarm-sholder-r)
+	  (show-rarm-shoulder-r)
 	  (setq f 1)))
     (if (string= action "show-rleg-ankle-r-1")
 	(progn
@@ -145,12 +145,17 @@
 	(progn
 	  (send m :joint_state (send-servo-info))
 	  (setq f 1)))
+    (if (string= action "stand-pose")
+	(progn
+	  (stand-pose)
+	  (setq f 1)))
     
     (if (= f 1)
 	(progn
 	  (send m :result "success"))
       (progn
 	(send m :result "false")))
+    (setq f 0)
     m))
 
 (ros::roseus "kxr_server")
