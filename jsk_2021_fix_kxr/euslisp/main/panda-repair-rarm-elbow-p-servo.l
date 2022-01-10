@@ -34,18 +34,25 @@
 	(setq target (decide-target-servo timeout-servo-list))
 	(if (string-equal target "rarm-elbow-p")
 	    (progn
-	      (ros::ros-info "Success to insert cable")
-	      (return-from nil))
+	      (ros::ros-info "Failed to insert cable")
+	      (ros::ros-info "Retry to insert cable"))
 	  (progn
-	    (ros::ros-info "Failed to insert cable")
-	    (ros::ros-info "Retry to insert cable"))))))
+	    (ros::ros-info "Success to insert cable")
+	    (return-from nil))
+	  )
+	)
+      )
+    )
 
-  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1210.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1205.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
   (send *robot* :rarm :move-end-pos #f(-100 0 0))
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
-  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1210.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *ri* :stop-grasp :rarm)
+  (unix:sleep 1)
+
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1205.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
   (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
@@ -70,6 +77,5 @@
   (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(305.157 -14.307 1220.274) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-  )
 
   (ros::ros-info "End repairing rarm-elbow-p-servo"))

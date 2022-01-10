@@ -3,11 +3,6 @@
 (require "package://panda_eus/euslisp/dual_panda-interface.l")
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/parameters.l")
 (require "package://jsk_2021_fix_kxr/euslisp/panda_commons/utils.l")
-(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rarm-elbow-p-servo.l")
-(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-larm-elbow-p-servo.l")
-(require "package://jsk_2021_fix_kxr/euslisp/main/panda-set-rarm.l")
-(require "package://jsk_2021_fix_kxr/euslisp/main/panda-return-rarm.l")
-(require "package://jsk_2021_fix_kxr/euslisp/main/panda-release-kxr.l")
 
 (ros::roseus-add-msgs "franka_msgs")
 (ros::roseus-add-msgs "franka_gripper")
@@ -19,6 +14,12 @@
 (ros::load-ros-manifest "apriltag_ros")
 (ros::load-ros-manifest "opencv_apps")
 (ros::load-ros-manifest "jsk_2021_fix_kxr")
+
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rarm-elbow-p-servo.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-larm-elbow-p-servo.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-set-rarm.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-return-rarm.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-release-kxr.l")
 
 (ros::roseus "panda_robot")
 

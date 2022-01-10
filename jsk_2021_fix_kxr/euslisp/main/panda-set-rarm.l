@@ -85,5 +85,7 @@
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
-
+  (send *robot* :rarm :move-end-pos #f(0 -100 0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :wait-interpolation)
   )

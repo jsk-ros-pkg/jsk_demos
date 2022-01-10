@@ -405,12 +405,12 @@ memo to get parameters
     (send *ri* :wait-interpolation)
 
     ;;grasp-pose
-    (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
-    (send *robot* :rarm :move-end-pos #f(2 0 0))
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+    ;; (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    ;; (send *ri* :wait-interpolation)
+    ;; (send *robot* :rarm :move-end-pos #f(2 0 0))
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    ;; (send *ri* :wait-interpolation)
 
     (setq goal_x 670)
     (setq goal_y 650)
@@ -567,7 +567,7 @@ memo to get parameters
     (setq i 0)
     (setq z-lim 4)
     (setq base-stroke #f(0.5 0 0))
-    (while (< i 30)
+    (while (< i 15)
       (setq wrench (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k))
       (setq wrench-diff (v- wrench wrench-init))
       (setq diff-z (elt wrench-diff 2))
