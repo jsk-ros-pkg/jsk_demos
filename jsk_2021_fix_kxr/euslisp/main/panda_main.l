@@ -45,6 +45,8 @@
 
 (ros::ros-info "Start repairing")
 
+(send *ri* :stop-grasp :rarm)
+(send *ri* :stop-grasp :larm)
 (send *robot* :reset-coop-pose)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)

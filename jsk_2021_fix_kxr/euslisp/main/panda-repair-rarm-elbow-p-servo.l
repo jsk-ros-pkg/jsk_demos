@@ -17,6 +17,8 @@
 
   ;;<TODO recognize which cable is missing>
   (while t
+    (rarm-arange-cable "rpov-rarm_elbow_p_servo" "right")
+    
     (rarm-grasp-cable "rpov-rarm_elbow_p_servo" "right")
 
     (rarm-insert-cable "rpov-rarm_elbow_p_servo" "right")

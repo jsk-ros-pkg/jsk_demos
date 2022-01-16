@@ -55,19 +55,19 @@
 (defun move-rarm-x (delta)
   (send *robot* :angle-vector (send *ri* :state :potentio-vector))
   (send *robot* :rarm :move-end-pos (float-vector delta 0 0))
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
   (send *ri* :wait-interpolation))
 
 (defun move-rarm-y (delta)
   (send *robot* :angle-vector (send *ri* :state :potentio-vector))
   (send *robot* :rarm :move-end-pos (float-vector 0 delta 0))
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
   (send *ri* :wait-interpolation))
 
 (defun move-rarm-z (delta)
   (send *robot* :angle-vector (send *ri* :state :potentio-vector))
   (send *robot* :rarm :move-end-pos (float-vector 0 0 delta))
-  (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
   (send *ri* :wait-interpolation))
 
 (defun search-body ()
@@ -294,6 +294,34 @@ memo to get parameters
 (setq test (send (send base-to-marker-origin :copy-worldcoords) :transform param))
 (objects (list *robot* base-to-marker-origin test))
 |#
+(defun rarm-arange-cable (servo-name side)
+  (let ((base-to-servo-marker-origin nil))
+    (setq base-to-servo-marker-origin *base_to_rarm_elbow_p_servo*)
+    (setq base-to-arange-cable-pose-1 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *servo-to-arange-cable-pose-1*))
+    (setq base-to-arange-cable-pose-2 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *servo-to-arange-cable-pose-2*))
+    (setq base-to-arange-cable-pose-3 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *servo-to-arange-cable-pose-3*))
+    (setq base-to-arange-cable-pose-4 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *servo-to-arange-cable-pose-4*))
+
+    (send *ri* :start-grasp :rarm)
+    (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-1))
+    (if (not ret) (ros::ros-error "IK-failed") nil)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+    
+    (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-2))
+    (if (not ret) (ros::ros-error "IK-failed") nil)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    
+    (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-3))
+    (if (not ret) (ros::ros-error "IK-failed") nil)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    
+    (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-4))
+    (if (not ret) (ros::ros-error "IK-failed") nil)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)))
 
 (defun rarm-grasp-cable (servo-name side)
   (let ((base-to-servo-marker-origin nil)
@@ -309,10 +337,8 @@ memo to get parameters
 	(stamp nil)
 	(ret nil))
     (setq count 0)
-    (setq stamp (ros::time-now))
-    (when (send *tfl* :wait-for-transform "dual_arm_base" servo-name stamp 5)
-      (setq base-to-servo-marker-origin (send *tfl* :lookup-transform "dual_arm_base" servo-name stamp)))
     (ros::ros-info "searching cable...")
+    (setq base-to-servo-marker-origin *base_to_rarm_elbow_p_servo*)
     (setq cable-id-list (servo-name-to-cable-id-list servo-name))
     (if (string= side "right")
 	(progn
@@ -374,13 +400,8 @@ memo to get parameters
     (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
       (setq base-to-cable-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp)))
     
-    (send *robot* :rarm :move-end-pos #f(-20 0 30))
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
     (send *robot* :rarm_joint1 :joint-angle 60)
-    (send *robot* :rarm :inverse-kinematics base-to-search-pose)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+    
     (if (string= grasp-cable-side "front")
 	(progn
 	  (setq base-to-pre-grasp-pose-1 (send (send base-to-cable-marker-origin :copy-worldcoords) :transform *cable-front-to-pre-grasp-pose-1*))
@@ -394,31 +415,29 @@ memo to get parameters
     ;;pre-grasp-poses
     (send *ri* :start-grasp :rarm)
     (unix:sleep 1)
-    (send *ri* :stop-grasp :rarm :width 0.01)
+    (send *ri* :stop-grasp :rarm :width 0.015)
     (unix:sleep 1)
     
-    (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-1)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
-    (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-2)
+    ;; (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-1)
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    ;; (send *ri* :wait-interpolation)
+    ;; (send *robot* :rarm :inverse-kinematics base-to-pre-grasp-pose-2)
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    ;; (send *ri* :wait-interpolation)
+
+    ;;grasp-pose
+    (send base-to-grasp-pose :rpy -0.1 0.3 1.7)
+    (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
+    (send *robot* :rarm :move-end-pos #f(-2 12 25))
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    ;;grasp-pose
-    ;; (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
-    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    ;; (send *ri* :wait-interpolation)
-    ;; (send *robot* :rarm :move-end-pos #f(2 0 0))
-    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    ;; (send *ri* :wait-interpolation)
-
     (setq goal_x 670)
-    (setq goal_y 650)
-    (setq robust_x 60)
-    (setq min_x (- goal_x (/ robust_x 2)))
-    (setq max_x (+ goal_x (/ robust_x 2)))
+    (setq goal_y 660)
+    (setq min_x 630)
+    (setq max_x 710)
     (setq min_y 630)
-    (setq max_y 675)
+    (setq max_y 690)
     (setq k_x 0.13)
     (setq k_y 0.116)
     (setq fx 0)
@@ -494,37 +513,22 @@ memo to get parameters
 
     (send *ri* :start-grasp :rarm)
     (unix:sleep 1)
-    (send *ri* :stop-grasp :rarm :width 0.003)
+    (send *ri* :stop-grasp :rarm :width 0.0008)
     (unix:sleep 1)
-
-    (send *robot* :rarm :move-end-pos (float-vector 2 2 -4))
-    (send *ri* :angle-vector (send *robot* :angle-vector) 1500)
+    (send *robot* :rarm :move-end-pos #f(5 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-    (send *ri* :start-grasp :rarm)
-    (unix:sleep 1)
 
     (setq base-to-change-pose-1 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-1*))
     (setq base-to-change-pose-2 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-2*))
     (setq base-to-change-pose-3 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-3*))
 
-    (send *robot* :rarm :inverse-kinematics base-to-change-pose-1)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
     (send *robot* :rarm :inverse-kinematics base-to-change-pose-2)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (send *robot* :rarm :inverse-kinematics base-to-change-pose-3)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
-    
-    ;; (setq self-coords (send *robot* :rarm :end-coords))
-    ;; (setq target-pos (send (setq self-coords (send *robot* :rarm :end-coords)) :worldpos))
-    ;; (send (setq target-coords (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert*)) :replace-pos target-pos)
-    
-    ;; (send *robot* :rarm :inverse-kinematics target-coords)
-    ;; (send *robot* :rarm :move-end-pos #f(5 10 10))
-    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    ;; (send *ri* :wait-interpolation)
     ))
 
 (defun rarm-insert-cable (servo-name side)
@@ -584,6 +588,7 @@ memo to get parameters
 	  (setq stroke (* (elt base-stroke 0) i))
 	  (ros::ros-info (format nil "stroke is ~A" stroke)))))
 
+    (send *ri* :start-grasp :rarm)
     (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (send *robot* :rarm :move-end-pos #f(0 0 -8))
     (send *ri* :angle-vector (send *robot* :angle-vector) 4000)
@@ -619,7 +624,8 @@ memo to get parameters
 	       (progn
 		 (ros::ros-info "Bad")
 		 (move-rarm-y (- 0 h_delta))
-		 (move-rarm-x (- 0 i_delta))))
+		 (move-rarm-x (- 0.1 i_delta))
+		 (ros::ros-info (format nil "total_insert is ~A" total-insert))))
 	     (setq mode 2))
 	    (2
 	     (ros::ros-info "Move to -y")
@@ -641,7 +647,8 @@ memo to get parameters
 	       (progn
 		 (ros::ros-info "Bad")
 		 (move-rarm-y h_delta)
-		 (move-rarm-x (- 0 i_delta))))
+		 (move-rarm-x (- 0.1 i_delta))
+		 (ros::ros-info (format nil "total_insert is ~A" total-insert))))
 	     (setq mode 3))
 	    (3
 	     (ros::ros-info "Move to +z")
@@ -663,7 +670,8 @@ memo to get parameters
 	       (progn
 		 (ros::ros-info "Bad")
 		 (move-rarm-y h_delta)
-		 (move-rarm-x (- 0 i_delta))))
+		 (move-rarm-x (- 0.1 i_delta))
+		 (ros::ros-info (format nil "total_insert is ~A" total-insert))))
 	     (setq mode 4))
 	    (4
 	     (ros::ros-info "Move to -z")
@@ -685,7 +693,8 @@ memo to get parameters
 	       (progn
 		 (ros::ros-info "Bad")
 		 (move-rarm-y h_delta)
-		 (move-rarm-x (- 0 i_delta))))
+		 (move-rarm-x (- 0.1 i_delta))
+		 (ros::ros-info (format nil "total_insert is ~A" total-insert))))
 	     (setq mode 1)))
       (ros::ros-info (format nil "times of try is ~A" count))
       (if (or (> total-insert total-insert-th) (> count 20))

@@ -48,6 +48,26 @@
        :rpy #f(-0.5 0 0)
        ))
 
+(setq *servo-to-arange-cable-pose-1*
+      (make-cascoords
+       :pos #f(30.646 -43.753 41.312)
+       :rpy #f(2.783 1.34 2.785)
+       ))
+(setq *servo-to-arange-cable-pose-2*
+      (make-cascoords
+       :pos #f(30.066 -4.353 51.323)
+       :rpy #f(2.67 1.353 2.69)
+       ))
+(setq *servo-to-arange-cable-pose-3*
+      (make-cascoords
+       :pos #f(29.544 -15.79 41.237)
+       :rpy #f(2.618 1.341 2.806)
+       ))
+(setq *servo-to-arange-cable-pose-4*
+      (make-cascoords
+       :pos #f(31.268 -80.999 89.198)
+       :rpy #f(2.782 1.393 2.887)
+       ))
 
 (setq *servo-to-search-cable-pose*
       (make-cascoords
@@ -56,39 +76,39 @@
        ))
 (setq *servo-to-search-cable-pose-1*
       (make-cascoords
-        :pos #f(-2.566 -82.76 38.397)
-        :rpy #f(0.188 1.494 1.785)
+        :pos #f(46.676 -79.639 45.276)
+        :rpy #f(1.727 0.974 1.716)
         ))
 (setq *servo-to-search-cable-pose-2*
       (make-cascoords
-        :pos #f(-17.376 -144.684 -6.541)
-        :rpy #f(-1.561 0.409 3.087)
+        :pos #f(61.917 -9.069 60.789)
+        :rpy #f(2.458 1.464 2.421)
         )) 
 (setq *servo-to-search-cable-pose-3*
       (make-cascoords
-        :pos #f(13.83 -55.579 91.701)
-        :rpy #f(-1.799 1.134 -0.262)
+        :pos #f(61.24 18.619 63.366)
+        :rpy #f(-1.812 1.174 -1.821)
         ))
 
 (setq *servo-to-cable-front-grasp-ready*
       (make-cascoords
         :pos #f(34.974 -76.339 49.308)
-        :rpy #f(1.453 0.441 1.446)
+        :rpy #f(1.453 0.7 1.446)
         ))
 (setq *cable-front-to-pre-grasp-pose-1*
       (make-cascoords
         :pos #f(-45.691 22.526 27.675)
-        :rpy #f(-1.655 0.5 1.413)
+        :rpy #f(-1.655 0.7 1.413)
         )) 
 (setq *cable-front-to-pre-grasp-pose-2*
       (make-cascoords
         :pos #f(-39.479 16.61 12.343)
-        :rpy #f(-1.365 0.5 1.57)
+        :rpy #f(-1.365 0.7 1.57)
         ))
 (setq *cable-front-to-grasp-pose*
       (make-cascoords
         :pos #f(-16.344 21.751 10.114)
-        :rpy #f(-1.45 0.5 1.552)
+        :rpy #f(-1.45 0.7 1.552)
         ))
 (setq *cable-front-change-pose-before-insert*
       (make-cascoords
