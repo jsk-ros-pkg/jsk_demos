@@ -1,0 +1,41 @@
+<launch>
+  <arg name="spot_name" default="belka" /> <!-- belka or strelka -->
+
+  <arg name="image_topic" default="/l515_head/color/image_raw" />
+  <arg name="camera_info_topic" default="/l515_head/color/camera_info" />
+  <arg name="camera_frame" default="l515_head_color_optical_frame" />
+
+  <node
+      pkg="apriltag_ros"
+      type="apriltag_ros_continuous_node"
+      name="plug_power_apriltag_ros_continuous_node"
+      clear_params="true"
+      output="log"
+      >
+      <remap
+          from="image_rect"
+          to="$(arg image_topic)" />
+      <remap
+          from="camera_info"
+          to="$(arg camera_info_topic)"
+          />
+    <param
+        name="camera_frame"
+        type="str"
+        value="$(arg camera_frame)"
+        />
+    <param
+        name="publish_tag_detections_image"
+        type="bool"
+        value="true"
+        />
+      <rosparam
+          command="load"
+          file="$(find jsk_fetch_plug_power_spot)/config/apriltag/settings.yaml"
+          />
+      <rosparam
+          command="load"
+          file="$(find jsk_fetch_plug_power_spot)/config/apriltag/tags_for_$(arg spot_name).yaml"
+          />
+  </node>
+</launch>

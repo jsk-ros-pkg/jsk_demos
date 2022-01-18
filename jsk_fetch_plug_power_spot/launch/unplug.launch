@@ -1,0 +1,16 @@
+<launch>
+    <arg name="spot_name" default="belka" />
+
+    <include file="$(find jsk_fetch_plug_power_spot)/launch/apriltag_detection.launch.xml">
+        <arg name="spot_name" value="$(arg spot_name)"/>
+    </include>
+
+    <node
+        pkg="jsk_fetch_plug_power_spot"
+        type="unplug.l"
+        name="jsk_fetch_plug_power_spot_unplug"
+        output="screen"
+        required="true"
+        >
+    </node>
+</launch>

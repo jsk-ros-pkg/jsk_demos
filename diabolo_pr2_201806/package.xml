@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>diabolo_pr2_201806</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>diabolo_pr2_201806 package</description>
 
   <maintainer email="t-murooka@jsk.imi.i.u-tokyo.ac.jp">Takayuki Murooka</maintainer>
