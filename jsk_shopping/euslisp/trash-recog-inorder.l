@@ -13,9 +13,15 @@
                                      :timeout 5000)))
     (unless object
       (return-from hrp2-trashcan))
+    (unless (boundp '*tfl*) (setq *tfl* transform-listener :init))
+    (setq *mark* (send *tfl* :lookup-transform "/base_link" "/trash_mark" (ros::time 0)))
+    (ros::ros-info "msg [~A]" *mark*)
+    (setq distance (- (/ (elt (send *mark* :pos) 0) 1000) 0.2))
+    (send *ri* :speak-jp "~Aメートル動きます．注意してください" :wait t)
+    (send *ri* :go-pos-unsafe distance 0 0)
     ;; TODO use *tfl* to reach trashcan
-    (send *ri* :go-pos-unsafe 0.5 0 0)
-    (if (< 90 (trashcan-occupancy-recognition))
+    ;; (send *ri* :go-pos-unsafe 0.5 0 0)
+    (if (and (trashcan-occupancy-recognition) (< 90 (trashcan-occupancy-recognition))
       ;; TODO enhance grasp code
       (push "hrp2" collection-list)
       (return-from hrp2-trashcan))
@@ -43,7 +49,8 @@
          (notify-text (if occupancy (if (> occupancy 1.0)
                                       "Trashcan is full."
                                       "Trashcan is not full."))))
-    (* occupancy 100)))
+    (when occupancy
+      (* occupancy 100))))
 
 (defun belka-support ()
   (move-to-belka-front)
@@ -56,9 +63,23 @@
       (hrp2-trash-collection))
   (move-to-temp-area))
 
+(defun lift-trashbag-fetch ()
+  ;; assume calling after trashbag grasp
+  (send *fetch* :rarm :shoulder-y :joint-angle -91.0)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+  (send *fetch* :angle-vector #f(99.6253 -91.9143 -63.6014 -148.503 46.6524 -2.28871 25.3505 0.454471 0.492839 19.0466))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+  (send *ri* :wait-interpolation))
+ 
 (defun main ()
   (hrp2-trashcan)
   (kitchen-trashcan)
   (if (< 1 (length collection-list))
       (belka-support)
       (fetch-only)))
+
+
+;; memo
+;; trashbag back hold
+;; #f(99.6253 -91.9143 -63.6014 -148.503 46.6524 -2.28871 25.3505 0.454471 0.492839 19.0466)
