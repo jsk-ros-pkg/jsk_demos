@@ -29,10 +29,10 @@
 
 (defun kitchen-trashcan ()
   (move-to-trashcan-front)
-  (let* ((object (one-shot-subscribe "/head_camera/rgb/ObjectDetection"
-                                     posedetection_msgs::ObjectDetection
-                                     :timeout 5000)))
-    (unless object
+  (let* ((object-detect (one-shot-subscribe "/head_camera/rgb/ObjectDetection"
+                                            posedetection_msgs::ObjectDetection
+                                            :timeout 5000)))
+    (unless object-detect
       (return-from kitchen-trashcan))
     ;; TODO use *tfl* to reach trashcan
     (if (< 90 (trashcan-occupancy-recognition))
