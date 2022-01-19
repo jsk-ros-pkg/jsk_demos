@@ -4,21 +4,22 @@
   <include file="$(find jsk_pcl_ros)/launch/hsi_color_filter.launch">
     <arg name="INPUT" value="/head_camera/depth_registered/points"/>
     <arg name="FILTER_NAME_SUFFIX" value="_trashcanedge"/>
+
     <!-- <arg name="OUTPUT" value="hsi_output_trashcanedge"/> -->
     <arg name="CENTROID_FRAME" value="target_edge"/>
     <arg name="DEFAULT_NAMESPACE" value="pcl_nodelet"/>
 
-    <arg name="h_max" value="127" />
-    <arg name="h_min" value="52" />
-    <arg name="s_max" value="158" />
-    <arg name="s_min" value="62" />
-    <arg name="i_max" value="172" />
-    <arg name="i_min" value="50" />
+    <arg name="h_max" value="100" />
+    <arg name="h_min" value="60" />
+    <arg name="s_max" value="255" />
+    <arg name="s_min" value="16" />
+    <arg name="i_max" value="255" />
+    <arg name="i_min" value="36" />
 
     <arg name="create_manager" value="true" />
     <arg name="manager" value="hsi_filter_manager" />
   </include>
 
   <!-- <node pkg="rviz" type="rviz" name="rviz" args=" -d $(find jsk_pcl_ros)/sample/rviz/hsi_color_filter.rviz"/> -->
-  <node pkg="rviz" type="rviz" name="rviz" args=" -d $(find jsk_shopping)/launch/trashcan.rviz"/>
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args=" -d $(find jsk_shopping)/launch/trashcan.rviz"/> -->
 </launch>
