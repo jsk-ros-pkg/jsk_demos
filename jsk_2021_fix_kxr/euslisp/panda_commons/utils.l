@@ -313,10 +313,10 @@ memo to get parameters
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     
-    (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-3))
-    (if (not ret) (ros::ros-error "IK-failed") nil)
-    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
-    (send *ri* :wait-interpolation)
+    ;; (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-3))
+    ;; (if (not ret) (ros::ros-error "IK-failed") nil)
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    ;; (send *ri* :wait-interpolation)
     
     (setq ret (send *robot* :rarm :inverse-kinematics base-to-arange-cable-pose-4))
     (if (not ret) (ros::ros-error "IK-failed") nil)
@@ -426,9 +426,9 @@ memo to get parameters
     ;; (send *ri* :wait-interpolation)
 
     ;;grasp-pose
-    (send base-to-grasp-pose :rpy -0.1 0.3 1.7)
+    (send base-to-grasp-pose :rpy -0.1 0.5 1.6)
     (send *robot* :rarm :inverse-kinematics base-to-grasp-pose)
-    (send *robot* :rarm :move-end-pos #f(-2 12 25))
+    (send *robot* :rarm :move-end-pos #f(-3 12 28))
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
@@ -522,11 +522,15 @@ memo to get parameters
     (setq base-to-change-pose-1 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-1*))
     (setq base-to-change-pose-2 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-2*))
     (setq base-to-change-pose-3 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-3*))
+    (setq base-to-change-pose-4 (send (send base-to-servo-marker-origin :copy-worldcoords) :transform *cable-front-change-pose-before-insert-4*))
 
     (send *robot* :rarm :inverse-kinematics base-to-change-pose-2)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     (send *robot* :rarm :inverse-kinematics base-to-change-pose-3)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *robot* :rarm :inverse-kinematics base-to-change-pose-4)
     (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
     ))

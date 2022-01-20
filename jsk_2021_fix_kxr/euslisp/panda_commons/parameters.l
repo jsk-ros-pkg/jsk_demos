@@ -130,6 +130,11 @@
         :pos #f(22.596 -32.874 50.651)
         :rpy #f(1.347 0.974 1.204)
         ))
+(setq *cable-front-change-pose-before-insert-4*
+      (make-cascoords
+        :pos #f(26.596 -22.874 50.651)
+        :rpy #f(1.32 1.374 1.404)
+        ))
 (setq *servo-to-slide-insert-right-cable-inter-pose*
       (make-cascoords
         :pos #f(34.757 -12.996 40.748)
@@ -184,7 +189,7 @@
        ))
 (setq *rarm-elbow-p-to-grasp-pose*
       (make-cascoords
-       :pos #f(-24.612 4.967 -27.886)
+       :pos #f(-24.612 4.967 -30.886)
        :rpy #f(-2.962 -1.494 3.004)
        ))
 

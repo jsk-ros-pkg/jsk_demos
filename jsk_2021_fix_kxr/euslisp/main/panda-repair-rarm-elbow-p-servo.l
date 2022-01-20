@@ -11,11 +11,13 @@
 
   (rarm-search-servo-tag "rpov-rarm_elbow_p_servo")
 
+  (unix:sleep 2)
   (setq stamp (ros::time-now))
   (when (send *tfl* :wait-for-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp 5)
     (setq *base_to_rarm_elbow_p_servo* (send *tfl* :lookup-transform "dual_arm_base" "rpov-rarm_elbow_p_servo" stamp)))
 
-  ;;<TODO recognize which cable is missing>
+  (send *ri* :start-grasp :larm)
+
   (while t
     (rarm-arange-cable "rpov-rarm_elbow_p_servo" "right")
     

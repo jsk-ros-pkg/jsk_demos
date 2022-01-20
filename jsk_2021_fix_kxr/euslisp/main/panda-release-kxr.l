@@ -48,4 +48,8 @@
   (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
   (send req :action "stand-pose")
   (setq res (ros::service-call "repair_reaction" req t))
+  (unix:sleep 2)
+  (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
+  (send req :action "check-rarm-elbow-p")
+  (setq res (ros::service-call "repair_reaction" req t))
   )

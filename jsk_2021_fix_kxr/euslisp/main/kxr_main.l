@@ -70,6 +70,25 @@
   (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -40.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 300))
 
+(defun check-rarm-elbow-p ()
+  (ros::ros-info "check-rarm-elbow-p")
+  (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 90.0 -90.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300)
+  (unix:sleep 1)
+  (send *robot* :rarm-elbow-p :joint-angle 60)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300)
+  (unix:sleep 1)
+  (send *robot* :rarm-elbow-p :joint-angle 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300)
+  (unix:sleep 1)  
+  (send *robot* :rarm-elbow-p :joint-angle 60)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300)
+  (unix:sleep 1)
+  (send *robot* :rarm-elbow-p :joint-angle 0)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300)
+  (unix:sleep 1))  
+  
+
 (defun send-servo-info ()
   (ros::ros-info "send-servo-info")
   (setq msg (instance sensor_msgs::jointstate :init))
@@ -148,6 +167,10 @@
     (if (string= action "stand-pose")
 	(progn
 	  (stand-pose)
+	  (setq f 1)))
+    (if (string= action "check-rarm-elbow-p")
+	(progn
+	  (check-rarm-elbow-p)
 	  (setq f 1)))
     
     (if (= f 1)
