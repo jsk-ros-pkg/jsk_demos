@@ -221,7 +221,7 @@
                 (ros::time 0)))
     (unix::sleep 2)
     (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :arm-controller)
     (send *ri* :wait-interpolation)
     
     (setq obj-coords (make-coords :pos (scale 1000 obj-pos)
@@ -233,10 +233,11 @@
     (ros::ros-info "~A" obj-coords)
 
     (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis t)
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 10000) ;; reaching
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast) ;; reaching
     (send *ri* :wait-interpolation)
-    (send *fetch* :rarm :move-end-pos #f(60 0 0))
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 4000 :use-torso nil)
+    ;; (send *fetch* :rarm :move-end-pos #f(60 0 0)) ;; for plastic
+    (send *fetch* :rarm :move-end-pos #f(45 0 0)) ;; for burnable
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :use-torso nil)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp)
     (send *ri* :speak-jp "ごみ袋を持ち上げます" :wait t)
@@ -266,15 +267,15 @@
     (send *fetch* :angle-vector #f(99.6253 -91.9143 -63.6014 -148.503 46.6524 -2.28871 25.3505 0.454471 0.492839 19.0466))
     (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
     (send *ri* :wait-interpolation)
-    
     ))
 
 (defun hole-main()
-  ;;(move-to-trashcan-front)
+  ;; (move-to-trashcan-front)
   (send *fetch* :reset-pose)
   (send *fetch* :head :neck-p :joint-angle 45)
   (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :head-controller)
   (send *ri* :wait-interpolation)
+  (send *ri* :speak-jp "ゴミ箱が満杯です．回収します" :wait t)
   (unix::sleep 1)
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
@@ -283,6 +284,22 @@
   (ros::spin-once)
   (hole obj-pos)
   (setq obj-pos nil)
+  (send *ri* :go-pos-unsafe 0 0 -90)
+  (move-to-belka-front)
+  
+  (send *fetch* :angle-vector #f(274.774 10.05741 -54.241 176.714 30.87212 -2.26673 70.3505 0.498438 -0.017 27.3303))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
+  (send *ri* :wait-interpolation)
+
+  (send *ri* :go-pos-unsafe 0.1 0 0)
+  (send *ri* :speak-jp "ゴミ袋を渡しました" :wait t)
+  (send *fetch* :angle-vector #f(204.973 -7.38554 -48.3304 -180.518 46.6744 -89.1906 -89.918 178.169 -0.130286 39.8107))
+  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
+  (send *ri* :wait-interpolation)
+
+  (send *ri* :go-pos-unsafe -0.1 0 0)
+
+  
   )
 
 (defun right-side-main()
@@ -292,3 +309,14 @@
                   #'bounding-box-array-cb 1)
   (ros::spin-once)
   (right-side obj-pos))
+
+;; #f(368.746 -11.8899 -54.5267 -180.474 46.6524 -2.35462 -54.4542 -86.0519 -0.345553 39.9206)
+;; #f(368.731 -6.11112 -20.2713 -180.452 46.6524 -2.31067 -68.1212 -86.0079 -0.300235 39.8327) ;; give trashbag
+
+;; #f(352.328 -5.8914 -3.70392 -180.012 46.8282 -2.55238 -106.661 -85.5685 -0.050987 39.7887) ;; release trashbag
+
+
+;; #f(204.973 -7.38554 -48.3304 -180.518 46.6744 -89.1906 -89.918 178.169 -0.130286 39.8107) ;;pre release pose trashbag
+;; #f(204.057 46.2497 -27.742 160.872 46.7403 -121.996 -111.012 -179.348 -0.062312 39.8766) ;;release
+;; #f(274.774 -1.05741 -54.241 176.714 1.87212 -2.26673 25.3505 0.498438 -0.017 27.3303)
+;; #f(258.661 -0.947549 71.7941 -136.484 125.249 -2.31067 42.2914 0.520411 -0.266248 41.8102)
