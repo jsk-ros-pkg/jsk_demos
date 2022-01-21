@@ -33,7 +33,7 @@
     (send *ri* :speak-jp "ゴミ捨て場に向かいます")
     (ros::publish "/spot_behavior_manager_demo/execute_behaviors/goal" behavior_msg)))
 
-(defun main ()
+(defun main-old ()
   ;; garbage colletion from trash cans
   (autowalk-data-upload)
   (send *ri* :navigate-to 1)
@@ -43,3 +43,114 @@
   (send *ri* :navigate-to 0)
   (go-to-garbagecollection-area)
   )
+
+(defun confirm-mark ()
+  (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.053131 -0.029053 0.064575 -90.015045 -90.041107 -90.033264))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (setq *mark* nil)
+  (unless (boundp '*tfl*) (setq *tfl* transform-listener :init))
+  (while (not *mark*)
+    (setq *mark* (send *tfl* :lookup-transform "/base_link" "/trash_mark" (ros::time 0))))
+  (unix::sleep 30)
+  (send *spotkinova* :kinova-rest-pose)
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+  t)
+
+(defun main ()
+  (confirm-mark)
+  
+  (go-to-garbagecollection-area)
+  )
+
+;; (defun speech-recognition (text &optional (duration 5))
+;;   "args: text (string)"
+;;   (let ((start nil) (tm nil))
+;;     (setq start (send (ros::time-now) :sec))
+;;     (while (or (< duration (- tm start))
+;;                (not (string= text
+;;                              (elt
+;;                               (send
+;;                                (one-shot-subscribe
+;;                                 "/speech_to_text_jp"
+;;                                 speech_recognition_msgs::SpeechRecognitionCandidates)
+;;                                :transcript) 0))))
+;;       (setq tm (send (ros::time-now) :now)))))
+
+;; (send *ri* :power-off)
+
+;; (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.040451 -0.030273 -45.02832 -0.042175 -90.013351 -45.023102))
+;; (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+;; (send *ri* :wait-interpolation nil)
+
+(defun speech-recognition (&optional (timeout 10000))
+  (let* ((message
+         (one-shot-subscribe
+                "/speech_to_text_jp"
+                speech_recognition_msgs::SpeechRecognitionCandidates
+                :timeout timeout)))
+    (when message
+      (setq text (elt (send message :transcript) 0))
+    (ros::ros-info "~A" text)
+    text)))
+  
+(defun hoge ()
+
+  ;; (confirm-mark)
+  ;; (send *ri* :stand)
+  ;; (send *ri* :go-pos 0 0.8 0)
+  ;; (send *ri* :sit)
+
+  (setq lift nil)
+  (while (not lift)
+    (when (substringp "運んでください" (speech-recognition 100000))
+      (setq lift t)))
+  (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.040451 -0.030273 -45.02832 -0.042175 -90.013351 -45.023102))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
+  (send *ri* :start-grasp)
+
+  (send *spotkinova* :init-pose)
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
+
+  (send *ri* :speak-jp "受け取りました" :wait t)
+
+  (setq move nil)
+  (while (not move)
+    (when (substringp "お願いします" (speech-recognition 100000))
+      (setq move t)))
+  ;;(send *ri* :speak-jp "ゴミ袋をのせます" :wait t)
+  (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 0.082428 90.002762 -0.015259 0.037933))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
+
+  (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 0.082428 90.002762 -45.015259 0.037933))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
+
+  (send *ri* :speak-jp "ゴミ袋を運搬します" :wait t)
+  (if (wait-person)
+    (send *ri* speak-jp "ゴミ袋を運搬します" :wait t))
+  )
+
+(defun wait-person ()
+  (setq person nil)
+  (setq timeout 5000)
+  (setq finishtm (ros::time-now))
+  (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0))))
+  (while (not person)
+    (if (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)
+        (progn
+          (setq person t)
+          (setq no-wait t)))
+    (ros::ros-info "~A" (send (ros::time- finishtm (ros::time-now)) :to-Sec))
+    (when (substringp "待って" (speech-recognition 1000))
+      (setq person t)))
+  (if no-wait
+    (return-from wait-person nil))
+  (ros::ros-info "11111")
+  (setq confirm nil)
+  (while (not confirm)
+    (when (substringp "いいよ" (speech-recognition 100000))
+      (setq confirm t))))
