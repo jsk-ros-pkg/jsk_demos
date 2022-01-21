@@ -115,7 +115,7 @@
   (send *ri* :wait-interpolation nil)
 
   (send *ri* :speak-jp "受け取りました" :wait t)
-
+  (send *ri* :speak-jp "次の動作に進んでも良いですか" :wait t)
   (setq move nil)
   (while (not move)
     (when (substringp "お願いします" (speech-recognition 100000))
@@ -137,13 +137,15 @@
 
   (send *ri* :speak-jp "ゴミ袋を運搬します" :wait t)
   (send *ri* :speak-jp "何か問題があったら呼び止めてください" :wait t)
-  (if (wait-person)
+  (if (wait-person 10000)
     (send *ri* speak-jp "ゴミ袋を運搬します" :wait t))
   )
 
-(defun wait-person ()
+(defun wait-person (wait-time)
   (setq person nil)
-  (setq timeout 5000)
+  (setq no-wait nil)
+  (setq wait nil)
+  (setq timeout wait-time)
   (setq finishtm (ros::time-now))
   (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0))))
   (ros::ros-info "wait person")
