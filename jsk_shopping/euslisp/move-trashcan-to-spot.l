@@ -156,7 +156,7 @@
                       :relative-rot pi))))
 
 (defun move-to-belka-front ()
-  (let ((offset #f(0 -800 0)) (offset-other #f(1000 -800 0)))
+  (let ((offset #f(0 -800 0)) (offset-other #f(2000 -800 0)))
     ;; (send *ri* :go-pos-unsafe -0.3 0 0)
     ;; (send *ri* :go-pos-unsafe 0 0 90)
     ;; (send *ri* :go-pos-unsafe 1.9 0 0)
@@ -169,6 +169,15 @@
           (go-to-spot "/eng2/7f/room73B2-sink-front0"
                       :relative-pos offset
                       :relative-rot pi))))
+
+(defun move-to-trash-pre-front ()
+  (inflation-loose)
+  (setq success (go-to-spot "/eng2/7f/room73B2-door-front"
+                            :relative-pos #f(2200 -200 0)
+                            :relative-rot -pi/2))
+  (send *ri* :go-pos-unsafe 0.1 0 0)
+  )
+  
 
 ;; (setq offset #f(-450 -400 0))
 ;;(setq success (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot -pi/2))

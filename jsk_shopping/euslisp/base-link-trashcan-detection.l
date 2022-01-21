@@ -10,6 +10,7 @@
 (load "move-trashcan-to-spot.l")
 
 (ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "speech_recognition_msgs")
 
 ;;defvarは一度やってしまったら上書きされない
 (defvar *topic-name* "/pcl_nodelet/boxes_trashcanedge")
@@ -285,19 +286,19 @@
   (hole obj-pos)
   (setq obj-pos nil)
   (send *ri* :go-pos-unsafe 0 0 -90)
-  (move-to-belka-front)
+  ;; (move-to-belka-front)
   
-  (send *fetch* :angle-vector #f(274.774 10.05741 -54.241 176.714 30.87212 -2.26673 70.3505 0.498438 -0.017 27.3303))
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
-  (send *ri* :wait-interpolation)
+  ;; (send *fetch* :angle-vector #f(274.774 10.05741 -54.241 176.714 30.87212 -2.26673 70.3505 0.498438 -0.017 27.3303))
+  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
+  ;; (send *ri* :wait-interpolation)
 
-  (send *ri* :go-pos-unsafe 0.1 0 0)
-  (send *ri* :speak-jp "ゴミ袋を渡しました" :wait t)
-  (send *fetch* :angle-vector #f(204.973 -7.38554 -48.3304 -180.518 46.6744 -89.1906 -89.918 178.169 -0.130286 39.8107))
-  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
-  (send *ri* :wait-interpolation)
+  ;; (send *ri* :go-pos-unsafe 0.1 0 0)
+  ;; (send *ri* :speak-jp "ゴミ袋を渡しました" :wait t)
+  ;; (send *fetch* :angle-vector #f(204.973 -7.38554 -48.3304 -180.518 46.6744 -89.1906 -89.918 178.169 -0.130286 39.8107))
+  ;; (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
+  ;; (send *ri* :wait-interpolation)
 
-  (send *ri* :go-pos-unsafe -0.1 0 0)
+  ;; (send *ri* :go-pos-unsafe -0.1 0 0)
 
   
   )
@@ -310,6 +311,91 @@
   (ros::spin-once)
   (right-side obj-pos))
 
+(defun speech-recognition (&optional (timeout 1000))
+  (let* ((message
+         (one-shot-subscribe
+                "/speech_to_text_google"
+                speech_recognition_msgs::SpeechRecognitionCandidates
+                :timeout timeout)))
+
+    (when message
+      (setq text (elt (send message :transcript) 0))
+    (ros::ros-info "~A" text)
+    text)))
+
+(defun giving-trashbag ()
+  ;;(move-to-trash-pre-front)
+  ;;(unix::sleep 3)
+  (send *fetch* :angle-vector #f(304.797 50.0388 -54.1531 176.692 30.876 -2.33266 70.4823 0.520411 -0.345553 27.8796))
+  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :speak-jp "ゴミを運んでください" :wait t)
+  (send *ri* :speak-jp "受け取ってください" :wait t)
+  (setq f nil)
+  (while (not f)
+    (when (substringp "わかりました" (speech-recognition 1000))
+      (setq f t)))
+  (send *fetch* :angle-vector #f(306.809 29.5944 -22.4686 176.604 30.7881 -2.33266 31.4369 0.498438 9.0354 53.4338))
+  (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :speak-jp "これを運んでください" :wait t)
+  (setq take nil)
+  (while (not take)
+    (when (substringp "受け取りました" (speech-recognition 1000))
+      (setq take t)))
+  (send *ri* :stop-grasp)
+
+  ;; (unless (string= "受け取りました" (speech-recognition 100000))
+  ;;   (return-from giving-trashbag))
+  (unix::sleep 1)
+  (send *ri* :speak-jp "お願いします" :wait t)
+  (send *ri* :stop-grasp)
+  (setq bag nil)
+  (while (not bag)
+    (when (substringp "ゴミ袋" (speech-recognition 1000))
+      (setq bag t)))
+  (send *ri* :speak-jp "問題があったら呼び止めてください" :wait t)
+  (wait-person 10000)
+  ;; (send *fetch* :angle-vector #f(274.797 50.0388 -54.1531 176.692 30.876 -2.33266 70.4823 0.520411 -0.345553 27.8796))
+  ;; (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
+  (send *fetch* :reset-pose)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 30000)
+  (send *ri* :wait-interpolation)
+  )
+
+(defun wait-person (timeout)
+  (setq person nil)
+  (setq wait nil)
+  (setq no-wait nil)
+  (setq timeout timeout)
+  (setq finishtm (ros::time-now))
+  (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0))))
+  (ros::ros-info "wait person")
+  (while (not person)
+    (if (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)
+        (progn
+          (ros::ros-info "timeout")
+          (setq person t)
+          (setq no-wait t)))
+    (ros::ros-info "~A" (send (ros::time- finishtm (ros::time-now)) :to-Sec))
+    (when (substringp "待って" (speech-recognition 1000))
+      (setq wait t)
+      (setq person t)))
+  (setq person nil)
+  (if wait
+    (send *ri* :speak-jp "少し待ちます" :wait t))
+  (if no-wait
+    (return-from wait-person nil))
+  (ros::ros-info "11111")
+  (setq confirm nil)
+  (while (not confirm)
+    (when (or
+           (substringp "いいよ" (speech-recognition 100000))
+           (substringp "オーケー" (speech-recognition 100000)))
+      (setq confirm t)))
+  (setq confirm nil))
+
+
 ;; #f(368.746 -11.8899 -54.5267 -180.474 46.6524 -2.35462 -54.4542 -86.0519 -0.345553 39.9206)
 ;; #f(368.731 -6.11112 -20.2713 -180.452 46.6524 -2.31067 -68.1212 -86.0079 -0.300235 39.8327) ;; give trashbag
 
@@ -320,3 +406,6 @@
 ;; #f(204.057 46.2497 -27.742 160.872 46.7403 -121.996 -111.012 -179.348 -0.062312 39.8766) ;;release
 ;; #f(274.774 -1.05741 -54.241 176.714 1.87212 -2.26673 25.3505 0.498438 -0.017 27.3303)
 ;; #f(258.661 -0.947549 71.7941 -136.484 125.249 -2.31067 42.2914 0.520411 -0.266248 41.8102)
+
+;; send *ri* :angle-vector-raw #f(274.797 50.0388 -54.1531 176.692 30.876 -2.33266 70.4823 0.520411 -0.345553 27.8796)
+;; #f(266.809 29.5944 -22.4686 176.604 30.7881 -2.33266 31.4369 0.498438 9.0354 53.4338)

@@ -4,6 +4,7 @@
   </node>
 
   <node name="monitor_image_viewer" pkg="image_view" type="image_view">
+    <env name="DISPLAY" value=":0"/>
     <remap from="image" to="/monitor_image_publisher/output" />
     <param name="autosize" value="true" />
   </node>

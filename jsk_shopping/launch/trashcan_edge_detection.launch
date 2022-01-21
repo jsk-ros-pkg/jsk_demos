@@ -12,7 +12,7 @@
     <arg name="h_max" value="100" />
     <arg name="h_min" value="60" />
     <arg name="s_max" value="255" />
-    <arg name="s_min" value="16" />
+    <arg name="s_min" value="48" />
     <arg name="i_max" value="255" />
     <arg name="i_min" value="36" />
 
