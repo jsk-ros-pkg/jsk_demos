@@ -1,10 +1,11 @@
 #!/usr/bin/env roseus
 
-(load "package://spoteus/spot-interface.l")
+(load "package://spotkinovaeus/spotkinova-interface.l")
 (ros::roseus-add-msgs "spot_behavior_manager_msgs")
+(ros::load-ros-manifest "speech_recognition_msgs")
 
 (unless (boundp '*ri*)
-  (spot-init))
+  (spotkinova-init))
 
 (defvar *spot_autowalk_data_path*
       "/home/spot/spot_ws/src/jsk-ros-pkg/jsk_robot/jsk_spot_robot/spot_autowalk_data")
@@ -101,6 +102,7 @@
   ;; (send *ri* :go-pos 0 0.8 0)
   ;; (send *ri* :sit)
 
+  (send *ri* :stop-grasp)
   (setq lift nil)
   (while (not lift)
     (when (substringp "運んでください" (speech-recognition 100000))
@@ -108,6 +110,11 @@
   (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.040451 -0.030273 -45.02832 -0.042175 -90.013351 -45.023102))
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
   (send *ri* :wait-interpolation nil)
+  (send *ri* :speak-jp "わかりました" :wait t)
+  (setq grasp nil)
+  (while (not grasp)
+    (when (substringp "運んでください" (speech-recognition 100000))
+      (setq grasp t)))
   (send *ri* :start-grasp) ;; grasping
 
   (send *spotkinova* :init-pose)
@@ -115,6 +122,7 @@
   (send *ri* :wait-interpolation nil)
 
   (send *ri* :speak-jp "受け取りました" :wait t)
+  (unix::sleep 3)
   (send *ri* :speak-jp "次の動作に進んでも良いですか" :wait t)
   (setq move nil)
   (while (not move)
@@ -129,8 +137,15 @@
   (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 0.082428 90.002762 -45.015259 0.037933))
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
   (send *ri* :wait-interpolation nil)
+  (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 -20.082428 90.002762 -60.015259 0.037933))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
+  (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 -20.082428 90.002762 -60.015259 -90.037933))
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
   (send *ri* :speak-jp "ゴミ袋をのせました" :wait t)
 
+  (send *ri* :stop-grasp)
   (send *spotkinova* :kinova-rest-pose)
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
   (send *ri* :wait-interpolation nil)
@@ -167,7 +182,7 @@
   (ros::ros-info "11111")
   (setq confirm nil)
   (while (not confirm)
-    (when (substringp "いいよ" (speech-recognition 100000))
+    (when (substringp "OK" (speech-recognition 100000))
       (setq confirm t)))
   t)
 
