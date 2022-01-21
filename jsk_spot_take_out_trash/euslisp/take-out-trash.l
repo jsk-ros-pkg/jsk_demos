@@ -93,7 +93,7 @@
       (setq text (elt (send message :transcript) 0))
     (ros::ros-info "~A" text)
     text)))
-  
+
 (defun hoge ()
 
   ;; (confirm-mark)
@@ -139,14 +139,19 @@
   (setq timeout 5000)
   (setq finishtm (ros::time-now))
   (setq finishtm (ros::time+ finishtm (ros::time (/ timeout 1000.0))))
+  (ros::ros-info "wait person")
   (while (not person)
     (if (< (send (ros::time- finishtm (ros::time-now)) :to-Sec) 0)
         (progn
+          (ros::ros-info "timeout")
           (setq person t)
           (setq no-wait t)))
     (ros::ros-info "~A" (send (ros::time- finishtm (ros::time-now)) :to-Sec))
     (when (substringp "待って" (speech-recognition 1000))
+      (setq wait t)
       (setq person t)))
+  (if wait
+    (send *ri* :speak-jp "少し待ちます" :wait t))
   (if no-wait
     (return-from wait-person nil))
   (ros::ros-info "11111")
