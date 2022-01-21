@@ -108,7 +108,7 @@
   (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.040451 -0.030273 -45.02832 -0.042175 -90.013351 -45.023102))
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
   (send *ri* :wait-interpolation nil)
-  (send *ri* :start-grasp)
+  (send *ri* :start-grasp) ;; grasping
 
   (send *spotkinova* :init-pose)
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
@@ -120,6 +120,7 @@
   (while (not move)
     (when (substringp "お願いします" (speech-recognition 100000))
       (setq move t)))
+  ;; start lifting
   ;;(send *ri* :speak-jp "ゴミ袋をのせます" :wait t)
   (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 0.082428 90.002762 -0.015259 0.037933))
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
@@ -128,8 +129,14 @@
   (send *spotkinova* :angle-vector #f(-31.6125 63.7154 -157.63 11.7098 56.1667 -154.122 -21.4785 65.2962 -155.618 19.7338 64.1409 -158.226 -0.033203 -0.003235 0.082428 90.002762 -45.015259 0.037933))
   (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
   (send *ri* :wait-interpolation nil)
+  (send *ri* :speak-jp "ゴミ袋をのせました" :wait t)
+
+  (send *spotkinova* :kinova-rest-pose)
+  (send *ri* :angle-vector (send *spotkinova* :angle-vector) :fast)
+  (send *ri* :wait-interpolation nil)
 
   (send *ri* :speak-jp "ゴミ袋を運搬します" :wait t)
+  (send *ri* :speak-jp "何か問題があったら呼び止めてください" :wait t)
   (if (wait-person)
     (send *ri* speak-jp "ゴミ袋を運搬します" :wait t))
   )
@@ -159,3 +166,28 @@
   (while (not confirm)
     (when (substringp "いいよ" (speech-recognition 100000))
       (setq confirm t))))
+
+(defun in-garbage-collection-area ()
+  (send *ri* :speak-jp "ゴミを持ってきました．受け取ってください" :wait t)
+  (send *spotkinova* :angle-vector #f(0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.0 45.0 -90.0 0.040451 -0.030273 -45.02832 -0.042175 -90.013351 -45.023102))
+  (send *ri* :angle-vector (send *spotkinvoa* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+
+  (send *ri* :speak-jp "受け取ったら受け取りましたと言ってください" :wait t)
+  (send *ri* :stop-grasp)
+  (send *ri* :speak-jp "腕が動くので注意してください" :wait t)
+  (send *ri* :angle-vector (send *spotkinova* :kinova-rest-pose) :fast)
+  )
+
+(defun go-to-home ()
+  (send *ri* :speak-jp "おうちに帰ります" :wait t)
+  (send *ri* :go-to-spot "eng2_73B2")
+  (send *ri* :dock 520))
+
+
+(defun demo ()
+  (hoge)
+  (send *ri* :go-to-spot "eng2_GarbageCollectionArea_east")
+  (in-garbage-collection-area)
+  (go-to-home)
+  )
