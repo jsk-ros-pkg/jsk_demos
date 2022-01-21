@@ -138,7 +138,8 @@
   (send *ri* :speak-jp "ゴミ袋を運搬します" :wait t)
   (send *ri* :speak-jp "何か問題があったら呼び止めてください" :wait t)
   (if (wait-person 10000)
-    (send *ri* speak-jp "ゴミ袋を運搬します" :wait t))
+      (send *ri* speak-jp "ゴミ袋を運搬します" :wait t))
+  (send *ri* :speak-jp "出発します" :wait t)
   )
 
 (defun wait-person (wait-time)
@@ -167,7 +168,8 @@
   (setq confirm nil)
   (while (not confirm)
     (when (substringp "いいよ" (speech-recognition 100000))
-      (setq confirm t))))
+      (setq confirm t)))
+  t)
 
 (defun in-garbage-collection-area ()
   (send *ri* :speak-jp "ゴミを持ってきました．受け取ってください" :wait t)
