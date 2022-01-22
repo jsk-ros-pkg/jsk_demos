@@ -237,7 +237,7 @@
     (send *ri* :angle-vector (send *fetch* :angle-vector) :fast) ;; reaching
     (send *ri* :wait-interpolation)
     ;; (send *fetch* :rarm :move-end-pos #f(60 0 0)) ;; for plastic
-    (send *fetch* :rarm :move-end-pos #f(45 0 0)) ;; for burnable
+    (send *fetch* :rarm :move-end-pos #f(55 0 0)) ;; for burnable
     (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :use-torso nil)
     (send *ri* :wait-interpolation)
     (send *ri* :start-grasp)
@@ -333,7 +333,7 @@
   (send *ri* :speak-jp "受け取ってください" :wait t)
   (setq f nil)
   (while (not f)
-    (when (substringp "わかりました" (speech-recognition 1000))
+    (when (substringp "わかりました" (speech-recognition 10000))
       (setq f t)))
   (send *fetch* :angle-vector #f(306.809 29.5944 -22.4686 176.604 30.7881 -2.33266 31.4369 0.498438 9.0354 53.4338))
   (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 5000)
@@ -341,7 +341,7 @@
   (send *ri* :speak-jp "これを運んでください" :wait t)
   (setq take nil)
   (while (not take)
-    (when (substringp "受け取りました" (speech-recognition 1000))
+    (when (substringp "次の動作" (speech-recognition 10000))
       (setq take t)))
   (send *ri* :stop-grasp)
 
@@ -352,15 +352,19 @@
   (send *ri* :stop-grasp)
   (setq bag nil)
   (while (not bag)
-    (when (substringp "ゴミ袋" (speech-recognition 1000))
+    (when (substringp "ゴミ袋" (speech-recognition 10000))
       (setq bag t)))
   (send *ri* :speak-jp "問題があったら呼び止めてください" :wait t)
   (wait-person 10000)
   ;; (send *fetch* :angle-vector #f(274.797 50.0388 -54.1531 176.692 30.876 -2.33266 70.4823 0.520411 -0.345553 27.8796))
   ;; (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
-  (send *fetch* :reset-pose)
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 30000)
-  (send *ri* :wait-interpolation)
+  (setq departure nil)
+  (while (not departure)
+    (when (substringp "します" (speech-recognition 10000))
+      (setq bag t)))
+  ;; (send *fetch* :reset-pose)
+  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 30000)
+  ;; (send *ri* :wait-interpolation)
   )
 
 (defun wait-person (timeout)
