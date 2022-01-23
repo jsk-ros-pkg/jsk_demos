@@ -65,14 +65,19 @@
   (send *robot* :angle-vector #f(0.0 20.0 50.0 -70.0 0.0 90.0 -10.0 70.0 -20.0 0.0 -90.0 -180.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 200))
 
+(defun before-stand-pose ()
+  (ros::ros-info "before-stand-pose")
+  (send *robot* :angle-vector #f(0.0 -45.0 95.0 -50.0 0.0 0.0 -45.0 95.0 -50.0 0.0 0.0 -90.0 0.0 -27.0 -27.0 0.0 90.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 200))
+
 (defun stand-pose ()
   (ros::ros-info "stand-pose")
-  (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 0.0 -40.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *robot* :angle-vector #f(0.0 -20.0 35.0 -20.0 0.0 0.0 -20.0 35.0 -20.0 0.0 0.0 -40.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 300))
 
 (defun check-rarm-elbow-p ()
   (ros::ros-info "check-rarm-elbow-p")
-  (send *robot* :angle-vector #f(0.0 -20.0 40.0 -20.0 0.0 0.0 -20.0 40.0 -20.0 0.0 90.0 -90.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *robot* :angle-vector #f(0.0 -20.0 35.0 -20.0 0.0 0.0 -20.0 35.0 -20.0 0.0 90.0 -90.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 300)
   (unix:sleep 1)
   (send *robot* :rarm-elbow-p :joint-angle 60)
@@ -86,7 +91,9 @@
   (unix:sleep 1)
   (send *robot* :rarm-elbow-p :joint-angle 0)
   (send *ri* :angle-vector (send *robot* :angle-vector) 300)
-  (unix:sleep 1))  
+  (unix:sleep 1)
+  (send *robot* :angle-vector #f(0.0 -20.0 35.0 -20.0 0.0 0.0 -20.0 35.0 -20.0 0.0 0.0 -40.0 0.0 -27.0 -27.0 0.0 40.0 0.0 -27.0 -27.0 0.0 10.0))
+  (send *ri* :angle-vector (send *robot* :angle-vector) 300))  
   
 
 (defun send-servo-info ()
@@ -163,6 +170,10 @@
     (if (string= action "send-servo-info")
 	(progn
 	  (send m :joint_state (send-servo-info))
+	  (setq f 1)))
+    (if (string= action "before-stand-pose")
+	(progn
+	  (before-stand-pose)
 	  (setq f 1)))
     (if (string= action "stand-pose")
 	(progn
