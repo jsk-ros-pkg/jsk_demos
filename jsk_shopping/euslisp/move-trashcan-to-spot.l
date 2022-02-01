@@ -143,7 +143,7 @@
           (go-to-spot "/eng2/7f/room73B2-microwave-front"
                       :relative-pos offset
                       :relative-rot 0))
-    (send *ri* :go-pos-unsafe 0.1 0 0)
+    (send *ri* :go-pos-unsafe 0.2 0 0)
     (send *ri* :go-pos-unsafe 0 0 -90)
     (send *ri* :go-pos-unsafe 0.1 0 0)
     ))
