@@ -60,7 +60,8 @@
                            (ros::time 0)))
     (send obj-coords :transform cam-coords :world)
     (ros::ros-info "obj-coords: ~A" obj-coords)
-    (send obj-coords :transform (make-coords :pos #f(-120 -10 0)) :world)
+    (send obj-coords :transform (make-coords :pos #f(-120 0 0)) :world)
+    ;; (send obj-coords :transform (make-coords :pos #f(-120 10 -100)) :world)
     (send *fetch* :rarm :inverse-kinematics
           (make-coords :pos (send obj-coords :pos)
                        :rpy (float-vector 0 0 pi/2)) :rotation-axis t)
@@ -68,7 +69,7 @@
     (send *ri* :wait-interpolation)
     ;; reaching
     (send *fetch* :rarm :move-end-pos #f(100 0 0))
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :use-torso nil)
     (send *ri* :wait-interpolation)
     (unix::sleep 2)
     (send *ri* :start-grasp)
@@ -82,12 +83,12 @@
 
     ;; release handle
     (send *fetch* :angle-vector (send *ri* :state :potentio-vector))
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
     (send *ri* :wait-interpolation)
 
     (send *ri* :stop-grasp)
     (send *fetch* :rarm :move-end-pos #f(-100 0 0))
-    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
     (send *ri* :wait-interpolation)))
 
 (defun door-close-with-rec (obj-pos)
@@ -211,6 +212,7 @@
   (send *ri* :wait-interpolation))
 
 (defun 73b2-door-open()
+  (send *fetch* :reset-pose)
   (setq *obj-pos* nil)
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
