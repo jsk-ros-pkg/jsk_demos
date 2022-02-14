@@ -180,9 +180,9 @@
 
 (defun move-to-73b2-outside ()
   (inflation-loose)
-  (let ((offset #f(0 0 0)))
+  (let ((offset #f(400 -800 0)))
     (setq success
-          (go-to-spot "/eng2/7f/room73A3-front"
+          (go-to-spot "/eng2/7f/room73A4-front"
                       :relative-pos offset
                       :relative-rot -pi/2))))
 

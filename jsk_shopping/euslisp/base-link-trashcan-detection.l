@@ -333,9 +333,10 @@
   ;; (move-to-trashcan-front)
   (send *fetch* :reset-pose)
   (send *fetch* :head :neck-p :joint-angle 45)
-  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :head-controller)
+  (send *fetch* :torso :waist-z :joint-angle 120)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
   (send *ri* :wait-interpolation)
-  (send *ri* :speak-jp "ゴミ箱が満杯です．回収します" :wait t)
+  ;;(send *ri* :speak-jp "ゴミ箱が満杯です．回収します" :wait t)
   (unix::sleep 1)
   (ros::subscribe *topic-name*
                   jsk_recognition_msgs::BoundingBoxArray
@@ -344,7 +345,61 @@
   (ros::spin-once)
   (hole-fast obj-pos)
   (setq obj-pos nil)
-  (send *ri* :go-pos-unsafe 0 0 -90)
+
+  ;; (send *ri* :go-pos-unsafe 0 0 -90)
+  ;; (move-to-belka-front)
+  
+  ;; (send *fetch* :angle-vector #f(274.774 10.05741 -54.241 176.714 30.87212 -2.26673 70.3505 0.498438 -0.017 27.3303))
+  ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 10000)
+  ;; (send *ri* :wait-interpolation)
+
+  ;; (send *ri* :go-pos-unsafe 0.1 0 0)
+  ;; (send *ri* :speak-jp "ゴミ袋を渡しました" :wait t)
+  ;; (send *fetch* :angle-vector #f(204.973 -7.38554 -48.3304 -180.518 46.6744 -89.1906 -89.918 178.169 -0.130286 39.8107))
+  ;; (send *ri* :angle-vector-raw (send *fetch* :angle-vector) 10000)
+  ;; (send *ri* :wait-interpolation)
+
+  ;; (send *ri* :go-pos-unsafe -0.1 0 0)
+
+  
+  )
+
+(defun hole-main-demo()
+  ;; (move-to-trashcan-front)
+  (send *fetch* :reset-pose)
+  (send *fetch* :head :neck-p :joint-angle 45)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :head-controller)
+  (send *fetch* :torso :waist-z :joint-angle 120)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+  ;;(send *ri* :speak-jp "ゴミ箱が満杯です．回収します" :wait t)
+  (unix::sleep 1)
+  (ros::subscribe *topic-name*
+                  jsk_recognition_msgs::BoundingBoxArray
+                  #'bounding-box-array-cb 1)
+  (unix::sleep 1)
+  (ros::spin-once)
+  (hole-fast obj-pos)
+  (setq obj-pos nil)
+
+  (move-to-73b2-outside)
+  (send *fetch* :angle-vector #f(99.9534 20.278 -26.5115 110.928 29.272 -29.4469 47.1254 44.1142 0.594807 44.8205))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+  (send *fetch* :angle-vector #f(101.357 -36.6311 -51.4505 -148.547 -74.7465 160.221 71.6469 -5.41223 0.005662 24.6716))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+  (send *ri* :wait-interpolation)
+  (send *ri* :stop-grasp)
+  (send *fetch* :rarm :move-end-pos #f(-100 0 0))
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+
+  (send *ri* :go-pos-unsafe -0.2 0 0)
+  (send *fetch* :reset-pose)
+  (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+  (send *ri* :wait-interpolation)
+  
+  ;; (send *ri* :go-pos-unsafe 0 0 -90)
   ;; (move-to-belka-front)
   
   ;; (send *fetch* :angle-vector #f(274.774 10.05741 -54.241 176.714 30.87212 -2.26673 70.3505 0.498438 -0.017 27.3303))
