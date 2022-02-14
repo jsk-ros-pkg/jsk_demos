@@ -177,7 +177,15 @@
                             :relative-rot -pi/2))
   (send *ri* :go-pos-unsafe 0.1 0 0)
   )
-  
+
+(defun move-to-73b2-outside ()
+  (inflation-loose)
+  (let ((offset #f(0 0 0)))
+    (setq success
+          (go-to-spot "/eng2/7f/room73A3-front"
+                      :relative-pos offset
+                      :relative-rot -pi/2))))
+
 
 ;; (setq offset #f(-450 -400 0))
 ;;(setq success (go-to-spot "/eng2/7f/room73B2-microwave-front" :relative-pos offset :relative-rot -pi/2))

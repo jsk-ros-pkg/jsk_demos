@@ -270,6 +270,65 @@
     (send *ri* :wait-interpolation)
     ))
 
+(defun hole-fast(obj-pos)
+  (let ((cam-coords nil)
+        (obj-coords nil))
+    (ros::spin-once)
+    (unless (boundp '*tfl*) (setq *tfl* (instance transform-listener :init)))
+    (setq cam-coords
+          (send *tfl*
+                :lookup-transform "/base_link" "/head_camera_depth_optical_frame"
+                (ros::time 0)))
+    (unix::sleep 2)
+    (send *fetch* :angle-vector #f(20.0 56.549 86.0026 -30.9913 101.496 -91.683 92.782 8.07181 0.0 0.0)) ;; (send *fetch* :rarm :inverse-kinematics (make-coords :pos #f(400 -200 500) :rpy (float-vector 0 0 pi/2)))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :arm-controller)
+    (send *ri* :wait-interpolation)
+    
+    (setq obj-coords (make-coords :pos (scale 1000 obj-pos)
+                                  :rpy (float-vector 0 0 pi/2)))
+    (send obj-coords :transform cam-coords :world)
+    (send obj-coords :transform (make-coords :pos #f(-130 -25 30)) :world) ;; fetch1075 1020
+    (setq obj-coords (make-coords :pos (send obj-coords :pos)
+                                  :rpy (float-vector 0 0 pi/2)))
+    (ros::ros-info "~A" obj-coords)
+
+    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis t)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast) ;; reaching
+    (send *ri* :wait-interpolation)
+    ;; (send *fetch* :rarm :move-end-pos #f(60 0 0)) ;; for plastic
+    (send *fetch* :rarm :move-end-pos #f(55 0 0)) ;; for burnable
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast :use-torso nil)
+    (send *ri* :wait-interpolation)
+    (send *ri* :start-grasp)
+    (send *ri* :speak-jp "ごみ袋を持ち上げます" :wait t)
+
+    ;; lifting garbage bag
+    (send obj-coords :transform (make-coords :pos #f(100 0 300)) :world)
+    (ros::ros-info "~A" obj-coords)
+    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis nil)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso t)
+    (send *ri* :wait-interpolation)
+    (send obj-coords :transform (make-coords :pos #f(-150 0 400)) :world)
+    (ros::ros-info "~A" obj-coords)
+    ;; (send obj-coords :transform (make-coords :pos #f(-50 0 700)) :world)
+    (send *fetch* :rarm :inverse-kinematics obj-coords :rotation-axis nil)
+    ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000 :use-torso t)
+    ;; (send *ri* :wait-interpolation)
+    (send *fetch* :torso :waist-z :joint-angle 360)
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+    (send *ri* :wait-interpolation)
+
+    ;;(send *ri* :go-pos-unsafe 0 0 -90)
+    ;; (send *fetch* :torso :waist-z :joint-angle 0)
+    ;; (send *ri* :angle-vector (send *fetch* :angle-vector) 5000)
+    ;; (send *ri* :wait-interpolation)
+    
+
+    (send *fetch* :angle-vector #f(99.6253 -91.9143 -63.6014 -148.503 46.6524 -2.28871 25.3505 0.454471 0.492839 19.0466))
+    (send *ri* :angle-vector (send *fetch* :angle-vector) :fast)
+    (send *ri* :wait-interpolation)
+    ))
+
 (defun hole-main()
   ;; (move-to-trashcan-front)
   (send *fetch* :reset-pose)
@@ -283,7 +342,7 @@
                   #'bounding-box-array-cb 1)
   (unix::sleep 1)
   (ros::spin-once)
-  (hole obj-pos)
+  (hole-fast obj-pos)
   (setq obj-pos nil)
   (send *ri* :go-pos-unsafe 0 0 -90)
   ;; (move-to-belka-front)
