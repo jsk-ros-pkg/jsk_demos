@@ -11,9 +11,24 @@
 ;; add for voice recognition
 (ros::roseus "curry_rec_test" :anonymous t)
 
-;; move-to call codes
-;; speech-with-rec
-(defun move-to-arrange-with-speech-before-and-before-with-rec ()
+(defun now-set-ladle-a-and-plate-with-dialogue ()
+  ;; おたまを受け取る
+  (up-rarm)
+  (receive-ladle-with-dialogue)
+
+  ;; 盛り付ける動作をして皿を人にセットしてもらう
+  (arrange-motion-set)
+  (arrange-motion)
+  (have-the-plate-set-with-dialgue)
+  (after-arrange-motion)
+
+  ;; おたまをセットする
+  (put-ladle-a)
+  (reset-rarm)
+  )
+
+;; ケーブルの状態を確認し、キッチンに移動する。
+(defun move-to-kitchen ()
   (speech-before-move-with-rec)
   (unix:sleep 2)
   (move-to-arrange-ri-direct)
@@ -22,32 +37,14 @@
   (after-move)
   )
 
-(defun soup-arrange-0 () ;; 最初の準備
-  (send *ri* :speak-jp "準備を開始します") ;; 最初の位置はarrangeの場所 (move-to-arrange-ri-direct)
-
-  ;; 設置するもの
-
-  ;; おたまとお皿を用意する TODOここで鍋の位置も調整してもいいかも 最初にコンロ操作を確認するのもあり？
-  ;; (update-pos)
-  (set-pose)
-  (now-set-ladle-a-and-plate-with-dialogue)
-
-  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい")
-  (ok-wait)
-  (send *ri* :speak-jp "次の工程に移ります")
-
-  (warn "please run (soup-arrange-1) ~%")
-  )
-
-
-(defun soup-arrange-1 () ;; 沸騰させる
+;; IHコンロを使ってお湯を沸騰させる
+(defun boil-soup ()
   (send *ri* :speak-jp "沸騰させる調理を開始します")
 
   ;; 着火する
-  ;; (update-pos)
   (now-start-ih-with-fail-detection :deg 10)
 
-  ;; 沸騰させる
+  ;; 沸騰するまで待つ
   (look-at-pot)
   (ros::spin-once)
   (if *max-temp*
@@ -62,7 +59,6 @@
       (now-boil-with-dialogue)))
 
   ;; 火を止める
-  ;; (update-pos)
   (push-knob)
   (set-pose-3)
 
@@ -73,36 +69,31 @@
       (ok-wait)))
   (send *ri* :speak-jp "次の工程に移ります")
 
-  (warn "please run (soup-arrange-2) ~%")
+  (unix:sleep 2)
   )
 
-(defun soup-arrange-2 () ;; お湯を注ぐ
-  ;; ;; 盛り付けの位置に移動する
+;; スープを注ぐ
+(defun pour-soup ()
+  ;; 盛り付けの位置に移動する
   (move-to-arrange-with-speech-before-and-before-with-rec)
 
   ;; おたまを掴む
-  ;; (update-pos)
-  (set-pose) ;; よけいなset-poseになってしまっているがデモ固定化のために一応のこしておく．右腕がここで動いていなければなくしても問題ないかも．
+  (update-pos)
+  (set-pose)
   (grasp-ladle-with-fail-detection)
 
   ;; 鍋を掴む
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
-  ;; (update-pos)
-  (grasp-pot-from-below-model-with-fail-detection) ;; 鍋を掴む
+  (grasp-pot-from-below-model-with-fail-detection)
 
-  ;; お湯を注ぐ ;; 何回かやる？
-  (setq *pour-flag* nil)
-  (until *pour-flag*
-         (now-arrange-curry) ;; ここを改良したい？？認識を入れるなどしたい？IKが失敗したらやめるなど？
-         ;; お湯を注ぐ状態を確認する
-         ;; (look-at-pot)
-         (send *ri* :speak-jp "まだお湯が必要ですか？")
-         (ok-wait)
-         (unless (equal *data* '("はい"))
-           (setq *pour-flag* t)
-           )
-         )
+  ;; 止められるまでお湯を注ぐ
+  (let ((pour-flag t))
+    (until (not pour-flag)
+           (now-arrange-curry)
+           (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
+           (setq pour-flag (listen-speech "はい"))
+           ))
 
+  ;; 鍋とおたまを手から離す
   (release-pot-from-below-model)
   (put-ladle-a)
   (reset-rarm)
@@ -112,11 +103,11 @@
   (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
   (ok-wait)
 
-  (warn "please run (soup-arrange-3) ~%")
+  (unix:sleep 2)
   )
 
-
-(defun soup-arrange-3 () ;; 冷ます
+;; スープを冷ます
+(defun cool-soup ()
   (look-at-dish)
   (ros::spin-once)
   (if *max-temp*
@@ -124,16 +115,29 @@
       (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
       (unix:sleep 15)
       (ros::spin-once)))
-  (send *ri* :speak-jp "スープが完成しました")
-  ;; (warn "please run (soup-arrange-4) ~%")
+  (send *ri* :speak-jp "スープが完成しました" :wait t)
   )
 
-(defun soup-arrange-all ()
-  (soup-arrange-0) ;; 最初の準備
-  (unix:sleep 2)
-  (soup-arrange-1) ;; 沸騰させる
-  (unix:sleep 2)
-  (soup-arrange-2) ;; お湯を注ぐ
-  (unix:sleep 2)
-  (soup-arrange-3) ;; 冷ます
+(defun setup ()
+  ;; 最初の位置はarrangeの場所 (move-to-arrange-ri-direct)
+  (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
+  (move-to-kitchen)
+
+  ;; 設置するもの：おたまとお皿
+  (update-pos)
+  (set-pose)
+  (now-set-ladle-a-and-plate-with-dialogue)
+  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
+  (ok-wait)
+
+  ;; IHコンロの位置を確認
+  (send *ri* :speak-jp "IHコンロを操作できるかチェックします" :wait t)
+  (ih-check)
+  )
+
+(defun main ()
+  (move-to-kitchen)
+  (boil-soup) ;; 沸騰させる
+  (pour-soup) ;; お湯を注ぐ
+  (cool-soup) ;; 冷ます
   )

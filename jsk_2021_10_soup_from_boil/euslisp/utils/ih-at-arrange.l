@@ -328,7 +328,7 @@
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (send *ri* :speak-jp "鍋を掴むのが失敗しました，鍋の柄を掴ませる準備をしてokと合図して下さい")
-              (ok-grasp :arm larm)
+              (ok-grasp :arm :larm)
               ))
         ))
   )
@@ -393,7 +393,7 @@
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (send *ri* :speak-jp "鍋を掴むのが失敗しました，鍋の柄を掴ませる準備をしてokと合図して下さい")
-              (ok-grasp :arm larm)
+              (ok-grasp :arm :larm)
               ))
         ))
   )

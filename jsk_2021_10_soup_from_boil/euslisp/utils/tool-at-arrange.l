@@ -8,6 +8,8 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
 
+(setq *debug-flag* nil)
+
 (defun tool-init ()
   ;; set tools
   (setq *knife* (knife))
@@ -767,8 +769,6 @@
   (rarm-middle-pose)
   )
 
-
-
 (defun reset-rarm () ;; TODO (copy from arrangement-codes.l)
   (setq *rav0* #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
   (send *pr2* :rarm :angle-vector *rav0*)
@@ -940,8 +940,60 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-  
+
   (warn "please run (arrange-motion) ~%")
+  )
+
+(defun arrange-motion ()
+  ;; copy from (transfer-curry) in arrangement-codes.l
+  (send *arrow* :newcoords (send (elt (send *ladle* :attention) 1) :copy-worldcoords))
+
+  (dotimes (i 9)
+    (send *arrow* :rotate (deg2rad 10) :y :world)
+    (send *pr2* :rarm :inverse-kinematics
+          (send *arrow* :copy-worldcoords)
+          :move-target (elt (send *ladle* :attention) 1)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    )
+  (warn "please run (have-the-plate-set-with-dialgue) ~%")
+  )
+
+(defun after-arrange-motion ()
+  (send *pr2* :rarm :move-end-pos #f(0 0 100) :world)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
+
+  (setq avs (list))
+  (setq tms (list))
+
+  (dotimes (i 3)
+    (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+    (setq av (send *pr2* :angle-vector))
+    (setq avs (append avs (list av)))
+    (setq tms (append tms (list 400)))
+
+    (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+    (setq av (send *pr2* :angle-vector))
+    (setq avs (append avs (list av)))
+    (setq tms (append tms (list 400)))
+    )
+
+  (send *ri* :angle-vector-sequence avs tms)
+  (send *ri* :wait-interpolation)
+
+  ;; avoid-pose的な姿勢になる．
+  (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))
+  (send *pr2* :rarm :inverse-kinematics
+        (send *arrow* :copy-worldcoords)
+        :rotation-axis t
+        :debug-view *debug-flag*)
+  (send *viewer* :draw-objects)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
   )
 
 (defun now-set-ladle-1 ()

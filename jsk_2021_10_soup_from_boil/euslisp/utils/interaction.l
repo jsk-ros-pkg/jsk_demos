@@ -3,7 +3,7 @@
 (ros::load-ros-manifest "pr2_msgs")
 
 ;; Wait until speech
-(defun listen-speech (expected-speech "はい")
+(defun listen-speech (&optional (expected-speech "はい"))
   (ros::unsubscribe "/speech_to_text")
   (let ((speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
     (equal (send speech :transcript) (list expected-speech))))
@@ -31,8 +31,7 @@
            (send *ri* :speak-jp "上手く掴めていますか？")
            (setq yes-flag (listen-speech "はい"))
            (unless yes-flag
-             (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします")
-             (unix:sleep 2)
+             (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします" :wait t)
              )
            )
     )
@@ -44,13 +43,19 @@
   (let ((yes-flag nil))
     (until yes-flag
          (unix:sleep sleep-time)
-         (send *ri* :speak-jp "画像を記録します")
-         (send *ri* :speak-jp "記録しました")
-         (send *ri* :speak-jp "鍋の中身は沸騰していますか？")
+         ;; (send *ri* :speak-jp "画像を記録します" :wait t)
+         ;; (send *ri* :speak-jp "記録しました" :wait t)
+         (send *ri* :speak-jp "鍋の中身は沸騰していますか？" :wait t)
          (setq yes-flag (listen-speech "はい"))
          )
     )
   (send *ri* :speak-jp "次の工程に進みます")
+  )
+
+(defun have-the-plate-set-with-dialgue ()
+  (send *ri* :speak-jp "盛り付ける器を位置にセットして，OKと合図をして下さい")
+  (ok-wait)
+  (warn "please run (after-arrange-motion) ~%")
   )
 
 ;; Wait until movable (cable checks)
