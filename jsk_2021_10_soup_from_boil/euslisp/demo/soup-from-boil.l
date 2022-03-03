@@ -4,8 +4,6 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/utils/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/utils/tool-at-arrange.l")
 
-(warn "please run (soup-arrange-0) or (soup-arrange-all)~%")
-
 ;; 最初に換気扇とIHの電源を入れていく
 
 ;; add for voice recognition
@@ -47,29 +45,28 @@
   ;; 沸騰するまで待つ
   (look-at-pot)
   (ros::spin-once)
-  (if *max-temp*
-    (progn
-      (while (< *max-temp* 75)
-        (send *ri* :speak-jp "まだお湯は沸騰していません" :wait t)
-        (unix:sleep 15)
-        (ros::spin-once))
-      (send *ri* :speak-jp "お湯が沸騰しました。" :wait t))
-    (progn
-      (look-at-pot)
-      (now-boil-with-dialogue)))
+  (let ((max-temp
+         (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
+    (if max-temp
+      ;; If PR2 have thermal sensor
+      (progn
+        (while (< max-temp 75)
+          (send *ri* :speak-jp "まだお湯は沸騰していません" :wait t)
+          (unix:sleep 15)
+          (setq max-temp
+                (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
+        (send *ri* :speak-jp "お湯が沸騰しました。" :wait t))
+      ;; If PR2 does not have thermal sensor
+      (progn
+        (look-at-pot)
+        (now-boil-with-dialogue))))
 
   ;; 火を止める
   (push-knob)
   (set-pose-3)
 
-  (if *max-temp*
-    (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
-    (progn
-      (send *ri* :speak-jp "沸騰させる調理を行いました．確認してokと合図をして下さい")
-      (ok-wait)))
-  (send *ri* :speak-jp "次の工程に移ります")
-
-  (unix:sleep 2)
+  (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
+  (send *ri* :speak-jp "次の工程に移ります" :wait t)
   )
 
 ;; スープを注ぐ
@@ -110,11 +107,16 @@
 (defun cool-soup ()
   (look-at-dish)
   (ros::spin-once)
-  (if *max-temp*
-    (while (> *max-temp* 65)
-      (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
-      (unix:sleep 15)
-      (ros::spin-once)))
+  (let ((max-temp
+         (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
+    ;; If PR2 have thermal sensor
+    (if max-temp
+      (while (> max-temp 65)
+        (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
+        (unix:sleep 15)
+        (setq max-temp
+              (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data))
+        )))
   (send *ri* :speak-jp "スープが完成しました" :wait t)
   )
 

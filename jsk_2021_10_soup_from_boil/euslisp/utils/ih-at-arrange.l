@@ -118,21 +118,6 @@
       (setq *fail-flag* t))
   )
 
-;; Temperature recognition
-(ros::load-ros-manifest "std_msgs")
-(setq *max-temp* nil)
-(setq *min-temp* nil)
-(setq *center-temp* nil)
-(defun max-temp-cb (msg)
-  (setq *max-temp* (send msg :data)))
-(defun min-temp-cb (msg)
-  (setq *min-temp* (send msg :data)))
-(defun center-temp-cb (msg)
-  (setq *center-temp* (send msg :data)))
-(ros::subscribe "/thermal/max_temp" std_msgs::Int16 #'max-temp-cb)
-(ros::subscribe "/thermal/min_temp" std_msgs::Int16 #'min-temp-cb)
-(ros::subscribe "/thermal/center_temp" std_msgs::Int16 #'center-temp-cb)
-
 ;; IH funcs
 (defun push-stove-button ()
   ;; (send *arrow* :translate #f(130 0 0) :world) ;;をしている前提で始める
