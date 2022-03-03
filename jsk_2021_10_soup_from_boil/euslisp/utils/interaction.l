@@ -1,0 +1,65 @@
+;; add for voice recognition
+(ros::load-ros-manifest "speech_recognition_msgs")
+(setq *data-flag* nil)
+(setq *s-time* 3)
+(setq *w-time* 2)
+(setq *debug-flag* nil)
+
+(defun voice-cb (msg)
+  (when msg
+    (setq *msg* msg)
+    (setq *data* (send *msg* :transcript))
+    (setq *data-flag* t)
+    (format t "data: ~A ~%" *data*)
+    )
+  )
+
+(defun listen-speech (expected-speech "はい")
+  (ros::unsubscribe "/speech_to_text")
+  (let ((speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
+    (equal (send speech :transcript) (list expected-speech))))
+
+(defun ok-wait ()
+  (ros::unsubscribe "/speech_to_text")
+  (let ((speech (instance speech_recognition_msgs::SpeechRecognitionCandidates :init)))
+    (while (not (equal (send speech :transcript) '("OK")))
+      (setq speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates))))
+  (send *ri* :speak-jp "ありがとうございます")
+  (unix:sleep *w-time*)
+  )
+
+(defun ok-grasp (&rest args &key (gain 0.01) (arm :rarm) &allow-other-keys)
+  (ok-wait)
+  (send *ri* :start-grasp arm :wait t :gain gain)
+  )
+
+(defun receive-with-dialogue (&rest args &key (gain 0.01) (arm :rarm) &allow-other-keys)
+  ;; (send *ri* :speak-jp "包丁を渡す準備をして，合図をして下さい") ;; 喋らせている想定でスタート
+  (let ((yes-flag nil))
+    (until yes-flag
+           (send *ri* :stop-grasp arm :wait t)
+           (ok-grasp :gain gain :arm arm)
+           (send *ri* :speak-jp "上手く掴めていますか？")
+           (setq yes-flag (listen-speech "はい"))
+           (unless yes-flag
+             (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします")
+             (unix:sleep *w-time*)
+             )
+           )
+    )
+  (send *ri* :speak-jp "次の行動に移ります")
+  (unix:sleep *w-time*)
+  )
+
+(defun now-boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
+  (let ((yes-flag nil))
+    (until yes-flag
+         (unix:sleep sleep-time)
+         (send *ri* :speak-jp "画像を記録します")
+         (send *ri* :speak-jp "記録しました")
+         (send *ri* :speak-jp "鍋の中身は沸騰していますか？")
+         (setq yes-flag (listen-speech "はい"))
+         )
+    )
+  (send *ri* :speak-jp "次の工程に進みます")
+  )

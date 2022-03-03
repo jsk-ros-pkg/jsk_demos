@@ -1,6 +1,37 @@
 # soup-from-boil
 スープを作るデモの移動無しver. 
 
+## euslisp directory structure
+
+Rules
+
+- programs in `demo` directory load only programs in `utils` and `demo` directory.
+- programs in `utils` directory load only programs in `models` directory.
+- programs in `models` directory do not load any other programs.
+
+Structure
+
+- demo
+  - soup-from-boil.l
+    - demo code for soup-from-boil
+- utils
+  - arrangement-at-arrange.l
+    - arrangement motions at arrange position
+    - For example, `(scoop-up-curry)`
+  - ih-at-arrange.l
+    - IH manipulation motions at arrange position
+    - For example, `(push-knob)`
+  - tool-at-arrange.l
+    - tool manipulation motions at arrange position
+    - For example, `(open-shelf)`
+  - move-to-kitchen-with-map.l
+    - navigation motions in the kitchen
+    - If you go to arrange position, call `(move-to-arrange-ri)`
+- models
+  - bowl-4.l
+    - euslisp model of bowl
+  - ... (and many models)
+
 ![IMG_5826](https://user-images.githubusercontent.com/38127823/136733293-a7e58b12-2150-4099-ad30-2df666da0a86.jpg)
 
 ## 準備
@@ -30,7 +61,7 @@ PR2を移動させるために、電源ケーブルを抜く。
 ```
 # ROS_MASTER_URIをPR1040にすることを忘れない (e.g. rossetmaster pr1040)
 source ~/soup_ws/devel/setup.bash
-roscd jsk_2021_10_soup_from_boil/euslisp
+roscd jsk_2021_10_soup_from_boil/euslisp/utils
 roseus move-to-kitchen-with-map.l
 (move-to-arrange-ri-direct)
 ```
@@ -46,9 +77,9 @@ move-to : succeeded
 
 ```
 source ~/soup_ws/devel/setup.bash
-roscd jsk_2021_10_soup_from_boil/euslisp
+roscd jsk_2021_10_soup_from_boil/euslisp/utils
 roseus soup-arrange-test-20211008.l
-(ih-check)
+
 ```
 としてIHコンロの操作が成功するか確認することができる．
 失敗した場合は、ps3joyでPR2の位置を調節する．

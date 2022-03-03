@@ -1,31 +1,28 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :eng2-scene "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-scene.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-coords.l")
+(load "models/arrow-object.l")
 
 (defun init ()
   ;; init
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-coords.l")
-  
+
   ;; init ROS Node
   (ros::roseus "pr2-move-with-maps")
-  
+
   ;; init 73B2 room
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
-  
+
   ;; init PR2
   (unless (boundp '*pr2*) (setq *pr2* (instance pr2-sensor-robot :init)))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
   (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
-  (load "models/arrow-object.l")
   (setq *arrow* (arrow))
-  
+
   (objects (list *scene* *pr2*))
 
   ;; set global variables
-  (setq *s-time* 3)
-  (setq *w-time* 2)
-  (setq *debug-flag* nil)
   )
 
 ;; add dynamic parmas
@@ -118,122 +115,8 @@
 (init)
 (update-view)
 
-;; (if (send *ri* :simulation-modep)
-;;     (progn
-;;       (update-view)
-;;       )
-;;   (progn
-;;     (update-pos)
-;;     (store-params)
-;;     (change-dynm-params)
-;;     )
-;;   )
-
 (warn "~% If you use real robot, run (update-pos) ~%")
 (warn "please run (move-to-kitchen-ri) , (move-to-sink-ri) or (move-to-stove-ri) and (set-pose)~%")
-
-;; add for voice recognition
-(ros::load-ros-manifest "speech_recognition_msgs")
-(setq *data-flag* nil)
-(defun voice-cb (msg)
-  (when msg
-    (setq *msg* msg)
-    (setq *data* (send *msg* :transcript))
-    (setq *data-flag* t)
-    (format t "data: ~A ~%" *data*)
-    )
-  )
-
-(defun dialogue-func ()
-  (ros::unsubscribe "/speech_to_text")
-  (setq *data-flag* nil)
-  (ros::subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates #'voice-cb)
-  (until *data-flag*
-         (ros::spin-once)
-         (ros::sleep)
-         )
-  (send *ri* :speak-jp "ありがとうございます")
-  (unix:sleep 1)
-  )
-
-(setq *ok-flag* nil)
-(defun voice-ok-cb (msg)
-  (when msg
-    (setq *msg* msg)
-    (setq *data* (send *msg* :transcript))
-    (if (equal *data* '("OK"))
-        (progn
-          (format t "了解しました！ ~%" *data*)
-          (setq *ok-flag* t)
-          )
-      (format t "data: ~A ~%" *data*)
-      ) 
-    )
-  )
-
-(defun ok-wait ()
-  (ros::unsubscribe "/speech_to_text")
-  (setq *ok-flag* nil)
-  (ros::subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates #'voice-ok-cb)
-  (until *ok-flag*
-         (ros::spin-once)
-         (ros::sleep)
-         )  
-  (send *ri* :speak-jp "ありがとうございます")
-  (unix:sleep *w-time*)
-  )
-
-(defun ok-grasp-larm (&rest args &key (gain 0.01) &allow-other-keys)
-  (ok-wait)
-  (send *ri* :start-grasp :larm :wait t :gain gain)
-  )
-
-(defun ok-grasp (&rest args &key (gain 0.01) &allow-other-keys)
-  (ok-wait)
-  (send *ri* :start-grasp :rarm :wait t :gain gain)
-  )
-
-(defun receive-with-dialogue-larm (&rest args &key (gain 0.01) &allow-other-keys)
-  ;; (send *ri* :speak-jp "包丁を渡す準備をして，合図をして下さい") ;; 喋らせている想定でスタート
-  (setq *yes-flag* nil)
-  (until *yes-flag*
-         (send *ri* :stop-grasp :larm :wait t)
-         (ok-grasp-larm :gain gain)
-         (send *ri* :speak-jp "上手く掴めていますか？")
-         (dialogue-func)
-         (if (equal *data* '("はい"))
-             (setq *yes-flag* t)
-           (progn
-             (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします")
-             (unix:sleep *w-time*)
-             )
-           )
-         )
-  
-  (send *ri* :speak-jp "次の行動に移ります")
-  (unix:sleep *w-time*)
-  )
-
-(defun receive-with-dialogue (&rest args &key (gain 0.01) &allow-other-keys)
-  ;; (send *ri* :speak-jp "包丁を渡す準備をして，合図をして下さい") ;; 喋らせている想定でスタート
-  (setq *yes-flag* nil)
-  (until *yes-flag*
-         (send *ri* :stop-grasp :rarm :wait t)
-         (ok-grasp :gain gain)
-         (send *ri* :speak-jp "上手く掴めていますか？")
-         (dialogue-func)
-         (if (equal *data* '("はい"))
-             (setq *yes-flag* t)
-           (progn
-             (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします")
-             (unix:sleep *w-time*)
-             )
-           )
-         )
-  
-  (send *ri* :speak-jp "次の行動に移ります")
-  (unix:sleep *w-time*)
-  )
 
 ;; add for grasp detection
 (defun grasp-fail-detection (&rest args &key (g-thre 10) &allow-other-keys)
@@ -264,9 +147,6 @@
 (defun wait-cable ()
   (setq *cable* t)
   (while *cable*
-    ;; (let ((msg (cable-test)))
-    ;;   (setq *cable* (< 0 (send msg :AC_present)))
-    ;;   (unix::sleep 1)))
     (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
       (setq *cable* (< 0 (send msg :AC_present)))
       (unix::sleep 1)))
@@ -307,7 +187,6 @@
       (send *ri* :speak-jp "ありがとうございます．調理を再開します")
       ))
   )
-
 
 ;; IRT上の移動
 (defun move-to-kitchen-irt ()
@@ -469,7 +348,6 @@
   (print (send *ri* :state :worldcoords))
   )
 
-
 ;; kitchen spotとsink間の移動
 (defun go-to-sink ()
   ;; kitchen spotからsinkに移動する
@@ -483,7 +361,7 @@
 
 (defun go-to-kitchen-from-sink ()
   ;; sinkからkitchen spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)  
+  (send *ri* :go-pos-unsafe -0.09 0 0)
   (send *ri* :go-pos-unsafe 0 0.6 0)
   (move-to-kitchen-ri)
   (update-pos)
@@ -493,7 +371,7 @@
 
 (defun go-to-kitchen-from-sink-without-map ()
   ;; sinkからkitchen spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)  
+  (send *ri* :go-pos-unsafe -0.09 0 0)
   (send *ri* :go-pos-unsafe 0 0.6 0)
   (update-pos)
   (update-view)
@@ -518,12 +396,6 @@
   (print (send *ri* :state :worldcoords))
   )
 
-
-(defun go-to-microwave () ;; TODO
-  ;; kitchenからmicrowaveに移動する
-  
-  )
-
 (defun go-to-sink-from-arrange ()
   ;; arrange spotからsinkに実行する
   (send *ri* :go-pos-unsafe 0 -0.9 0)
@@ -536,7 +408,7 @@
 
 (defun go-to-arrnage-from-sink ()
   ;; sinkからarrange spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)  
+  (send *ri* :go-pos-unsafe -0.09 0 0)
   (send *ri* :go-pos-unsafe 0 0.9 0)
   (move-to-arrange-ri)
   (update-pos)
@@ -551,7 +423,7 @@
   (move-to-sink-ri)
   (update-pos)
   (update-view)
-  (print (send *ri* :state :worldcoords))  
+  (print (send *ri* :state :worldcoords))
   )
 
 (defun go-to-stove-from-sink ()
@@ -561,7 +433,7 @@
   (move-to-stove-ri)
   (update-pos)
   (update-view)
-  (print (send *ri* :state :worldcoords))  
+  (print (send *ri* :state :worldcoords))
   )
 
 ;; def util-funcs
@@ -608,23 +480,23 @@
   (setq *ok-flag* nil)
   (ros::subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates #'voice-ok-cb)
   (until *ok-flag*
-	 (ros::spin-once)
-	 (ros::sleep)
-	 )
+         (ros::spin-once)
+         (ros::sleep)
+     )
 
   (send *ri* :speak-jp "ありがとうございます．移動を開始します")
   )
 
 (defun speech-after-move ()
   (send *ri* :speak-jp "電源ケーブルを挿して，合図して下さい")
-  
+
   (ros::unsubscribe "/speech_to_text")
   (setq *ok-flag* nil)
   (ros::subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates #'voice-ok-cb)
   (until *ok-flag*
-	 (ros::spin-once)
-	 (ros::sleep)
-	 )  
+         (ros::spin-once)
+         (ros::sleep)
+         )
   (send *ri* :speak-jp "ありがとうございます．調理を再開します")
   )
 
@@ -644,7 +516,7 @@
   )
 
 (defun go-to-stove-with-speech-before-and-after ()
-  ;; kitchen spotからstoveに移動し，拠点も移動させる  
+  ;; kitchen spotからstoveに移動し，拠点も移動させる
   (speech-before-move)
   (unix:sleep *w-time*)
   (go-to-stove)
@@ -671,7 +543,7 @@
   ;; kitchen spot(拠点)からsinkに移動する
   (speech-before-move)
   (unix:sleep *w-time*)
-  (go-to-sink)  
+  (go-to-sink)
   )
 
 (defun go-to-kitchen-from-sink-with-speech-after ()
@@ -883,4 +755,3 @@
   (unix:sleep *w-time*)
   (after-move)
   )
-
