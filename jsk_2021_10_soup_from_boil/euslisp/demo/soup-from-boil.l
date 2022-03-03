@@ -1,4 +1,9 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/utils/move-to-kitchen-with-map.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/arrangement-at-arrange.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/ih-at-arrange.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/interaction.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/tool-at-arrange.l")
+
 (warn "please run (soup-arrange-0) or (soup-arrange-all)~%")
 
 ;; 最初に換気扇とIHの電源を入れていく
@@ -6,13 +11,23 @@
 ;; add for voice recognition
 (ros::roseus "curry_rec_test" :anonymous t)
 
+;; move-to call codes
+;; speech-with-rec
+(defun move-to-arrange-with-speech-before-and-before-with-rec ()
+  (speech-before-move-with-rec)
+  (unix:sleep 2)
+  (move-to-arrange-ri-direct)
+  (speech-after-move-with-rec)
+  (unix:sleep 2)
+  (after-move)
+  )
+
 (defun soup-arrange-0 () ;; 最初の準備
   (send *ri* :speak-jp "準備を開始します") ;; 最初の位置はarrangeの場所 (move-to-arrange-ri-direct)
 
   ;; 設置するもの
 
   ;; おたまとお皿を用意する TODOここで鍋の位置も調整してもいいかも 最初にコンロ操作を確認するのもあり？
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/tool-use-arrange-codes.l")
   ;; (update-pos)
   (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)
@@ -29,7 +44,6 @@
   (send *ri* :speak-jp "沸騰させる調理を開始します")
 
   ;; 着火する
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)
   (now-start-ih-with-fail-detection :deg 10)
 
@@ -48,7 +62,6 @@
       (now-boil-with-dialogue)))
 
   ;; 火を止める
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/ih-use-arrange-codes.l")
   ;; (update-pos)
   (push-knob)
   (set-pose-3)
@@ -65,10 +78,9 @@
 
 (defun soup-arrange-2 () ;; お湯を注ぐ
   ;; ;; 盛り付けの位置に移動する
-  ;; (move-to-arrange-with-speech-before-and-before-with-rec)
+  (move-to-arrange-with-speech-before-and-before-with-rec)
 
   ;; おたまを掴む
-  (load "package://jsk_2021_10_soup_from_boil/euslisp/arrangement-codes.l")
   ;; (update-pos)
   (set-pose) ;; よけいなset-poseになってしまっているがデモ固定化のために一応のこしておく．右腕がここで動いていなければなくしても問題ないかも．
   (grasp-ladle-with-fail-detection)

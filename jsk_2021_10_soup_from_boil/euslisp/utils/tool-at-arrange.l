@@ -1,4 +1,5 @@
-(load "package://jsk_2021_10_soup_from_boil/euslisp/move-to-kitchen-with-map.l")
+;; TODO: remove loading move-to-kitchen-with-map.l
+(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/move-to-kitchen-with-map.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/knife-new-attention.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/peeler.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/potato-peeler.l")

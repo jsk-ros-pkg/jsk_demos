@@ -8,7 +8,7 @@
   (send *ladle* :newcoords (send *ladle-coords-a* :copy-worldcoords))
   ;; def global coords
   (move-to-arrange-irt)
-  (objects (list *pr2* *scene* *spatula* *ladle* *pot* *curry-dish* *sato-rice*))
+  (objects (list *pr2* *scene* *ladle* *curry-dish*))
   (update-view)
   )
 

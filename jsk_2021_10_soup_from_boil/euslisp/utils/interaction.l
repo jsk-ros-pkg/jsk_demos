@@ -1,19 +1,8 @@
 ;; add for voice recognition
 (ros::load-ros-manifest "speech_recognition_msgs")
-(setq *data-flag* nil)
-(setq *s-time* 3)
-(setq *w-time* 2)
-(setq *debug-flag* nil)
+(ros::load-ros-manifest "pr2_msgs")
 
-(defun voice-cb (msg)
-  (when msg
-    (setq *msg* msg)
-    (setq *data* (send *msg* :transcript))
-    (setq *data-flag* t)
-    (format t "data: ~A ~%" *data*)
-    )
-  )
-
+;; Wait until speech
 (defun listen-speech (expected-speech "はい")
   (ros::unsubscribe "/speech_to_text")
   (let ((speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
@@ -25,7 +14,7 @@
     (while (not (equal (send speech :transcript) '("OK")))
       (setq speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates))))
   (send *ri* :speak-jp "ありがとうございます")
-  (unix:sleep *w-time*)
+  (unix:sleep 2)
   )
 
 (defun ok-grasp (&rest args &key (gain 0.01) (arm :rarm) &allow-other-keys)
@@ -43,12 +32,12 @@
            (setq yes-flag (listen-speech "はい"))
            (unless yes-flag
              (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします")
-             (unix:sleep *w-time*)
+             (unix:sleep 2)
              )
            )
     )
   (send *ri* :speak-jp "次の行動に移ります")
-  (unix:sleep *w-time*)
+  (unix:sleep 2)
   )
 
 (defun now-boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
@@ -62,4 +51,64 @@
          )
     )
   (send *ri* :speak-jp "次の工程に進みます")
+  )
+
+;; Wait until movable (cable checks)
+(defun wait-cable ()
+  (let ((cable t))
+    (while cable
+      (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+        (setq cable (< 0 (send msg :AC_present)))
+        (unix::sleep 1)))
+    ))
+
+(defun wait-cable-in ()
+  (let ((cable t))
+    (while cable
+      (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+        (setq cable (>= 0 (send msg :AC_present)))
+        (unix::sleep 1)))
+    ))
+
+(defun cable-test ()
+  (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+    (format t "now AC_present is ~A ~%" (send msg :AC_present))
+    msg))
+
+(defun speech-before-move-with-rec ()
+  (let ((msg (cable-test)))
+    (if (< 0 (send msg :AC_present))
+      (progn
+        (send *ri* :speak-jp "移動するので電源ケーブルを抜いて下さい")
+        (wait-cable)
+        (send *ri* :speak-jp "ありがとうございます．移動を開始します")
+        )
+      (send *ri* :speak-jp "移動を開始します")
+      )
+    ))
+
+(defun speech-after-move-with-rec ()
+  (let ((msg (cable-test)))
+    (if (< 0 (send msg :AC_present))
+      (send *ri* :speak-jp "調理を再開します")
+      (progn
+        (send *ri* :speak-jp "電源ケーブルを挿して下さい")
+        (wait-cable-in)
+        (send *ri* :speak-jp "ありがとうございます．調理を再開します")
+        ))
+    ))
+
+;; Move with speech
+(defun speech-before-move ()
+  (send *ri* :speak-jp "移動するので電源ケーブルを抜いて，合図して下さい")
+  (ros::unsubscribe "/speech_to_text")
+  (ok-wait)
+  (send *ri* :speak-jp "ありがとうございます．移動を開始します")
+  )
+
+(defun speech-after-move ()
+  (send *ri* :speak-jp "電源ケーブルを挿して，合図して下さい")
+  (ros::unsubscribe "/speech_to_text")
+  (ok-wait)
+  (send *ri* :speak-jp "ありがとうございます．調理を再開します")
   )
