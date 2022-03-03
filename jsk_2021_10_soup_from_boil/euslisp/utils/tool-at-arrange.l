@@ -1,5 +1,3 @@
-;; TODO: remove loading move-to-kitchen-with-map.l
-(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/move-to-kitchen-with-map.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/knife-new-attention.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/peeler.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/potato-peeler.l")
@@ -37,25 +35,6 @@
   )
 
 (tool-init)
-
-;; add for sense
-(setq *x-thre* -15)
-
-(ros::roseus "stove_rec_test" :anonymous t)
-(setq *topic-name* "/right_endeffector/wrench")
-(ros::load-ros-manifest "geometry_msgs")
-(setq *cb-flag* nil)
-(defun wrench-x-cb (msg)
-  (when msg
-    (let ((x nil))
-      (setq x (send msg :wrench :force :x))
-      (if (< x *x-thre*)
-          (progn 
-            (setq *cb-flag* t)
-            (format t "OK!! x: ~A ~%" x)
-            )
-        (format t "x: ~A ~%" x))
-      )))
 
 ;; set codes
 (warn "~%  If you use real robot, run (update-pos) ~%")
@@ -209,17 +188,45 @@
   (send *ri* :wait-interpolation)
   )
 
+(defun touch-shelf-knob ()
+  ;; Mainly copied from (push-stove-button) in ih-at-arrange.l
+  ;; The difference is left and right
+  (setq avs (list))
+  (setq tms (list))
+
+  (dotimes (i 15)
+    (send *pr2* :rarm :move-end-pos #f(-10 0 0) :world)
+    (setq av (send *pr2* :angle-vector))
+    (setq avs (append avs (list av)))
+    (setq tms (append tms (list 400)))
+    )
+  (send *ri* :angle-vector-sequence avs tms)
+
+  (ros::unsubscribe "/right_endeffector/wrench")
+
+  (while (some #'identity (send *ri* :wait-interpolation nil 0.1))
+    (let* ((msg (one-shot-subscribe "/right_endeffector/wrench" geometry_msgs::WrenchStamped))
+           (force-x (send msg :wrench :force :x))
+           (force-x-thre -15))
+      (when (< force-x force-x-thre)
+        (format t "Touch detected. Cancel moving.~%force-x is ~A (threshold is ~A)~%"
+                force-x force-x-thre)
+        (send *ri* :cancel-angle-vector)
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))))
+  (ros::unsubscribe "/right_endeffector/wrench")
+  )
+
 (defun open-shelf-set ()
   ;; 中間姿勢になる
   (rarm-middle-pose)
-  
+
   ;;グリッパを微妙に開く
   (send *ri* :move-gripper :rarm 0.05)
-  
+
   ;; 棚のノブの位置
   ;; (send *arrow* :newcoords (send *shelf-knob-closed-coords* :copy-worldcoords))
   (send *arrow* :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
-  
+
   (send *arrow* :translate (float-vector 100 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -228,7 +235,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -237,44 +244,10 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
-  
+
   ;; ノブのところまで手を伸ばす 力覚を入れても良い．
-  (setq avs (list))
-  (setq tms (list))
-  
-  (dotimes (i 10)
-    (send *arrow* :translate (float-vector -10 0 0) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          *arrow*
-          :rotation-axis t
-          :debug-view nil)
-    
-    (setq av (send *pr2* :angle-vector))
-    
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 600)))
-    )
-  
-  (send *ri* :angle-vector-sequence avs tms)
-  
-  (ros::unsubscribe "/right_endeffector/wrench")
-  (setq *topic-name* "/right_endeffector/wrench")
-  (setq *cb-flag* nil)
-  (ros::subscribe "/right_endeffector/wrench" geometry_msgs::WrenchStamped #'wrench-x-cb)
-  
-  (while (some #'identity (send *ri* :wait-interpolation nil 0.01))
-    (when (progn
-            (ros::spin-once)
-            (if *cb-flag* t)
-            )
-      (send *ri* :cancel-angle-vector)
-      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-      (warn "cancel!!! ~%")
-      )
-    )
-  
-  (ros::unsubscribe "/right_endeffector/wrench")
-  
+  (touch-shelf-knob)
+
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *arrow* :newcoords (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
   (send *arrow* :translate #f(10 0 0) :world)
@@ -284,10 +257,10 @@
         :debug-view *debug-flag*)
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
-  
+
   (send *ri* :start-grasp :rarm :wait t)
   (send *ri* :start-grasp :rarm :wait t :gain 0.08)
-  
+
   (set-shelf-door)
   (warn "please run (open-shelf) ~%")
   )
@@ -298,15 +271,15 @@
         (av)
         (tms (list))
         (avs (list)))
-    (while (< i 99) 
+    (while (< i 99)
       (send *shelf-door* :angle-vector (float-vector i))
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
-      
+
       (send *pr2* :rarm :inverse-kinematics (send handle-coords :copy-worldcoords) :rotation-axis t)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 600)))
-      
+
       (setq i (+ i 10))
       )
     (send *ri* :angle-vector-sequence avs tms)
@@ -317,18 +290,18 @@
 
 (defun after-open ()
   (send *ri* :stop-grasp :rarm :wait t)
-  
+
   (send *pr2* :rarm :move-end-pos #f(0 20 -80) :world)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-  
+
   (send *pr2* :rarm :move-end-pos #f(0 -100 -100) :world)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
   ;; 中間姿勢になる
   (rarm-middle-pose)
-  
+
   (warn "please run (grasp-spatula-0) ~%")
   )
 

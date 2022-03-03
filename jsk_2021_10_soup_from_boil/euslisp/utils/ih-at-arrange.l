@@ -1,8 +1,6 @@
-;; remove interaction.l
-(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/interaction.l")
-;; remove tool-at-arrange.l
-(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/tool-at-arrange.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
+
+(ros::roseus "ih-at-arrange" :anonymous t)
 
 (defun ih-init ()
   ;; set objects
@@ -26,7 +24,6 @@
 
 (ih-init)
 
-
 (defun set-pose-3 ()
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
@@ -35,80 +32,6 @@
   )
 
 (warn "If you use real robot, run (update-pos) ~%")
-
-
-;; add for sense
-(setq *x-thre* -15)
-
-(ros::roseus "stove_rec_test" :anonymous t)
-(setq *topic-name* "/left_endeffector/wrench")
-(ros::load-ros-manifest "geometry_msgs")
-(setq *cb-flag* nil)
-(defun wrench-x-cb (msg)
-  (when msg
-    (let ((x nil))
-      (setq x (send msg :wrench :force :x))
-      (if (< x *x-thre*)
-          (progn 
-            (setq *cb-flag* t)
-            (format t "OK!! x: ~A ~%" x)
-            )
-        (format t "x: ~A ~%" x))
-      )))
-
-;; add for panel rec
-(ros::load-ros-package "roseus")
-
-(defun panel-reader-cb (msg)
-  (when msg
-    (setq *msg* msg)
-    (setq *data* (send *msg* :data))
-    (format t "~A ~%" *data*)
-    (if (ros::time> (send *msg* :header :stamp) *now*)
-        (setq *cb-flag* t)
-      )
-    ))
-
-(defun read-panel ()
-  (setq *now* (ros::time-now))
-  (ros::unsubscribe "/ih_stove_reader/result")
-  (setq *cb-flag* nil)
-  (ros::subscribe "/ih_stove_reader/result" roseus::StringStamped #'panel-reader-cb)
-  (until *cb-flag*
-         (ros::spin-once)
-         (ros::sleep)
-         )
-  )
-
-(defun string2num (string)
-  (let (num)
-    (cond
-     ((equal string "1")
-      (setq num 1))
-     ((equal string "2")
-      (setq num 2))
-     ((equal string "3")
-      (setq num 3))
-     ((equal string "4")
-      (setq num 4))
-     ((equal string "5")
-      (setq num 5))
-     ((equal string "6")
-      (setq num 6))
-     ((equal string "7")
-      (setq num 7))
-     ((equal string "8")
-      (setq num 8))
-     ((equal string "9")
-      (setq num 9))
-     )
-    num))
-
-(defun read-data ()
-  (let (num-data num)
-    (setq num-data (string-trim "p" (string-trim "/" *data*)))
-    (setq num (string2num num-data))
-    num))
 
 ;; add for grasp detection
 (defun grasp-fail-detection-larm (&rest args &key (g-thre 10) &allow-other-keys)
@@ -133,21 +56,16 @@
   (send *ri* :angle-vector-sequence avs tms)
 
   (ros::unsubscribe "/left_endeffector/wrench")
-  (setq *topic-name* "/left_endeffector/wrench")
-  (setq *cb-flag* nil)
-  (ros::subscribe "/left_endeffector/wrench" geometry_msgs::WrenchStamped #'wrench-x-cb)
 
   (while (some #'identity (send *ri* :wait-interpolation nil 0.1))
-    (when (progn
-            (ros::spin-once)
-            (if *cb-flag* t)
-            )
-      (send *ri* :cancel-angle-vector)
-      (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-      (warn "cancel!!! ~%")
-      )
-    )
-
+    (let* ((msg (one-shot-subscribe "/left_endeffector/wrench" geometry_msgs::WrenchStamped))
+           (force-x (send msg :wrench :force :x))
+           (force-x-thre -15))
+      (when (< force-x force-x-thre)
+        (format t "Touch detected. Cancel moving.~%force-x is ~A (threshold is ~A)~%"
+                force-x force-x-thre)
+        (send *ri* :cancel-angle-vector)
+        (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))))
   (ros::unsubscribe "/left_endeffector/wrench")
   )
 

@@ -1,4 +1,3 @@
-(load "package://jsk_2021_10_soup_from_boil/euslisp/utils/tool-at-arrange.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
 
 (defun arrangement-init ()

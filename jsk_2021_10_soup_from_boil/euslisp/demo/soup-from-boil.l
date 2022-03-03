@@ -45,11 +45,12 @@
   ;; 沸騰するまで待つ
   (look-at-pot)
   (ros::spin-once)
-  (let ((max-temp
-         (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
-    (if max-temp
+  (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
+        max-temp)
+    (if max-temp-msg
       ;; If PR2 have thermal sensor
       (progn
+        (setq max-temp (send max-temp-msg :data))
         (while (< max-temp 75)
           (send *ri* :speak-jp "まだお湯は沸騰していません" :wait t)
           (unix:sleep 15)
@@ -72,7 +73,7 @@
 ;; スープを注ぐ
 (defun pour-soup ()
   ;; 盛り付けの位置に移動する
-  (move-to-arrange-with-speech-before-and-before-with-rec)
+  ;; (move-to-arrange-with-speech-before-and-before-with-rec)
 
   ;; おたまを掴む
   (update-pos)
@@ -107,10 +108,11 @@
 (defun cool-soup ()
   (look-at-dish)
   (ros::spin-once)
-  (let ((max-temp
-         (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
+  (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
+        max-temp)
     ;; If PR2 have thermal sensor
-    (if max-temp
+    (when max-temp-msg
+      (setq max-temp (send max-temp-msg :data))
       (while (> max-temp 65)
         (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
         (unix:sleep 15)
@@ -124,9 +126,11 @@
   ;; 最初の位置はarrangeの場所 (move-to-arrange-ri-direct)
   (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
   (move-to-kitchen)
+  (update-pos)
+
+  ;; TODO: correct position of IH by touch and wrench
 
   ;; 設置するもの：おたまとお皿
-  (update-pos)
   (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
@@ -138,7 +142,6 @@
   )
 
 (defun main ()
-  (move-to-kitchen)
   (boil-soup) ;; 沸騰させる
   (pour-soup) ;; お湯を注ぐ
   (cool-soup) ;; 冷ます
