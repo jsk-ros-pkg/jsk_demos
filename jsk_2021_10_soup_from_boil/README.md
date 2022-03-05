@@ -1,7 +1,10 @@
 # soup-from-boil
-スープを作るデモの移動無しver. 
+
+スープを作るデモ
 
 ## euslisp directory structure
+
+これは、euslispディレクトリに移動しておく
 
 - Programs in `demo` directory is for PR2 to do demos. These programs load only programs in `motion` directory.
 - Programs in `motion` directory is PR2's primitives for cooking. These programs load only programs in `util` and `model` directory.
@@ -45,6 +48,8 @@ Structure
 
 ## 準備
 
+以下、準備の実行手順
+
 ワークスペースの作成
 
 ```
@@ -66,57 +71,77 @@ catkin build jsk_2021_10_soup_from_boil
 - 換気扇とIHコンロの準備
 
 PR2を移動させるために、電源ケーブルを抜く。
-準備が出来たら
+準備が出来たら、
+
 ```
 # ROS_MASTER_URIをPR1040にすることを忘れない (e.g. rossetmaster pr1040)
 source ~/soup_ws/devel/setup.bash
-roscd jsk_2021_10_soup_from_boil/euslisp/utils
-roseus move-to-kitchen-with-map.l
-(move-to-arrange-ri-direct)
+roscd jsk_2021_10_soup_from_boil/euslisp/demo
+roseus soup-from-boil.l
+(setup)
 ```
-としてPR2を位置に移動させる．
+
+で、デモの物品配置やPR2の位置調整を行う。
+
+### setup関数の説明
+
+最初に、PR2がキッチンのIHコンロの前まで移動する。移動前後に充電ケーブルを抜き差しするように指示されるので、抜き差しする。
+
+```
+  (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
+  (move-to-kitchen)
+  (update-pos)
+```
+
+以下のように出たら移動に成功．
+PR2が動かなくなるなど移動に失敗した場合は、ps3joyでPR2をコンロの正面まで動かす．
+
 ```
 move-to : succeeded
 ```
-と出たら移動に成功．
-移動が失敗した場合はps3joyでPR2をコンロの正面まで動かす．
-移動が終わったら電源ケーブルを挿す．
 
-### 位置のチェック
+次に、PR2が操作できる位置におたまやお皿を配置する。PR2に言われたものをPR2に手渡したりキッチンに置いたりする。
+注意
+ - 「OKと合図をしてください」と言われる -> OKと答えるまでPR2は待つ
+ - それ以外の疑問形 -> 「はい」 or 「いいえ」で答える -> 「いいえ」の場合、PR2が動作をやり直す
 
+```
+  (set-pose)
+  (now-set-ladle-a-and-plate-with-dialogue)
+  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
+  (ok-wait)
+```
+
+最後に、IHコンロのツマミを操作できるかを試す。
+
+```
+  (send *ri* :speak-jp "IHコンロを操作できるかチェックします" :wait t)
+  (ih-check)
+```
+
+
+## デモ
 ```
 source ~/soup_ws/devel/setup.bash
-roscd jsk_2021_10_soup_from_boil/euslisp/utils
-roseus soup-arrange-test-20211008.l
-
-```
-としてIHコンロの操作が成功するか確認することができる．
-失敗した場合は、ps3joyでPR2の位置を調節する．
-
-## 実行
-```
-source ~/soup_ws/devel/setup.bash
-roscd jsk_2021_10_soup_from_boil/euslisp
-roseus soup-arrange-test-20211008.l
-(soup-arrange-all)
+roscd jsk_2021_10_soup_from_boil/euslisp/demo
+roseus soup-from-boil.l
+(main)
 ```
 でプログラムを実行する．
 
 
 ### デモの内容
 ```
-(defun soup-arrange-all ()
-  (soup-arrange-0) ;; 最初の準備
-  (unix:sleep 2)
-  (soup-arrange-1) ;; 沸騰させる
-  (unix:sleep 2)
-  (soup-arrange-2) ;; お湯を注ぐ
-  (unix:sleep 2)
-  (soup-arrange-3) ;; 冷ます
+(defun main ()
+  ;; 沸騰させる
+  (boil-soup)
+  ;; お湯を注ぐ
+  (pour-soup)
+  ;; 冷ます
+  (cool-soup)
   )
 ```
 
-- 最初の準備 : PR2の音声に従いながらおたまとコップをセットする．
 - 沸騰させる : IHコンロを操作して沸騰させる．
 - お湯を注ぐ : おたまを使ってお湯をコップに注ぐ．
 - 冷ます : WIP!!
