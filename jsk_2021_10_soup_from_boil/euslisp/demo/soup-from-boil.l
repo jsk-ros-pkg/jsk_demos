@@ -12,8 +12,6 @@
   (move-to-kitchen)
   (update-pos)
 
-  ;; TODO: correct position of IH by touch and wrench
-
   ;; 設置するもの：おたまとお皿
   (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)

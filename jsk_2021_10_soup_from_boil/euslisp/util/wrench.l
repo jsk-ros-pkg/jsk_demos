@@ -19,20 +19,23 @@
     "
 Return t if touch is detected
 "
-    (let* ((wrench-msg (if (eq arm :rarm) right-wrench- left-wrench-))
-           (force (send wrench-msg :wrench :force direction))
-           (touch (if (> threshold 0) (> force threshold) (< force threshold))))
-      (when touch
-        (format t "Touch detected. Cancel moving.~%force ~A is ~A (threshold is ~A)~%"
-                direction force threshold))
-      touch)))
+    (let ((wrench-msg (if (eq arm :rarm) right-wrench- left-wrench-)))
+      (unless wrench-msg
+        (format t "Wrench topic has not come yet.~%")
+        (return-from :check-touch nil))
+      (let* ((force (send wrench-msg :wrench :force direction))
+             (touch (if (> threshold 0) (> force threshold) (< force threshold))))
+        (when touch
+          (format t "Touch detected. Cancel moving.~%force ~A is ~A (threshold is ~A)~%"
+                  direction force threshold))
+        touch)))
+  )
 
 (defun cancel-motion-when-touch (&key (arm :rarm) (direction :x) (threshold -15))
   (let ((wrench-detector (instance kitchen-wrench-detector :init))
         touch)
     (ros::rate 20)
     (while (some #'identity (send *ri* :wait-interpolation nil 0.01))
-      (print "loop!!")
       (ros::spin-once)
       (setq touch
             (send wrench-detector :check-touch
