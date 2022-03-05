@@ -1,5 +1,6 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/wrench.l")
 
 (ros::roseus "ih-at-arrange" :anonymous t)
 
@@ -56,18 +57,7 @@
     )
   (send *ri* :angle-vector-sequence avs tms)
 
-  (ros::unsubscribe "/left_endeffector/wrench")
-
-  (while (some #'identity (send *ri* :wait-interpolation nil 0.1))
-    (let* ((msg (one-shot-subscribe "/left_endeffector/wrench" geometry_msgs::WrenchStamped))
-           (force-x (send msg :wrench :force :x))
-           (force-x-thre -15))
-      (when (< force-x force-x-thre)
-        (format t "Touch detected. Cancel moving.~%force-x is ~A (threshold is ~A)~%"
-                force-x force-x-thre)
-        (send *ri* :cancel-angle-vector)
-        (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))))
-  (ros::unsubscribe "/left_endeffector/wrench")
+  (cancel-motion-when-touch :arm :larm :direction :x :threshold -15)
   )
 
 (defun push-knob ()

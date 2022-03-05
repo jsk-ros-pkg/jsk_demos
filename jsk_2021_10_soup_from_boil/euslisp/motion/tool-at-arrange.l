@@ -203,18 +203,7 @@
     )
   (send *ri* :angle-vector-sequence avs tms)
 
-  (ros::unsubscribe "/right_endeffector/wrench")
-
-  (while (some #'identity (send *ri* :wait-interpolation nil 0.1))
-    (let* ((msg (one-shot-subscribe "/right_endeffector/wrench" geometry_msgs::WrenchStamped))
-           (force-x (send msg :wrench :force :x))
-           (force-x-thre -15))
-      (when (< force-x force-x-thre)
-        (format t "Touch detected. Cancel moving.~%force-x is ~A (threshold is ~A)~%"
-                force-x force-x-thre)
-        (send *ri* :cancel-angle-vector)
-        (send *pr2* :angle-vector (send *ri* :state :potentio-vector)))))
-  (ros::unsubscribe "/right_endeffector/wrench")
+  (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
   )
 
 (defun open-shelf-set ()
