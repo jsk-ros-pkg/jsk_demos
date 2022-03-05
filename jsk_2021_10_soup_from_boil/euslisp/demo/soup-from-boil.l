@@ -9,7 +9,7 @@
 (defun setup ()
   ;; 最初の位置はarrangeの場所
   (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
-  (move-to-kitchen)
+  (move-to-arrange-with-cable-check)
   (update-pos)
 
   ;; 設置するもの：おたまとお皿

@@ -429,7 +429,7 @@
 
 ;; Motions with interaction
 ;; ケーブルの状態を確認し、キッチンに移動する。
-(defun move-to-kitchen ()
+(defun move-to-arrange-with-cable-check ()
   (speech-before-move-with-rec)
   (unix:sleep 2)
   (move-to-arrange-ri-direct)

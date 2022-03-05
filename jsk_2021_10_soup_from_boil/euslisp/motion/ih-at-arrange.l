@@ -428,7 +428,7 @@
         (fingertip (send (send *pr2* :larm :end-coords :copy-worldcoords)
                          :translate #f(20 0 0) :local)))
     ;; Update *ih-knob-coords*
-    (setq *ih-knob-coords* (send fingertip :translate #f(0 -55 90) :world)))
+    (setq *ih-knob-coords* (send fingertip :translate #f(0 -55 85) :world)))
 
   ;; Reset PR2 left arm
   (send *pr2* :larm :move-end-pos #f(100 0 0) :world)
