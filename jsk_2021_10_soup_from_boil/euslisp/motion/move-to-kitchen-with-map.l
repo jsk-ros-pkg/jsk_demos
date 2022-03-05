@@ -2,6 +2,7 @@
 (require :eng2-scene "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-scene.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-coords.l")
 (load "models/arrow-object.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 
 (defun init ()
   ;; init
@@ -424,4 +425,15 @@
 (defun after-move ()
   (send *pr2* :torso_lift_joint :joint-angle 325)
   (set-head)
+  )
+
+;; Motions with interaction
+;; ケーブルの状態を確認し、キッチンに移動する。
+(defun move-to-kitchen ()
+  (speech-before-move-with-rec)
+  (unix:sleep 2)
+  (move-to-arrange-ri-direct)
+  (speech-after-move-with-rec)
+  (unix:sleep 2)
+  (after-move)
   )

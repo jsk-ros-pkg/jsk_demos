@@ -1,4 +1,5 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 
 (ros::roseus "ih-at-arrange" :anonymous t)
 
@@ -364,4 +365,40 @@
   (now-start-ih-with-fail-detection :deg 10)
   (push-knob)
   (set-pose)
+  )
+
+;; Motions with interation
+;; IHコンロを使ってお湯を沸騰させる
+(defun boil-soup ()
+  (send *ri* :speak-jp "沸騰させる調理を開始します")
+
+  ;; 着火する
+  (now-start-ih-with-fail-detection :deg 10)
+
+  ;; 沸騰するまで待つ
+  (look-at-pot)
+  (ros::spin-once)
+  (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
+        max-temp)
+    (if max-temp-msg
+      ;; If PR2 have thermal sensor
+      (progn
+        (setq max-temp (send max-temp-msg :data))
+        (while (< max-temp 75)
+          (send *ri* :speak-jp "まだお湯は沸騰していません" :wait t)
+          (unix:sleep 15)
+          (setq max-temp
+                (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data)))
+        (send *ri* :speak-jp "お湯が沸騰しました。" :wait t))
+      ;; If PR2 does not have thermal sensor
+      (progn
+        (look-at-pot)
+        (now-boil-with-dialogue))))
+
+  ;; 火を止める
+  (push-knob)
+  (set-pose-3)
+
+  (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
+  (send *ri* :speak-jp "次の工程に移ります" :wait t)
   )

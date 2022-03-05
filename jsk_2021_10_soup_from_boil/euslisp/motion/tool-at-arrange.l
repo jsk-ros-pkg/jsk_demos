@@ -5,6 +5,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 
 (setq *debug-flag* nil)
 
@@ -1065,4 +1066,73 @@
   (receive-ladle-with-dialogue)
   (put-ladle-a)
   (reset-rarm)
+  )
+
+;; Motions with interaction
+(defun now-set-ladle-a-and-plate-with-dialogue ()
+  ;; おたまを受け取る
+  (up-rarm)
+  (receive-ladle-with-dialogue)
+
+  ;; 盛り付ける動作をして皿を人にセットしてもらう
+  (arrange-motion-set)
+  (arrange-motion)
+  (have-the-plate-set-with-dialgue)
+  (after-arrange-motion)
+
+  ;; おたまをセットする
+  (put-ladle-a)
+  (reset-rarm)
+  )
+
+;; スープを注ぐ
+(defun pour-soup ()
+  ;; 盛り付けの位置に移動する
+  ;; (move-to-arrange-with-speech-before-and-before-with-rec)
+
+  ;; おたまを掴む
+  (update-pos)
+  (set-pose)
+  (grasp-ladle-with-fail-detection)
+
+  ;; 鍋を掴む
+  (grasp-pot-from-below-model-with-fail-detection)
+
+  ;; 止められるまでお湯を注ぐ
+  (let ((pour-flag t))
+    (until (not pour-flag)
+           (now-arrange-curry)
+           (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
+           (setq pour-flag (listen-speech "はい"))
+           ))
+
+  ;; 鍋とおたまを手から離す
+  (release-pot-from-below-model)
+  (put-ladle-a)
+  (reset-rarm)
+  (set-pose)
+
+  ;;完成！！
+  (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
+  (ok-wait)
+
+  (unix:sleep 2)
+  )
+
+;; スープを冷ます
+(defun cool-soup ()
+  (look-at-dish)
+  (ros::spin-once)
+  (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
+        max-temp)
+    ;; If PR2 have thermal sensor
+    (when max-temp-msg
+      (setq max-temp (send max-temp-msg :data))
+      (while (> max-temp 65)
+        (send *ri* :speak-jp "まだスープが熱いです。もう少しお待ちください。" :wait t)
+        (unix:sleep 15)
+        (setq max-temp
+              (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data))
+        )))
+  (send *ri* :speak-jp "スープが完成しました" :wait t)
   )
