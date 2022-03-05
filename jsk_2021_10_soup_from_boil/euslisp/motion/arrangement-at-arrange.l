@@ -1,9 +1,11 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
 
 (defun arrangement-init ()
   ;; set objects
   (setq *curry-dish* (curry-dish))
   (send *curry-dish* :newcoords (send *curry-dish-coords* :copy-worldcoords))
+  (setq *ladle* (ladle))
   (send *ladle* :newcoords (send *ladle-coords-a* :copy-worldcoords))
   ;; def global coords
   (move-to-arrange-irt)

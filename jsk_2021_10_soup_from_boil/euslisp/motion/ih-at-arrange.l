@@ -20,7 +20,7 @@
   (setq *ih-knob-coords* (make-coords :pos (float-vector 680 8110 30715) :rpy (float-vector -3.047 -0.011 1.512))) ;; ここを変える
 
   (move-to-arrange-irt)
-  (objects (list *pr2* *scene* *spatula* *ladle* *pot*))
+  (objects (list *pr2* *scene* *ladle* *pot*))
   (update-view)
   )
 
