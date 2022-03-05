@@ -3,11 +3,10 @@
 
 ## euslisp directory structure
 
-Rules
-
-- programs in `demo` directory load only programs in `utils` and `demo` directory.
-- programs in `utils` directory load only programs in `models` directory.
-- programs in `models` directory do not load any other programs.
+- Programs in `demo` directory is for PR2 to do demos. These programs load only programs in `motion` directory.
+- Programs in `motion` directory is PR2's primitives for cooking. These programs load only programs in `util` and `model` directory.
+- Programs in `util` directory is PR2's general functions. For example, touch sensing and human interaction.
+- Programs in `model` directory is for euslisp modelsfor cooking.
 
 Structure
 
