@@ -25,9 +25,10 @@ Return t if touch is detected
         (return-from :check-touch nil))
       (let* ((force (send wrench-msg :wrench :force direction))
              (touch (if (> threshold 0) (> force threshold) (< force threshold))))
-        (when touch
+        (if touch
           (format t "Touch detected. Cancel moving.~%force ~A is ~A (threshold is ~A)~%"
-                  direction force threshold))
+                  direction force threshold)
+          (format t "Touch is not detected.~%"))
         touch)))
   )
 

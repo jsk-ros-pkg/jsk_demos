@@ -1,3 +1,4 @@
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/wrench.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/knife-new-attention.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/peeler.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/potato-peeler.l")
@@ -24,6 +25,7 @@
   (setq *pot* (cooking-pot))
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
   ;; set equipment
+  ;; *shelf-door*のcoordsは、(correct-shelf-door-coords)で自動調整可能
   (setq *shelf-door* (shelf-door))
   (send *shelf-door* :newcoords (send *shelf-door-coords* :copy-worldcoords))
   (setq *shelf-look-coords* (send (send *shelf-door* :handle-handle0) :copy-worldcoords))
@@ -974,7 +976,7 @@
 (defun now-open-shelf-with-fail-detection ()
   (setq tmp-coords (send *shelf-door* :copy-worldcoords))
   (open-shelf-set)
-  
+
   ;; 失敗を検知する
   (grasp-fail-detection :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
@@ -991,11 +993,13 @@
               (ok-wait)
               (return-from now-open-shelf-with-fail-detection)))
         ))
-  
+
   (open-shelf)
   (after-open)
   )
 
+;; PR2がデモ前におたまなどを棚の中にセットするための関数
+;; (now-set-from-shelf-with-failure-detection)の前に呼ぶ
 (defun now-set-in-shelf-with-dialogue-and-fail-detection ()
   ;; 棚の中におたまとヘラをセットする．
 
@@ -1004,25 +1008,27 @@
   (now-open-shelf-with-fail-detection)
 
   ;; ヘラをセットする
-  (set-head)
-  (receive-spatula-with-dialogue)
-  (look-at-shelf)
-  (put-spatula-0)
+  ;; (set-head)
+  ;; (receive-spatula-with-dialogue)
+  ;; (look-at-shelf)
+  ;; (put-spatula-0)
 
   ;; おたまをセットする
   (set-head)
   (receive-ladle-with-dialogue)
   (look-at-shelf)
   (put-ladle-0)
-  
+
   ;; 棚の扉を閉める
   (close-shelf-set)
   (close-shelf)
   (after-close)
-  
+
   (set-head)
   )
 
+;; PR2がデモ本番に、棚を開けて道具を取り出してセットする関数
+;; (now-set-in-shelf-with-dialogue-and-fail-detection)の後で呼ぶ
 (defun now-set-from-shelf-with-failure-detection ()
   ;; 棚の扉を開ける
   (look-at-shelf)
@@ -1124,4 +1130,116 @@
               (send (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000) :data))
         )))
   (send *ri* :speak-jp "スープが完成しました" :wait t)
+  )
+
+(defun correct-shelf-door-coords ()
+  (set-pose)
+  (update-pos)
+
+  ;; 棚のノブの位置に手を伸ばす前のPre pose
+  (send *arrow* :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
+  (send *arrow* :translate (float-vector 100 80 0) :world)
+  (send *pr2* :rarm :inverse-kinematics
+        (send *arrow* :copy-worldcoords)
+        :rotation-axis t
+        :debug-view *debug-flag*)
+  (send *viewer* :draw-objects)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+  (send *ri* :wait-interpolation)
+
+  ;; Detect *shelf-door-coords* by touch
+  ;; Detect x direction for the next z ditection
+  (let (av avs tms)
+    (dotimes (i 20)
+      (send *arrow* :translate (float-vector -10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            *arrow*
+            :rotation-axis t
+            :debug-view nil)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms))
+  (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
+  (send *ri* :angle-vector-sequence
+        (list (send *pr2* :rarm :move-end-pos #f(100 0 -100) :world)
+              (send *pr2* :rarm :move-end-pos #f(-150 0 0) :world))
+        (list 2000 2000))
+  (send *ri* :wait-interpolation)
+
+  ;; Detect z direction
+  (let (av avs tms)
+    (dotimes (i 10)
+      (send *pr2* :rarm :move-end-pos #f(0 0 10) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms))
+  (cancel-motion-when-touch :arm :rarm :direction :z :threshold -10)
+  (send *ri* :angle-vector-sequence
+        (list (send *pr2* :rarm :move-end-pos #f(150 0 -50) :world)
+              (send *pr2* :rarm :move-end-pos #f(0 0 110) :world))
+        (list 2000 2000))
+  (send *ri* :wait-interpolation)
+
+  ;; Detect x direction for the next y ditection
+  (let (av avs tms)
+    (dotimes (i 10)
+      (send *pr2* :rarm :move-end-pos #f(-10 0 0) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms))
+  (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
+  (send *ri* :angle-vector
+        (send *pr2* :rarm :move-end-pos #f(15 0 0) :world)
+        2000)
+  (send *ri* :wait-interpolation)
+
+  ;; Detect y direction
+  (let (av avs tms)
+    (dotimes (i 20)
+      (send *pr2* :rarm :move-end-pos #f(0 -10 0) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms))
+  (cancel-motion-when-touch :arm :rarm :direction :y :threshold -5)
+
+  ;; Calculate *shelf-door-coords*
+  (unix:usleep (* 500 1000))
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (let* ((shelf-door-coords (copy-object *shelf-door-coords*))
+         (fingertip (send (send *pr2* :rarm :end-coords :copy-worldcoords)
+                          :translate #f(20 0 0) :local))
+         (new-shelf-door-handle (send fingertip :translate #f(0 -40 0) :world))
+         diff)
+    ;; Update *shelf-door-coords*
+    (setq diff (v- (send new-shelf-door-handle :worldpos)
+                   (car (send *shelf-door* :handle :worldpos))))
+    (send *shelf-door* :translate diff :world)
+    (format t "*shelf-door* coords is updated to ~A~%"
+            (send *shelf-door* :coords)))
+
+  ;; Reset PR2 rarm
+  (send *pr2* :rarm :move-end-pos #f(100 0 -100) :world)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
+)
+
+(defun shelf-check ()
+  (set-pose)
+  (look-at-shelf)
+
+  ;; correct position of IH by touch and wrench
+  ;; BE CAREFUL that this function changes *shelf-door* variable
+  (correct-shelf-door-coords)
+
+  ;; Check if PR2 can handle shelf
+  (open-shelf-set)
+  (open-shelf)
+  (after-open)
+  (close-shelf-set)
+  (close-shelf)
+  (after-close)
   )
