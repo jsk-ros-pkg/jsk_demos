@@ -28,7 +28,7 @@
     (until yes-flag
            (send *ri* :stop-grasp arm :wait t)
            (ok-grasp :gain gain :arm arm)
-           (send *ri* :speak-jp "上手く掴めていますか？")
+           (send *ri* :speak-jp "上手く掴めていますか？" :wait t)
            (setq yes-flag (listen-speech "はい"))
            (unless yes-flag
              (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします" :wait t)
