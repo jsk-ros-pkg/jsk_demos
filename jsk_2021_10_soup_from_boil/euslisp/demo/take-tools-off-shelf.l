@@ -7,14 +7,16 @@
 
 (defun setup()
   ;; 最初の場所はキッチン
-  (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
   (move-to-kitchen-with-cable-check)
-  (update-pos)
 
+  ;; 棚の取っ手の位置を触覚で確認
+  ;; *shelf-door*の値を書き換えるので、注意
+  (correct-shelf-door-coords)
+
+  ;; 棚の取っ手の位置を触覚で認識 + 棚の開閉ができるかテスト
   (shelf-check)
 
   ;; PR2がデモ前におたまなどを棚の中にセットするための関数
-  ;; (set-pose)
-  ;; (now-set-in-shelf-with-dialogue-and-fail-detection)
-
+  (set-pose)
+  (now-set-in-shelf-with-dialogue-and-fail-detection)
   )

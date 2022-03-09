@@ -8,19 +8,17 @@
 
 (defun setup ()
   ;; 最初の位置はarrangeの場所
-  (send *ri* :speak-jp "準備を開始します。キッチンに移動します。")
   (move-to-arrange-with-cable-check)
-  (update-pos)
+
+  ;; IHコンロの位置を触覚で確認
+  ;; *ih-knob-coords*の値を書き換えるので、注意
+  (correct-ih-knob-coords)
+
+  ;; IHコンロの操作チェック
+  (ih-check)
 
   ;; 設置するもの：おたまとお皿
-  (set-pose)
   (now-set-ladle-a-and-plate-with-dialogue)
-  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
-  (ok-wait)
-
-  ;; IHコンロの位置を確認
-  (send *ri* :speak-jp "IHコンロを操作できるかチェックします" :wait t)
-  (ih-check)
   )
 
 (defun main ()

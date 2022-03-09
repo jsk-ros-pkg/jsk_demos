@@ -345,7 +345,10 @@
   (set-pose-3)
   )
 
+;; correct position of IH by touch and wrench
+;; BE CAREFUL that this function changes *ih-knob-coords* variable
 (defun correct-ih-knob-coords ()
+  (send *ri* :speak-jp "IHコンロの位置を触って確認します")
   (set-pose)
   (update-pos)
 
@@ -438,12 +441,8 @@
   )
 
 (defun ih-check ()
+  (send *ri* :speak-jp "IHコンロを操作できるかチェックします")
   (set-pose)
-
-  ;; correct position of IH by touch and wrench
-  ;; BE CAREFUL that this function changes *ih-knob-coords* variable
-  (correct-ih-knob-coords)
-
   ;; Check if PR2 can handle IH kitchen
   (now-start-ih-with-fail-detection :deg 10)
   (push-knob)

@@ -430,20 +430,24 @@
 ;; Motions with interaction
 ;; ケーブルの状態を確認し、キッチンに移動する。
 (defun move-to-arrange-with-cable-check ()
+  (send *ri* :speak-jp "キッチンに移動します。")
   (speech-before-move-with-rec)
   (unix:sleep 2)
   (move-to-arrange-ri)
   (speech-after-move-with-rec)
   (unix:sleep 2)
   (after-move)
+  (update-pos)
   )
 
 ;; ケーブルの状態を確認し、キッチンに移動する。
 (defun move-to-kitchen-with-cable-check ()
+  (send *ri* :speak-jp "キッチンに移動します。")
   (speech-before-move-with-rec)
   (unix:sleep 2)
   (move-to-kitchen-ri)
   (speech-after-move-with-rec)
   (unix:sleep 2)
   (after-move)
+  (update-pos)
   )

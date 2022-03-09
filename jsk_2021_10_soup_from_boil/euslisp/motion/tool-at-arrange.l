@@ -1066,6 +1066,7 @@
 ;; Motions with interaction
 (defun now-set-ladle-a-and-plate-with-dialogue ()
   ;; おたまを受け取る
+  (set-pose)
   (up-rarm)
   (receive-ladle-with-dialogue)
 
@@ -1078,6 +1079,9 @@
   ;; おたまをセットする
   (put-ladle-a)
   (reset-rarm)
+
+  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
+  (ok-wait)
   )
 
 ;; スープを注ぐ
@@ -1132,8 +1136,12 @@
   (send *ri* :speak-jp "スープが完成しました" :wait t)
   )
 
+;; correct position of IH by touch and wrench
+;; BE CAREFUL that this function changes *shelf-door* variable
 (defun correct-shelf-door-coords ()
+  (send *ri* :speak-jp "ドアの取っ手の位置を触って確認します")
   (set-pose)
+  (look-at-shelf)
   (update-pos)
 
   ;; 棚のノブの位置に手を伸ばす前のPre pose
@@ -1228,12 +1236,9 @@
 )
 
 (defun shelf-check ()
+  (send *ri* :speak-jp "ドアの開閉が出来るかチェックします")
   (set-pose)
   (look-at-shelf)
-
-  ;; correct position of IH by touch and wrench
-  ;; BE CAREFUL that this function changes *shelf-door* variable
-  (correct-shelf-door-coords)
 
   ;; Check if PR2 can handle shelf
   (open-shelf-set)
