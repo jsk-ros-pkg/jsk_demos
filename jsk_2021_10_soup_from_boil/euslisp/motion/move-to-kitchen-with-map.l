@@ -432,7 +432,17 @@
 (defun move-to-arrange-with-cable-check ()
   (speech-before-move-with-rec)
   (unix:sleep 2)
-  (move-to-arrange-ri-direct)
+  (move-to-arrange-ri)
+  (speech-after-move-with-rec)
+  (unix:sleep 2)
+  (after-move)
+  )
+
+;; ケーブルの状態を確認し、キッチンに移動する。
+(defun move-to-kitchen-with-cable-check ()
+  (speech-before-move-with-rec)
+  (unix:sleep 2)
+  (move-to-kitchen-ri)
   (speech-after-move-with-rec)
   (unix:sleep 2)
   (after-move)
