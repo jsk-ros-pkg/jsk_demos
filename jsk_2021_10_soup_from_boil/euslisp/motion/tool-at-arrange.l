@@ -1035,10 +1035,10 @@
   (now-open-shelf-with-fail-detection)
 
   ;; ヘラをセットする
-  (rarm-middle-pose)
-  (grasp-spatula-0-with-fail-detection)
-  (rarm-middle-pose)
-  (put-spatula-1)
+  ;; (rarm-middle-pose)
+  ;; (grasp-spatula-0-with-fail-detection)
+  ;; (rarm-middle-pose)
+  ;; (put-spatula-1)
 
   ;; おたまをセットする
   (rarm-middle-pose)
