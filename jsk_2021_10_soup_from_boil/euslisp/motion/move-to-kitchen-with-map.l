@@ -99,12 +99,12 @@
 (defun update-view ()
   (send *pr2* :copy-worldcoords)
   (send *viewer* :draw-objects)
-  (send *irtviewer* :look-all *pr2*)           
+  (send *irtviewer* :look-all *pr2*)
   )
 
 (defun update-scene ()
   (objects (list *scene* *pr2*))
-  (send *irtviewer* :look-all *pr2*)           
+  (send *irtviewer* :look-all *pr2*)
   )
 
 (defun update-pos ()

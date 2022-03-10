@@ -10,8 +10,8 @@
   (move-to-kitchen-with-cable-check)
 
   ;; 棚の取っ手の位置を触覚で確認
-  ;; *shelf-door*の値を書き換えるので、注意
-  (correct-shelf-door-coords)
+  ;; *pr2*のcoordsの値を書き換えるので、注意
+  (correct-pr2-coords-at-kitchen)
 
   ;;  棚の開閉ができるかテスト
   (shelf-check)
