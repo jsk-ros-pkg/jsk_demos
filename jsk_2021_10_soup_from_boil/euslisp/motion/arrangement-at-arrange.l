@@ -15,59 +15,6 @@
 
 (arrangement-init)
 
-;; util funcs
-(defun reset-rarm-arrangement-at-arrangement () ;; TODO
-  (setq *rav0* #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
-  (send *pr2* :rarm :angle-vector *rav0*)
-
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (setq *rav2* #f(-30.0303 1.63624 -169.166 -116.783 100.843 -98.3015 -58.1037))
-  (send *pr2* :rarm :angle-vector *rav2*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (setq *rav3* #f(-75.0 50.0 -110.0 -110.0 20.0 -10.0 -10.0))
-  (send *pr2* :rarm :angle-vector *rav3*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
-
-  )
-
-(defun reset-larm-arrangement-at-arrangement () ;; TODO
-  (send *arrow* :newcoords (make-coords :pos (float-vector 557 8260 31125) :rpy (float-vector 2.356 0.785 1.571)))
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (send *arrow* :newcoords (make-coords :pos (float-vector 600.0 8061.0 31167.0) :rpy (float-vector 1.571 1.047 1.571)))
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  (send *arrow* :newcoords (make-coords :pos (float-vector 800.191 8010.896 30866.677) :rpy (float-vector 2.341 -0.222 0.133)))
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-  )
-
-
 (defun look-at-dish ()
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :head :look-at (send (send *curry-dish* :copy-worldcoords) :worldpos))
@@ -429,23 +376,19 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
 
-  (setq avs (list))
-  (setq tms (list))
+  (let (av avs tms)
+    (dotimes (i 3)
+      (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400)))
 
-  (dotimes (i 3)
-    (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
-    (setq av (send *pr2* :angle-vector))
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-
-    (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
-    (setq av (send *pr2* :angle-vector))
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+      (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   ;; avoid-pose的な姿勢になる．
   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))

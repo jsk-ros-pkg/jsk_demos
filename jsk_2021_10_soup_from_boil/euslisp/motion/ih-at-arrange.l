@@ -38,8 +38,7 @@
 ;; add for grasp detection
 (defun grasp-fail-detection-larm (&rest args &key (g-thre 10) &allow-other-keys)
   (setq *fail-flag* nil)
-  (setq gripper-len (send *ri* :state :gripper :larm :position))
-  (if (< gripper-len g-thre)
+  (if (< (send *ri* :state :gripper :larm :position) g-thre)
       (setq *fail-flag* t))
   )
 
@@ -175,8 +174,7 @@
 ;; pot funcs
 (defun grasp-pot-from-below ()
   ;;腕を引いた姿勢
-  (setq *larm0* #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
-  (send *pr2* :larm :angle-vector *larm0*)
+  (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
 
@@ -240,8 +238,7 @@
 
 (defun grasp-pot-from-below-model ()
   ;;腕を引いた姿勢
-  (setq *larm0* #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
-  (send *pr2* :larm :angle-vector *larm0*)
+  (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
 
@@ -302,8 +299,7 @@
   (send *ri* :wait-interpolation)
 
   ;;腕を引いた姿勢
-  (setq *larm0* #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
-  (send *pr2* :larm :angle-vector *larm0*)
+  (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
   )

@@ -122,25 +122,19 @@
 ;; add for grasp detection
 (defun grasp-fail-detection (&rest args &key (g-thre 10) &allow-other-keys)
   (setq *fail-flag* nil)
-  (setq gripper-len (send *ri* :state :gripper :rarm :position))
-  (if (< gripper-len g-thre)
-      (setq *fail-flag* t))
-  )
+  (if (< (send *ri* :state :gripper :rarm :position) g-thre)
+      (setq *fail-flag* t)))
 
 (defun grasp-fail-detection-larm (&rest args &key (g-thre 10) &allow-other-keys)
   (setq *fail-flag* nil)
-  (setq gripper-len (send *ri* :state :gripper :larm :position))
-  (if (< gripper-len g-thre)
-      (setq *fail-flag* t))
-  )
+  (if (< (send *ri* :state :gripper :larm :position) g-thre)
+      (setq *fail-flag* t)))
 
 ;; release gripper
 (defun release-object (&rest args &key (g-num 0.025) &allow-other-keys)
-  (let (tmp-gripper)
-    ;;グリッパを微妙に開く
-    (setq tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position)))
-    (send *ri* :move-gripper :rarm (+ g-num tmp-gripper))
-    ))
+  ;;グリッパを微妙に開く
+  (send *ri* :move-gripper :rarm
+        (+ g-num (* 0.001 (send *ri* :state :gripper :rarm :position)))))
 
 ;; IRT上の移動
 (defun move-to-kitchen-irt ()
@@ -181,49 +175,36 @@
 ;; 実機の移動
 (defun move-to-kitchen-ri ()
   (send *ri* :clear-costmap)
-  ;; (send *ri* :move-to (make-coords :pos #f(1200 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (setq local-flag (send *ri* :move-to (make-coords :pos #f(1400 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map"))
-  (if (eql local-flag t)
+  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
+    (if (eql local-flag t)
       (progn
         (send *ri* :go-pos-unsafe 0.2 0 0)
-        (warn "go-pos unsafe !! ~%")
-        )
-    (send *ri* :speak-jp "移動に失敗しました，アシストして下さい")
-    )
-  (print (send *ri* :state :worldcoords))
-  )
+        (warn "go-pos unsafe !! ~%"))
+      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
+    (print (send *ri* :state :worldcoords))))
 
 (defun move-to-sink-ri ()
   ;; コンロまで移動する
   (send *ri* :clear-costmap)
-  ;; (send *ri* :move-to (make-coords :pos #f(1110 9100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (setq local-flag (send *ri* :move-to (make-coords :pos #f(1400 9100 351) :rpy (float-vector pi 0 0)) :frame-id "/map"))
-  (if (eql local-flag t)
-      (progn   (send *ri* :go-pos-unsafe 0.29 0 0)
-               )
-    (send *ri* :speak-jp "移動に失敗しました，アシストして下さい")
-    )
-  (print (send *ri* :state :worldcoords))
-  )
+  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 9100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
+    (if (eql local-flag t)
+      (send *ri* :go-pos-unsafe 0.29 0 0)
+      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
+    (print (send *ri* :state :worldcoords))))
 
 (defun move-to-stove-ri ()
   (send *ri* :clear-costmap)
-  ;; (send *ri* :move-to (make-coords :pos #f(1200 8100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (setq local-flag (send *ri* :move-to (make-coords :pos #f(1400 8100 351) :rpy (float-vector pi 0 0)) :frame-id "/map"))
-  (if (eql local-flag t)
+  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
+    (if (eql local-flag t)
       (progn
         (send *ri* :go-pos-unsafe 0.2 0 0)
-        (warn "go-pos unsafe !! ~%")
-        )
-    (send *ri* :speak-jp "移動に失敗しました，アシストして下さい")
-    )
-  (print (send *ri* :state :worldcoords))
-  )
+        (warn "go-pos unsafe !! ~%"))
+      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
+    (print (send *ri* :state :worldcoords))))
 
 (defun move-to-microwave-ri ()
   ;; 電子レンジまで移動する
   (send *ri* :clear-costmap)
-  ;; (send *ri* :move-to (make-coords :pos #f(1700 9400 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
   (send *ri* :move-to (make-coords :pos #f(1600 9300 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
   (print (send *ri* :state :worldcoords))
   )
@@ -237,18 +218,13 @@
 
 (defun move-to-arrange-ri ()
   (send *ri* :clear-costmap)
-  ;; (send *ri* :move-to (make-coords :pos #f(1200 8200 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (setq local-flag (send *ri* :move-to (make-coords :pos #f(1400 8200 351) :rpy (float-vector pi 0 0)) :frame-id "/map"))
-  (if (eql local-flag t)
+  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8200 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
+    (if (eql local-flag t)
       (progn
         (send *ri* :go-pos-unsafe 0.2 0 0)
-        (warn "go-pos unsafe !! ~%")
-        )
-    (send *ri* :speak-jp "移動に失敗しました，アシストして下さい")
-    )
-  (print (send *ri* :state :worldcoords))
-  )
-
+        (warn "go-pos unsafe !! ~%"))
+      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
+    (print (send *ri* :state :worldcoords))))
 
 ;; direct move funcs
 (defun move-to-kitchen-ri-direct ()

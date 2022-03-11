@@ -194,16 +194,13 @@
 (defun touch-shelf-knob ()
   ;; Mainly copied from (push-stove-button) in ih-at-arrange.l
   ;; The difference is left and right
-  (setq avs (list))
-  (setq tms (list))
-
-  (dotimes (i 15)
-    (send *pr2* :rarm :move-end-pos #f(-10 0 0) :world)
-    (setq av (send *pr2* :angle-vector))
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-  (send *ri* :angle-vector-sequence avs tms)
+  (let (avs tms)
+    (dotimes (i 15)
+      (send *pr2* :rarm :move-end-pos #f(-10 0 0) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms))
 
   (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
   )
@@ -260,9 +257,7 @@
 (defun open-shelf ()
   (let ((i 0)   ;; open
         (handle-coords (make-coords))
-        (av)
-        (tms (list))
-        (avs (list)))
+        av avs tms)
     (while (< i 99)
       (send *shelf-door* :angle-vector (float-vector i))
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
@@ -275,8 +270,7 @@
       (setq i (+ i 10))
       )
     (send *ri* :angle-vector-sequence avs tms)
-    (send *ri* :wait-interpolation)
-    )
+    (send *ri* :wait-interpolation))
   (warn "please run (after-open) ~%")
   )
 
@@ -298,8 +292,6 @@
   )
 
 (defun close-shelf-set ()
-  ;; (setq *rav0* #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
-  ;; (send *pr2* :rarm :angle-vector *rav0*)
   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -349,9 +341,7 @@
 (defun close-shelf ()
   (let ((i 100)   ;; close
         (handle-coords (make-coords))
-        (av)
-        (tms (list))
-        (avs (list)))
+        av avs tms)
     (while (>= i 0)
       (send *shelf-door* :angle-vector (float-vector i))
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
@@ -365,8 +355,7 @@
       (setq i (- i 10))
       )
     (send *ri* :angle-vector-sequence avs tms)
-    (send *ri* :wait-interpolation)
-    )
+    (send *ri* :wait-interpolation))
   (warn "please run (after-close) ~%")
   )
 
@@ -447,24 +436,18 @@
   (send *ri* :wait-interpolation)
 
   ;; 手をスライドさせる
-  (setq avs (list))
-  (setq tms (list))
-
-  (dotimes (i 35)
-    (send *arrow* :translate (float-vector 10 0 0) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          *arrow*
-          :rotation-axis t
-          :debug-view nil)
-
-    (setq av (send *pr2* :angle-vector))
-
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+  (let (av avs tms)
+    (dotimes (i 35)
+      (send *arrow* :translate (float-vector 10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            *arrow*
+            :rotation-axis t
+            :debug-view nil)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   ;; 手を下げる
   (send *pr2* :rarm :move-end-pos #f(0 0 -60) :world)
@@ -515,24 +498,18 @@
   (send *ri* :wait-interpolation)
 
   ;; 手をスライドさせる
-  (setq avs (list))
-  (setq tms (list))
-
-  (dotimes (i 35)
-    (send *arrow* :translate (float-vector 10 0 0) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          *arrow*
-          :rotation-axis t
-          :debug-view nil)
-
-    (setq av (send *pr2* :angle-vector))
-
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+  (let (av avs tms)
+    (dotimes (i 35)
+      (send *arrow* :translate (float-vector 10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            *arrow*
+            :rotation-axis t
+            :debug-view nil)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   ;; 手を下げる
   (send *pr2* :rarm :move-end-pos #f(0 0 -60) :world)
@@ -589,24 +566,18 @@
   (send *ri* :wait-interpolation)
 
   ;; 手をスライドさせる
-  (setq avs (list))
-  (setq tms (list))
-
-  (dotimes (i 35)
-    (send *arrow* :translate (float-vector -10 0 0) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          *arrow*
-          :rotation-axis t
-          :debug-view nil)
-
-    (setq av (send *pr2* :angle-vector))
-
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+  (let (av avs tms)
+    (dotimes (i 35)
+      (send *arrow* :translate (float-vector -10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            *arrow*
+            :rotation-axis t
+            :debug-view nil)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   (send *arrow* :translate #f(-30 0 -30) :world)
   (send *pr2* :rarm :inverse-kinematics
@@ -619,10 +590,6 @@
 
   ;;グリッパを微妙に開く
   (release-object :g-num 0.025)
-  ;; (setq tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position)))
-  ;; (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper))
-
-  ;; (send *ri* :move-gripper :rarm 0.07)
 
   (send *pr2* :rarm :end-coords :dissoc *spatula*)
 
@@ -678,24 +645,18 @@
   (send *ri* :wait-interpolation)
 
   ;; 手をスライドさせる
-  (setq avs (list))
-  (setq tms (list))
-
-  (dotimes (i 35)
-    (send *arrow* :translate (float-vector -10 0 0) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          *arrow*
-          :rotation-axis t
-          :debug-view nil)
-
-    (setq av (send *pr2* :angle-vector))
-
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+  (let (av avs tms)
+    (dotimes (i 35)
+      (send *arrow* :translate (float-vector -10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            *arrow*
+            :rotation-axis t
+            :debug-view nil)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   (send *arrow* :translate #f(-30 0 -30) :world)
   (send *pr2* :rarm :inverse-kinematics
@@ -707,8 +668,8 @@
   (send *ri* :wait-interpolation)
 
   ;;グリッパを微妙に開く
-  (setq tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position)))
-  (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper))
+  (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
+    (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper)))
   ;; (send *ri* :move-gripper :rarm 0.07)
 
   (send *pr2* :rarm :end-coords :dissoc *ladle*)
@@ -735,35 +696,19 @@
   (rarm-middle-pose)
   )
 
-(defun reset-rarm () ;; TODO (copy from arrangement-codes.l)
-  (setq *rav0* #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
-  (send *pr2* :rarm :angle-vector *rav0*)
-  ;; (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086)))
-  ;; (send *pr2* :rarm :inverse-kinematics
-  ;;       (send *arrow* :copy-worldcoords)
-  ;;       :rotation-axis t
-  ;;       :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (setq *rav2* #f(-30.0303 1.63624 -169.166 -116.783 100.843 -98.3015 -58.1037))
-  (send *pr2* :rarm :angle-vector *rav2*)
-  ;; (send *arrow* :newcoords (make-coords :pos (float-vector 800.186 8689.105 30866.677) :rpy (float-vector -2.341 -0.222 -0.482)))
-  ;; (send *pr2* :rarm :inverse-kinematics
-  ;;       (send *arrow* :copy-worldcoords)
-  ;;       :rotation-axis t
-  ;;       :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (setq *rav3* #f(-75.0 50.0 -110.0 -110.0 20.0 -10.0 -10.0))
-  (send *pr2* :rarm :angle-vector *rav3*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
-  )
+(defun reset-rarm ()
+  (let ((rav0 #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
+        (rav1 #f(-30.0303 1.63624 -169.166 -116.783 100.843 -98.3015 -58.1037))
+        (rav2 #f(-75.0 50.0 -110.0 -110.0 20.0 -10.0 -10.0))
+        avs)
+    (dolist (rav (list rav0 rav1 rav2))
+      (send *pr2* :rarm :angle-vector rav)
+      (setq avs (append avs (list (send *pr2* :angle-vector)))))
+    (send *ri* :angle-vector-sequence
+          avs
+          (list 3000 3000 2000))
+    (send *viewer* :draw-objects)
+    (send *ri* :wait-interpolation)))
 
 (defun up-rarm ()
   ;; 手を上げる
@@ -846,8 +791,6 @@
   (send *ri* :wait-interpolation)
 
   ;; 待機姿勢になる
-  ;; (setq *rav0* #f(-20.8048 54.2396 -5.42985 -119.734 197.32 -75.8373 -189.059))
-  ;; (send *pr2* :rarm :angle-vector *rav0*)
   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -858,26 +801,26 @@
   )
 
 (defun grasp-ladle-with-fail-detection ()
-  (setq tmp-coords (send *ladle* :copy-worldcoords))
-  (grasp-ladle)
+  (let ((tmp-coords (send *ladle* :copy-worldcoords)))
+    (grasp-ladle)
 
-  ;; 失敗を検知する
-  (grasp-fail-detection :g-thre 10)
-  (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
+    ;; 失敗を検知する
+    (grasp-fail-detection :g-thre 10)
+    (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (if (not (eql (send *ladle* :parent) nil))
-            (send (send *ladle* :parent) :dissoc *ladle*))
+          (send (send *ladle* :parent) :dissoc *ladle*))
         (send *ladle* :newcoords tmp-coords)
         (grasp-ladle)
         (grasp-fail-detection :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
-            (progn
-              (send *ri* :speak-jp "おたまの把持が失敗しました，渡す準備をしてokと合図をして下さい")
-              (receive-with-dialogue)
-              (send *ri* :start-grasp :rarm :wait t)
-              ))
+          (progn
+            (send *ri* :speak-jp "おたまの把持が失敗しました，渡す準備をしてokと合図をして下さい")
+            (receive-with-dialogue)
+            (send *ri* :start-grasp :rarm :wait t)
+            ))
         ))
-  )
+    ))
 
 (defun set-ladle ()
   (if (not (eql (send *ladle* :parent) nil))
@@ -934,23 +877,19 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
 
-  (setq avs (list))
-  (setq tms (list))
+  (let (av avs tms)
+    (dotimes (i 3)
+      (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400)))
 
-  (dotimes (i 3)
-    (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
-    (setq av (send *pr2* :angle-vector))
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-
-    (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
-    (setq av (send *pr2* :angle-vector))
-    (setq avs (append avs (list av)))
-    (setq tms (append tms (list 400)))
-    )
-
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)
+      (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
+    (send *ri* :wait-interpolation))
 
   ;; avoid-pose的な姿勢になる．
   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))
@@ -976,28 +915,28 @@
   )
 
 (defun now-open-shelf-with-fail-detection ()
-  (setq tmp-coords (send *shelf-door* :copy-worldcoords))
-  (open-shelf-set)
+  (let ((tmp-coords (send *shelf-door* :copy-worldcoords)))
+    (open-shelf-set)
 
-  ;; 失敗を検知する
-  (grasp-fail-detection :g-thre 10)
-  (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
+    ;; 失敗を検知する
+    (grasp-fail-detection :g-thre 10)
+    (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (if (not (eql (send *shelf-door* :parent) nil))
-            (send (send *shelf-door* :parent) :dissoc *shelf-door*))
+          (send (send *shelf-door* :parent) :dissoc *shelf-door*))
         (send *shelf-door* :newcoords tmp-coords)
         (open-shelf-set)
         (grasp-fail-detection :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
-            (progn
-              (rarm-middle-pose) ;; 中間姿勢になる
-              (send *ri* :speak-jp "棚の取手を掴むのに失敗しました，棚を開けてokと合図をして下さい")
-              (ok-wait)
-              (return-from now-open-shelf-with-fail-detection)))
-        ))
+          (progn
+            (rarm-middle-pose) ;; 中間姿勢になる
+            (send *ri* :speak-jp "棚の取手を掴むのに失敗しました，棚を開けてokと合図をして下さい")
+            (ok-wait)
+            (return-from now-open-shelf-with-fail-detection)))
+        )))
 
-  (open-shelf)
-  (after-open)
+    (open-shelf)
+    (after-open)
   )
 
 ;; PR2がデモ前におたまなどを棚の中にセットするための関数
@@ -1219,7 +1158,7 @@
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms))
-  (cancel-motion-when-touch :arm :rarm :direction :y :threshold -5)
+  (cancel-motion-when-touch :arm :rarm :direction :y :threshold -6)
 
   ;; Calculate *shelf-door-coords*
   (unix:usleep (* 500 1000))
