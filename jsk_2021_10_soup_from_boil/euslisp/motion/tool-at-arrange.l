@@ -253,11 +253,10 @@
   (send *ri* :start-grasp :rarm :wait t)
   (send *ri* :start-grasp :rarm :wait t :gain 0.08)
 
-  ;; 消してもよいのか
-  ;; (set-shelf-door)
   (warn "please run (open-shelf) ~%")
   )
 
+;; (send *shelf-door* :angle-vector #f(90))によって、(send *shelf-door* :handle)の値が書き換わるので、注意
 (defun open-shelf ()
   (let ((i 0)   ;; open
         (handle-coords (make-coords))
@@ -1008,6 +1007,8 @@
 
   ;; 棚の扉を開ける
   (look-at-shelf)
+  ;; Close *shelf-door* model
+  (send *shelf-door* :angle-vector #f(0))
   (now-open-shelf-with-fail-detection)
 
   ;; ヘラをセットする
@@ -1035,7 +1036,10 @@
 (defun now-set-from-shelf-with-failure-detection ()
   ;; 棚の扉を開ける
   (look-at-shelf)
+  ;; Close *shelf-door* model
+  (send *shelf-door* :angle-vector #f(0))
   (now-open-shelf-with-fail-detection)
+
   ;; ヘラをセットする
   ;; (rarm-middle-pose)
   ;; (grasp-spatula-0-with-fail-detection)
@@ -1241,6 +1245,8 @@
 (defun shelf-check ()
   (send *ri* :speak-jp "ドアの開閉が出来るかチェックします")
   (look-at-shelf)
+  ;; Close *shelf-door* model
+  (send *shelf-door* :angle-vector #f(0))
 
   ;; Check if PR2 can handle shelf
   (open-shelf-set)

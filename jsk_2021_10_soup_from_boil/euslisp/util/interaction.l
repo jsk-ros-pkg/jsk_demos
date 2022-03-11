@@ -29,6 +29,7 @@
            (send *ri* :stop-grasp arm :wait t)
            (ok-grasp :gain gain :arm arm)
            (send *ri* :speak-jp "上手く掴めていますか？" :wait t)
+           (unix:usleep (* 300 1000))
            (setq yes-flag (listen-speech "はい"))
            (unless yes-flag
              (send *ri* :speak-jp "グリッパを開きます.もう一度お願いします" :wait t)
