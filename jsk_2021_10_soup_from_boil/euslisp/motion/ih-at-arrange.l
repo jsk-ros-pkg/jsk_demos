@@ -368,8 +368,7 @@
       (send *pr2* :larm :move-end-pos #f(-10 0 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
-      )
+      (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :x :threshold -15)
     (send *ri* :angle-vector-sequence
@@ -386,8 +385,7 @@
       (send *pr2* :larm :move-end-pos #f(0 0 -10) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
-      )
+      (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :z :threshold -15)
     (send *ri* :angle-vector-sequence
@@ -404,8 +402,7 @@
       (send *pr2* :larm :move-end-pos #f(-10 0 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
-      )
+      (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :x :threshold -15))
 
@@ -415,20 +412,24 @@
       (send *pr2* :larm :move-end-pos #f(0 -10 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
-      )
+      (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :y :threshold -4))
 
   ;; Calculate *ih-knob-coords*
   (unix:usleep (* 500 1000))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (let ((ih-knob-coords (copy-object *ih-knob-coords*))
-        (fingertip (send (send *pr2* :larm :end-coords :copy-worldcoords)
-                         :translate #f(20 0 0) :local)))
-    ;; Update *ih-knob-coords*
-    (setq *ih-knob-coords* (send fingertip :translate #f(0 -55 85) :world))
-    (format t "*ih-knob-coords* is updated to ~A~%" *ih-knob-coords*))
+  (let* ((ih-knob-coords (copy-object *ih-knob-coords*))
+         (fingertip (send (send *pr2* :larm :end-coords :copy-worldcoords)
+                          :translate #f(20 0 0) :local))
+         (new-ih-knob-coords (send fingertip :translate #f(0 -55 85) :world))
+         diff)
+    ;; Update *pr2* worldcoords
+    (setq diff (v- (send *ih-knob-coords* :worldpos)
+                   (send new-ih-knob-coords :worldpos)))
+    (send *pr2* :translate diff :world)
+    (format t "*pr2* coords is updated to ~A~%"
+            (send *pr2* :worldcoords)))
 
   ;; Reset PR2 left arm
   (send *pr2* :larm :move-end-pos #f(100 0 0) :world)
