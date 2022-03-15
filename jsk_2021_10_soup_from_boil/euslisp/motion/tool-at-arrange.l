@@ -77,6 +77,7 @@
   (warn "please run (put-ladle-1) or (put-ladle-0) ~%")
   )
 
+;; おたまを棚の中にセットする
 (defun put-ladle-1 ()
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
@@ -184,7 +185,8 @@
   (send *arrow* :newcoords (make-coords :pos (float-vector 570 8500 31100) :rpy (float-vector 3.14 0.0 0.0)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
-        :rotation-axis t
+        ;; :rotation-axis t
+        :rotation-axis :z ;; this change may affect many demos...
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -292,48 +294,38 @@
   )
 
 (defun close-shelf-set ()
-  (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086)))
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
   ;;グリッパを微妙に開く
   (send *ri* :move-gripper :rarm 0.05)
-
-  (send *shelf-door* :angle-vector (float-vector 100))
-
-  (send *arrow* :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
-  (send *arrow* :rotate (deg2rad -70) :y)
-  (send *arrow* :translate #f(-60 0 60))
-
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 6000)
-  (send *ri* :wait-interpolation)
-
-  (send *arrow* :translate #f(60 0 0))
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
-
-  (send *arrow* :translate #f(0 0 -60))
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
-  (send *ri* :wait-interpolation)
+  ;; ドアを閉める前の姿勢になる
+  (let (av1 av2 av3 av4)
+    (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086)))
+    (setq av1 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis :z
+          :debug-view *debug-flag*))
+    (send *shelf-door* :angle-vector (float-vector 100))
+    (send *arrow* :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
+    (send *arrow* :rotate (deg2rad -70) :y)
+    (send *arrow* :translate #f(-100 0 100))
+    (setq av2 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
+    (send *arrow* :translate (float-vector 100 0 0))
+    (setq av3 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
+    (send *arrow* :translate (float-vector 0 0 -100))
+    (setq av4 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector-sequence
+          (list av1 av2 av3 av4)
+          (list 2000 3000 1000 1000))
+    (send *ri* :wait-interpolation))
 
   (warn "please run (close-shelf) ~%")
   )
@@ -375,8 +367,6 @@
 
   (reset-rarm)
   )
-
-
 
 (defun grasp-tool-on-shelf ()
   ;; arrow　はセットしてある前提
@@ -615,38 +605,43 @@
   (rarm-middle-pose)
   )
 
-;; 成功する方
 (defun put-ladle-0 ()
   ;; 中間姿勢になる
   (rarm-middle-pose)
 
   ;; ladleを置く位置
-  (send *arrow* :newcoords (send *ladle-coords-0* :copy-worldcoords))
-  (send *arrow* :rotate (deg2rad -90) :x)
-  (send *arrow* :translate #f(30 0 30) :world)
-  (send *arrow* :translate (float-vector 350 0 0) :world)
-  (send *arrow* :translate #f(0 0 -100) :world)
-
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  (send *arrow* :translate #f(0 0 100) :world)
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+  (let (av1 av2 av3)
+    (send *arrow* :newcoords (send *ladle-coords-0* :copy-worldcoords))
+    (send *arrow* :rotate (deg2rad -90) :x)
+    (send *arrow* :translate #f(30 0 30) :world)
+    (send *arrow* :translate (float-vector 300 0 0) :world)
+    (send *arrow* :translate #f(0 0 -100) :world)
+    (setq av1 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis :z
+                    :debug-view *debug-flag*))
+    (send *arrow* :translate #f(-30 0 100) :world)
+    (send *arrow* :rotate (deg2rad 20) :z)
+    (setq av2 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
+    (send *arrow* :rotate (deg2rad -20) :z)
+    (send *arrow* :translate #f(-50 0 0) :world)
+    (setq av3 (send *pr2* :rarm :inverse-kinematics
+                    (send *arrow* :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector-sequence
+          (list av1 av2 av3)
+          (list 3000 3000 1000))
+    (send *ri* :wait-interpolation))
 
   ;; 手をスライドさせる
   (let (av avs tms)
-    (dotimes (i 35)
+    (dotimes (i 28)
+      (print i)
       (send *arrow* :translate (float-vector -10 0 0) :world)
       (send *pr2* :rarm :inverse-kinematics
             *arrow*
@@ -658,22 +653,21 @@
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation))
 
-  (send *arrow* :translate #f(-30 0 -30) :world)
+  ;; おたまが棚に当たるまで腕を下ろす
+  (send *arrow* :translate #f(0 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :rotation-axis t
         :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+  (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
+  (send *viewer* :draw-objects)
 
   ;;グリッパを微妙に開く
   (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
     (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper)))
-  ;; (send *ri* :move-gripper :rarm 0.07)
 
   (send *pr2* :rarm :end-coords :dissoc *ladle*)
-
   (send *arrow* :translate #f(60 0 30) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -749,7 +743,6 @@
   (send *ri* :start-grasp :rarm :wait t)
   )
 
-;; 失敗する方
 (defun grasp-ladle ()
   (pre-ik-pose)
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
@@ -902,18 +895,6 @@
   (send *ri* :wait-interpolation)
   )
 
-(defun now-set-ladle-1 ()
-  (up-rarm)
-  (receive-ladle)
-  (put-ladle-1)
-  )
-
-(defun now-set-ladle-0-with-dialogue ()
-  (up-rarm)
-  (receive-ladle-with-dialogue)
-  (put-ladle-0)
-  )
-
 (defun now-open-shelf-with-fail-detection ()
   (let ((tmp-coords (send *shelf-door* :copy-worldcoords)))
     (open-shelf-set)
@@ -997,15 +978,6 @@
   (after-close)
 
   (set-head)
-  )
-
-;; 盛り付けの位置での プログラム
-(defun now-set-ladle-a-with-dialogue ()
-  ;; おたまを受け取ってセットする
-  (up-rarm)
-  (receive-ladle-with-dialogue)
-  (put-ladle-a)
-  (reset-rarm)
   )
 
 ;; Motions with interaction
