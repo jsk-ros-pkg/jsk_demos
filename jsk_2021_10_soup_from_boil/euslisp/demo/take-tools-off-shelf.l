@@ -17,7 +17,6 @@
   (shelf-check)
 
   ;; PR2がデモ前におたまなどを棚の中にセットするための関数
-  (set-pose)
   (now-set-in-shelf-with-dialogue-and-fail-detection)
   )
 

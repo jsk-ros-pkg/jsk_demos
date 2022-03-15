@@ -17,7 +17,7 @@
 ;; (setq *spatula-coords-1* (make-coords :pos (float-vector 592 8549 30872) :rpy (float-vector 3.084 -0.042 1.542))) ;; ヘラ，平置き
 (setq *spatula-coords-1* (make-coords :pos (float-vector 630 8549 30872) :rpy (float-vector 3.084 -0.042 1.542))) ;; ヘラ，平置き
 ;; (setq *ladle-coords-1* (make-coords :pos (float-vector 599 8313 30877) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，平置き
-(setq *ladle-coords-1* (make-coords :pos (float-vector 630 8313 30877) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，平置き
+(setq *ladle-coords-1* (make-coords :pos (float-vector 550 8313 30877) :rpy (float-vector 3.14 0 1.57))) ;; おたま，平置き
 
 ;; (setq *spatula-coords-0* (make-coords :pos (float-vector 340 8720 31450) :rpy (float-vector -3.14 -0.008 1.529))) ;; ヘラ，棚の中
 (setq *spatula-coords-0* (make-coords :pos (float-vector 340 8730 31460) :rpy (float-vector -3.14 -0.008 1.529))) ;; ヘラ，棚の中
