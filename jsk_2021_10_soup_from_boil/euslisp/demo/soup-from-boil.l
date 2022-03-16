@@ -13,10 +13,10 @@
   ;; IHコンロの位置を触覚で確認
   ;; *ih-knob-coords*の値を書き換えるので、注意
   (correct-ih-knob-coords)
-  
+
   ;; IHコンロの操作チェック
   (ih-check)
-  
+
   ;; 設置するもの：おたまとお皿
   ;; (set-ladle-at-arrange-and-plate-with-dialogue)
   (receive-ladle-with-dialogue)
