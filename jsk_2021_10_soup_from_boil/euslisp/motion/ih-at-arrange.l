@@ -346,6 +346,9 @@
 (defun correct-ih-knob-coords ()
   (send *ri* :speak-jp "IHコンロの位置を触って確認します")
   (set-pose)
+  (send *pr2* :rarm :move-end-pos #f(0 200 0) :world)
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
   (update-pos)
 
   ;; Mainly copied from (push-knob)
@@ -374,7 +377,7 @@
     (send *ri* :angle-vector-sequence
           (list (send *pr2* :larm :move-end-pos #f(100 0 100) :world)
                 (send *pr2* :larm :move-end-pos #f(0 0 150) :world)
-                (progn (send *pr2* :larm :move-end-pos #f(-150 0 0) :world)
+                (progn (send *pr2* :larm :move-end-pos #f(-150 50 0) :world)
                        (send *pr2* :larm :move-end-rot 90 :x)))
           (list 2000 2000 2000))
     (send *ri* :wait-interpolation))
@@ -390,7 +393,7 @@
     (cancel-motion-when-touch :arm :larm :direction :z :threshold -15)
     (send *ri* :angle-vector-sequence
           (list (send *pr2* :larm :move-end-pos #f(150 -30 100) :world)
-                (send *pr2* :larm :move-end-pos #f(0 0 -150) :world)
+                (send *pr2* :larm :move-end-pos #f(0 -50 -150) :world)
                 (progn (send *pr2* :larm :move-end-pos #f(0 30 -160) :world)
                        (send *pr2* :larm :move-end-rot -90 :x)))
           (list 2000 2000 2000))
