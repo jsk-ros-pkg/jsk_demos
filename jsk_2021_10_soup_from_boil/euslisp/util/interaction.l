@@ -33,7 +33,7 @@
              (send *ri* :speak-jp "グリッパを開きます。渡す準備をしてokと合図をして下さい。" :wait t))))
   (send *ri* :speak-jp "次の行動に移ります" :wait t))
 
-(defun now-boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
+(defun boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
   (let ((yes-flag nil))
     (until yes-flag
          (unix:sleep sleep-time)

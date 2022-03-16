@@ -44,20 +44,20 @@
      (setq b1 (make-ellipsoid width length height))
      (setq b2 (make-cube (* 2 width) (* 2 length) (* 2 height)))
      (send b2 :locate (float-vector 0 (* (/ -2 3.0) length) 0))
-   
+
      (setq b3 (make-cube (* 2 width) (* 2 length) (* 2 height)))
      (send b3 :locate (float-vector 0 (* (/ 2 3.0) length) 0))
-   
+
      (setq b4 (make-cube (* 2 width) (* 2 length) (* 2 height)))
      (send b4 :locate (float-vector 0 0 (+ (* -1 height) 1)))
-   
+
      (setq p2 (body- b1 b2))
      (setq b1 (body- b1 p2))
      (setq p4 (body- b1 b3))
      (setq b1 (body- b1 p4))
      (setq p1 (body- b1 b4))
      (setq p3 (body- b1 p1))
-   
+
      (send p1 :assoc p2)
      (send p1 :assoc p3)
      (send p1 :assoc p4)
@@ -68,7 +68,7 @@
      (send p4 :set-color :saddlebrown)
      (send p1 :newcoords (send self :copy-worldcoords))
      (send self :assoc p1)
-     
+
      (push p1 r)
      (push p2 r)
      (push p3 r)
@@ -89,7 +89,7 @@
      (send b5 :locate (float-vector 0 0 (/ (* -5 height) 6)))
      (setq b6 (make-cube (* 2 width) (* 2 length) (* 2 height)))
      (send b6 :locate (float-vector 0 0 (/ (* -7 height) 6)))
-     
+
      (setq p1 (body- b3 b5))
      (setq p4 (body- b4 b5))
      (setq b3 (body- b3 p1))
@@ -112,7 +112,7 @@
      (send p4 :assoc p3)
      (send p4 :assoc p5)
      (send p4 :assoc p6)
-     
+
      (setq *cut-point-1* (make-cascoords :pos (float-vector 0 0 (/ height -2))))
      (send *cut-point-1* :rotate (deg2rad 90) :z)
      (send p1 :assoc *cut-point-1*)
@@ -121,7 +121,7 @@
      (send *cut-point-2* :rotate (deg2rad 90) :y)
      (send *cut-point-2* :rotate (deg2rad 90) :z)
      (send p2 :assoc *cut-point-2*)
-     
+
      (setq *cut-point-3* (make-cascoords :pos (float-vector 0 0 (/ height 6))))
      (send *cut-point-3* :rotate (deg2rad 90) :y)
      (send *cut-point-3* :rotate (deg2rad 90) :z)
@@ -139,7 +139,7 @@
 
      (send p4 :newcoords (send self :copy-worldcoords))
      (send self :assoc p4)
-     
+
      (push p1 r)
      (push p2 r)
      (push p3 r)
@@ -168,7 +168,7 @@
 ;; (defun p1-1 ()
 ;;   (send *potato* :peel)
 ;;   (objects (list *potato*))
-  
+
 ;;   (send p1 :set-color :moccasin)
 
 ;;   (send *viewer* :draw-objects)
@@ -181,7 +181,7 @@
 ;;   (send *viewer* :draw-objects)
 ;;   (format t ";; please run (p2-1)~%")
 ;;   )
-  
+
 ;; (defun p2-1 ()
 ;;   (send p2 :set-color :moccasin)
 
@@ -231,7 +231,7 @@
 
 ;;   (send *arrow* :newcoords (send *cut-point-1* :copy-worldcoords))
 ;;   (send *viewer* :draw-objects)
-  
+
 ;;   (format t ";; please run (c1-2)~%")
 ;;   )
 
@@ -251,7 +251,7 @@
 ;;   (send *viewer* :draw-objects)
 ;;   (unix:usleep 100000)
 
-;;   (format t ";; please run (c2-1)~%")  
+;;   (format t ";; please run (c2-1)~%")
 ;;   )
 
 ;; (defun c2-1 ()
@@ -260,7 +260,7 @@
 ;;   (send *viewer* :draw-objects)
 ;;   (format t ";; please run (c2-2)~%")
 ;;   )
-  
+
 ;; (defun c2-2 ()
 ;;   (send p1 :dissoc p3)
 ;;   (send p3 :translate #f(0 0 -20))
@@ -275,7 +275,7 @@
 ;;   (send *viewer* :draw-objects)
 ;;   (format t ";; please run (c3-2)~%")
 ;;   )
-  
+
 ;; (defun c3-2 ()
 ;;   (send p1 :dissoc p2)
 ;;   (send p2 :translate #f(0 0 -10))
@@ -290,7 +290,7 @@
 ;;   (send *viewer* :draw-objects)
 ;;   (format t ";; please run (c4-2)~%")
 ;;   )
-  
+
 ;; (defun c4-2 ()
 ;;   (send p4 :dissoc p6)
 ;;   (send p6 :translate #f(0 0 -20))
@@ -310,14 +310,14 @@
 ;;   (send p4 :dissoc p5)
 ;;   (send p5 :translate #f(0 0 -10))
 ;;   (send *viewer* :draw-objects)
-;;   )  
-  
+;;   )
+
 
 ;; (format t ";; please run (p1-1)~%")
-;; (format t ";; you can also run (now-devel) or (exec-all)~%"))
+;; (format t ";; you can also run (model-test) or (exec-all)~%"))
 
 
-;; (defun now-devel ()
+;; (defun model-test ()
 ;;   (p1-1)
 ;;   (unix:usleep 1000000)
 ;;   (p1-2)

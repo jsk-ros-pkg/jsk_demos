@@ -38,7 +38,6 @@
 
 ;; set codes
 (warn "~%  If you use real robot, run (update-pos) ~%")
-(warn "please run (now-set-tools) or (set-knife) ~%")
 
 (defun look-at-shelf ()
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -726,7 +725,7 @@
   (send *ri* :wait-interpolation)
   )
 
-(defun now-open-shelf-with-fail-detection ()
+(defun open-shelf-with-fail-detection ()
   (let ((tmp-coords (send *shelf-door* :copy-worldcoords)))
     (open-shelf-set)
 
@@ -744,7 +743,7 @@
             (rarm-middle-pose) ;; 中間姿勢になる
             (send *ri* :speak-jp "棚の取手を掴むのに失敗しました，棚を開けてokと合図をして下さい")
             (ok-wait)
-            (return-from now-open-shelf-with-fail-detection)))
+            (return-from open-shelf-with-fail-detection)))
         )))
 
     (open-shelf)
@@ -752,15 +751,15 @@
   )
 
 ;; PR2がデモ前におたまなどを棚の中にセットするための関数
-;; (now-set-from-shelf-with-failure-detection)の前に呼ぶ
-(defun now-set-in-shelf-with-dialogue-and-fail-detection ()
+;; (set-from-shelf-with-failure-detection)の前に呼ぶ
+(defun set-in-shelf-with-dialogue-and-fail-detection ()
   ;; 棚の中におたまとヘラをセットする．
 
   ;; 棚の扉を開ける
   (look-at-shelf)
   ;; Close *shelf-door* model
   (send *shelf-door* :angle-vector #f(0))
-  (now-open-shelf-with-fail-detection)
+  (open-shelf-with-fail-detection)
 
   ;; おたまを人から受け取り、棚の中にセットする
   (set-head)
@@ -776,13 +775,13 @@
   )
 
 ;; PR2がデモ本番に、棚を開けて道具を取り出してセットする関数
-;; (now-set-in-shelf-with-dialogue-and-fail-detection)の後で呼ぶ
-(defun now-set-from-shelf-with-failure-detection ()
+;; (set-in-shelf-with-dialogue-and-fail-detection)の後で呼ぶ
+(defun set-from-shelf-with-failure-detection ()
   ;; 棚の扉を開ける
   (look-at-shelf)
   ;; Close *shelf-door* model
   (send *shelf-door* :angle-vector #f(0))
-  (now-open-shelf-with-fail-detection)
+  (open-shelf-with-fail-detection)
 
   ;; おたまを棚から取り出し、キッチンにセットする
   (rarm-middle-pose)
@@ -799,7 +798,7 @@
   )
 
 ;; Motions with interaction
-(defun now-set-ladle-at-arrange-and-plate-with-dialogue ()
+(defun set-ladle-at-arrange-and-plate-with-dialogue ()
   ;; おたまを受け取る
   (set-pose)
   (up-rarm)
@@ -835,7 +834,7 @@
   ;; 止められるまでお湯を注ぐ
   (let ((pour-flag t))
     (until (not pour-flag)
-           (now-arrange-curry)
+           (arrange-curry)
            (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
            (setq pour-flag (listen-speech "はい"))
            ))

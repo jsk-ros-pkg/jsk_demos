@@ -401,7 +401,7 @@
   (send *ri* :wait-interpolation)
   )
 
-(defun now-arrange-curry ()
+(defun arrange-curry ()
   (set-ladle)
   (look-at-pot)
   (scoop-up-curry)

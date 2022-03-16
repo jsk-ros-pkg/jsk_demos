@@ -313,7 +313,7 @@
   )
 
 ;; tool funcs
-(defun now-start-ih-with-fail-detection (&rest args &key (deg -10) &allow-other-keys)
+(defun start-ih-with-fail-detection (&rest args &key (deg -10) &allow-other-keys)
   (set-pose-3)
   (push-knob)
 
@@ -332,7 +332,7 @@
               (set-pose-3)
               (send *ri* :speak-jp "IHコンロのつまみの操作に失敗しました，コンロをつけてokと合図をして下さい")
               (ok-wait)
-              (return-from now-start-ih-with-fail-detection)))
+              (return-from start-ih-with-fail-detection)))
         ))
 
   (rotate-knob :deg 30)
@@ -441,7 +441,7 @@
   (send *ri* :speak-jp "IHコンロを操作できるかチェックします")
   (set-pose)
   ;; Check if PR2 can handle IH kitchen
-  (now-start-ih-with-fail-detection :deg 10)
+  (start-ih-with-fail-detection :deg 10)
   (push-knob)
   (set-pose)
   )
@@ -452,7 +452,7 @@
   (send *ri* :speak-jp "沸騰させる調理を開始します")
 
   ;; 着火する
-  (now-start-ih-with-fail-detection :deg 10)
+  (start-ih-with-fail-detection :deg 10)
 
   ;; 沸騰するまで待つ
   (look-at-pot)
@@ -472,7 +472,7 @@
       ;; If PR2 does not have thermal sensor
       (progn
         (look-at-pot)
-        (now-boil-with-dialogue))))
+        (boil-with-dialogue))))
 
   ;; 火を止める
   (push-knob)

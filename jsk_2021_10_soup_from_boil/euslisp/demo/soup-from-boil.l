@@ -18,7 +18,7 @@
   (ih-check)
 
   ;; 設置するもの：おたまとお皿
-  (now-set-ladle-at-arrange-and-plate-with-dialogue)
+  (set-ladle-at-arrange-and-plate-with-dialogue)
   )
 
 (defun main ()
