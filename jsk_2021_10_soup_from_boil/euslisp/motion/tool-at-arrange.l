@@ -18,7 +18,7 @@
   (setq *potato-peeler* (peeler))
   (send *potato-peeler* :newcoords (send *potato-peeler-coords* :copy-worldcoords))
   (setq *ladle* (ladle))
-  (send *ladle* :newcoords (send *ladle-coords-1* :copy-worldcoords))
+  (send *ladle* :newcoords (send *ladle-coords-at-kitchen* :copy-worldcoords))
   (setq *pot* (cooking-pot))
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
   ;; set equipment
@@ -27,7 +27,7 @@
   (send *shelf-door* :newcoords (send *shelf-door-coords* :copy-worldcoords))
   (setq *shelf-look-coords* (send (send *shelf-door* :handle-handle0) :copy-worldcoords))
   ;; arrange original
-  (setq *ladle-coords-a* (make-coords :pos (float-vector 560 8700 30860) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
+  (setq *ladle-coords-at-arrange* (make-coords :pos (float-vector 560 8700 30860) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
 
   (move-to-arrange-irt)
   (objects (list *pr2* *peeler* *knife* *potato-peeler* *scene* *ladle* *shelf-door*))
@@ -58,14 +58,14 @@
   (set-ladle)
   (send *viewer* :draw-objects)
 
-  (warn "please run (put-ladle-1) or (put-ladle-0) ~%")
+  (warn "please run (put-ladle-kitchen) or (put-ladle-at-shelf) ~%")
   )
 
 ;; rarm-middle-poseから、おたまをキッチンの上にセットする
-(defun put-ladle-1 ()
+(defun put-ladle-at-kitchen ()
   ;; キッチン台に手が当たるまで腕を下げる
   (let (av1 av2)
-    (send *arrow* :newcoords (send *ladle-coords-1* :copy-worldcoords))
+    (send *arrow* :newcoords (send *ladle-coords-at-kitchen* :copy-worldcoords))
     (send *arrow* :rotate (deg2rad -90) :x)
     (send *arrow* :translate #f(0 0 100) :world)
     (send *pr2* :rarm :inverse-kinematics
@@ -108,8 +108,8 @@
     (send *ri* :wait-interpolation))
   )
 
-(defun put-ladle-a ()
-  (send *arrow* :newcoords (send *ladle-coords-a* :copy-worldcoords))
+(defun put-ladle-at-arrange ()
+  (send *arrow* :newcoords (send *ladle-coords-at-arrange* :copy-worldcoords))
   (send *arrow* :rotate (deg2rad -90) :x)
 
   (send *arrow* :translate #f(60 0 100) :world)
@@ -270,7 +270,7 @@
   ;; 中間姿勢になる
   (rarm-middle-pose)
 
-  (warn "please run (grasp-spatula-0) ~%")
+  (warn "please run (grasp-spatula-at-shelf) ~%")
   )
 
 (defun close-shelf-set ()
@@ -352,16 +352,16 @@
   )
 
 ;; 棚の中のおたまを掴む
-(defun grasp-ladle-0 ()
+(defun grasp-ladle-at-shelf ()
   (if (not (eql (send *ladle* :parent) nil))
       (send (send *ladle* :parent) :dissoc *ladle*))
-  (send *ladle* :newcoords (send *ladle-coords-0* :copy-worldcoords))
+  (send *ladle* :newcoords (send *ladle-coords-at-shelf* :copy-worldcoords))
   (send *arrow* :newcoords (send *ladle* :copy-worldcoords))
   (send *arrow* :rotate (deg2rad -90) :x)
 
   ;; 棚の中に手を伸ばす
   (send *ri* :move-gripper :rarm 0.05)
-  (move-rarm-to-ladle-0)
+  (move-rarm-to-ladle-at-shelf)
 
   ;; 右手をおたまの持ち手の高さに合わせる
   (send *arrow* :translate #f(0 0 -100) :world)
@@ -379,17 +379,17 @@
   ;; おたまを掴む
   (send *ri* :start-grasp :rarm :wait t)
   (send (send *pr2* :rarm :end-coords) :assoc *ladle*)
-  (warn "please run (put-ladle-1) ~%")
+  (warn "please run (put-ladle-at-kitchen) ~%")
   )
 
-(defun grasp-ladle-0-with-fail-detection ()
-  (grasp-ladle-0)
+(defun grasp-ladle-at-shelf-with-fail-detection ()
+  (grasp-ladle-at-shelf)
 
   ;; 失敗を検知する
   (grasp-fail-detection :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
     (progn
-        (grasp-ladle-0)
+        (grasp-ladle-at-shelf)
         (grasp-fail-detection :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
@@ -400,14 +400,14 @@
         ))
   )
 
-(defun move-rarm-to-ladle-0 ()
+(defun move-rarm-to-ladle-at-shelf ()
     ;; 中間姿勢になる
   (rarm-middle-pose)
   (look-at-shelf)
 
   ;; ladleを置く位置
   (let (av1 av2 av3)
-    (send *arrow* :newcoords (send *ladle-coords-0* :copy-worldcoords))
+    (send *arrow* :newcoords (send *ladle-coords-at-shelf* :copy-worldcoords))
     (send *arrow* :rotate (deg2rad -90) :x)
     (send *arrow* :translate #f(280 0 -70) :world)
     (setq av1 (send *pr2* :rarm :inverse-kinematics
@@ -446,9 +446,9 @@
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)))
 
-;; This function is almost reverse motion of (move-rarm-to-ladle-0)
-;; PR2の右手がladle-0の姿勢になっていることが前提
-(defun rarm-middle-pose-from-ladle-0 ()
+;; This function is almost reverse motion of (move-rarm-to-ladle-at-shelf)
+;; PR2の右手がladle-at-shelfの姿勢になっていることが前提
+(defun rarm-middle-pose-from-ladle-at-shelf ()
   (let (av avs tms)
     (dotimes (i 28)
       (send *pr2* :rarm :move-end-pos #f(10 0 0) :world :use-torso nil)
@@ -478,8 +478,8 @@
   )
 
 ;; おたまを棚の中に置く
-(defun put-ladle-0 ()
-  (move-rarm-to-ladle-0)
+(defun put-ladle-at-shelf ()
+  (move-rarm-to-ladle-at-shelf)
 
   ;; おたまが棚に当たるまで腕を下ろす
   (send *arrow* :translate #f(0 0 -100) :world)
@@ -765,7 +765,7 @@
   ;; おたまを人から受け取り、棚の中にセットする
   (set-head)
   (receive-ladle-with-dialogue)
-  (put-ladle-0)
+  (put-ladle-at-shelf)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
@@ -786,9 +786,9 @@
 
   ;; おたまを棚から取り出し、キッチンにセットする
   (rarm-middle-pose)
-  (grasp-ladle-0-with-fail-detection)
-  (rarm-middle-pose-from-ladle-0)
-  (put-ladle-1)
+  (grasp-ladle-at-shelf-with-fail-detection)
+  (rarm-middle-pose-from-ladle-at-shelf)
+  (put-ladle-at-kitchen)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
@@ -799,7 +799,7 @@
   )
 
 ;; Motions with interaction
-(defun now-set-ladle-a-and-plate-with-dialogue ()
+(defun now-set-ladle-at-arrange-and-plate-with-dialogue ()
   ;; おたまを受け取る
   (set-pose)
   (up-rarm)
@@ -812,7 +812,7 @@
   (after-arrange-motion)
 
   ;; おたまをセットする
-  (put-ladle-a)
+  (put-ladle-at-arrange)
   (reset-rarm)
 
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
@@ -842,7 +842,7 @@
 
   ;; 鍋とおたまを手から離す
   (release-pot-from-below-model)
-  (put-ladle-a)
+  (put-ladle-at-arrange)
   (reset-rarm)
   (set-pose)
 

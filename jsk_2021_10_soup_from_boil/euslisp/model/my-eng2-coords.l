@@ -17,17 +17,17 @@
 ;; (setq *spatula-coords-1* (make-coords :pos (float-vector 592 8549 30872) :rpy (float-vector 3.084 -0.042 1.542))) ;; ヘラ，平置き
 (setq *spatula-coords-1* (make-coords :pos (float-vector 630 8549 30872) :rpy (float-vector 3.084 -0.042 1.542))) ;; ヘラ，平置き
 ;; (setq *ladle-coords-1* (make-coords :pos (float-vector 599 8313 30877) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，平置き
-(setq *ladle-coords-1* (make-coords :pos (float-vector 550 8313 30877) :rpy (float-vector 3.14 0 1.57))) ;; おたま，平置き
+(setq *ladle-coords-at-kitchen* (make-coords :pos (float-vector 550 8313 30877) :rpy (float-vector 3.14 0 1.57))) ;; おたま，平置き
 
 ;; (setq *spatula-coords-0* (make-coords :pos (float-vector 340 8720 31450) :rpy (float-vector -3.14 -0.008 1.529))) ;; ヘラ，棚の中
 (setq *spatula-coords-0* (make-coords :pos (float-vector 340 8730 31460) :rpy (float-vector -3.14 -0.008 1.529))) ;; ヘラ，棚の中
 ;; (setq *spatula-coords-0* (make-coords :pos (float-vector 335 8730 31465) :rpy (float-vector -3.14 -0.008 1.529))) ;; ヘラ，棚の中 ;; 位置変えた時
 ;; (setq *ladle-coords-0* (make-coords :pos (float-vector 346 8637 31450) :rpy (float-vector -3.14 -0.008 1.529))) ;; おたま，棚の中
-(setq *ladle-coords-0* (make-coords :pos (float-vector 340 8630 31460) :rpy (float-vector -3.14 -0.008 1.529))) ;; おたま，棚の中
+(setq *ladle-coords-at-shelf* (make-coords :pos (float-vector 340 8630 31460) :rpy (float-vector -3.14 -0.008 1.529))) ;; おたま，棚の中
 ;; (setq *ladle-coords-0* (make-coords :pos (float-vector 335 8630 31465) :rpy (float-vector -3.14 -0.008 1.529))) ;; おたま，棚の中 ;; 位置変えた時
 
 (setq *spatula-coords-a* (make-coords :pos (float-vector 592 8900 30872) :rpy (float-vector 3.084 -0.042 1.542))) ;; ヘラ，盛り付け時
-(setq *ladle-coords-a* (make-coords :pos (float-vector 599 8700 30877) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
+(setq *ladle-coords-at-arrange* (make-coords :pos (float-vector 599 8700 30877) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
 
 
 ;; kitchenware coords

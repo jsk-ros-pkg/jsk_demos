@@ -6,7 +6,7 @@
   (setq *curry-dish* (curry-dish))
   (send *curry-dish* :newcoords (send *curry-dish-coords* :copy-worldcoords))
   (setq *ladle* (ladle))
-  (send *ladle* :newcoords (send *ladle-coords-a* :copy-worldcoords))
+  (send *ladle* :newcoords (send *ladle-coords-at-arrange* :copy-worldcoords))
   ;; def global coords
   (move-to-arrange-irt)
   (objects (list *pr2* *scene* *ladle* *curry-dish*))
@@ -40,7 +40,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :larm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -89,7 +89,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -131,7 +131,7 @@
 
 (defun grasp-obj-rarm ()
   (send *ri* :stop-grasp :rarm :wait t)
-  
+
   ;; targetの位置
   (send *arrow* :newcoords (send *target* :copy-worldcoords))
   (send *arrow* :translate (float-vector 0 0 200) :world)
@@ -142,7 +142,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -179,12 +179,12 @@
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)  
+  (send *ri* :wait-interpolation)
   )
 
 (defun grasp-obj-larm ()
   (send *ri* :stop-grasp :larm :wait t)
-  
+
   ;; targetの位置
   (send *arrow* :newcoords (send *target* :copy-worldcoords))
   (send *arrow* :translate (float-vector 0 0 200) :world)
@@ -195,7 +195,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :larm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -232,7 +232,7 @@
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)  
+  (send *ri* :wait-interpolation)
   )
 
 
@@ -256,7 +256,7 @@
 (defun scoop-up-curry-2 ()
   ;; (send *arrow* :translate #f(40 60 0) :world)
   (send *arrow* :translate #f(0 0 -10) :world)
-  (send *pr2* :rarm :inverse-kinematics  
+  (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
         :rotation-axis t
