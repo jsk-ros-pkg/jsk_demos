@@ -1,5 +1,6 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 
 (defun arrangement-init ()
   ;; set objects
@@ -341,7 +342,9 @@
   )
 
 (defun transfer-curry-set ()
-  (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  (send *pr2* :rarm :angle-vector #f(-16.7496 -20.1768 -97.9848 -24.3933 312.645 -99.862 17.5958))
+  ;; (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  (send *arrow* :newcoords (make-coords :pos (float-vector 604.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
@@ -412,5 +415,12 @@
 
   (transfer-curry-set)
   (transfer-curry)
+  (after-transfer-curry)
+  )
+
+(defun set-plate-with-dialogue ()
+  (transfer-curry-set)
+  (transfer-curry)
+  (have-the-plate-set-with-dialgue)
   (after-transfer-curry)
   )

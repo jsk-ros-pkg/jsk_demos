@@ -50,7 +50,8 @@
 (defun receive-ladle-with-dialogue ()
   (rarm-middle-pose)
   (set-ladle)
-  (arrange-motion-set)
+  ;; (arrange-motion-set)
+  (transfer-curry-set);; from arrangement-at-arrange.l
   (send *ri* :speak-jp "おたまを渡す準備をして，okと合図をして下さい")
   (receive-with-dialogue)
   (send *ri* :start-grasp :rarm :wait t :gain 100)
@@ -661,69 +662,70 @@
   )
 
 
-(defun arrange-motion-set ()
-  ;; copy from (transfer-curry-set) in arrangement-codes.l
-  (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
-  (pre-ik-pose)
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :move-target (elt (send *ladle* :attention) 1)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
+;; (defun arrange-motion-set ()
+;;   ;; copy from (transfer-curry-set) in arrangement-codes.l
+;;   (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+;;   (pre-ik-pose)
+;;   (send *pr2* :rarm :angle-vector #f(-16.7496 -20.1768 -97.9848 -24.3933 312.645 -99.862 17.5958))
+;;   (send *pr2* :rarm :inverse-kinematics
+;;         (send *arrow* :copy-worldcoords)
+;;         :move-target (elt (send *ladle* :attention) 1)
+;;         :rotation-axis t
+;;         :debug-view *debug-flag*)
+;;   (send *viewer* :draw-objects)
+;;   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+;;   (send *ri* :wait-interpolation)
 
-  (warn "please run (arrange-motion) ~%")
-  )
+;;   (warn "please run (arrange-motion) ~%")
+;;   )
 
-(defun arrange-motion ()
-  ;; copy from (transfer-curry) in arrangement-codes.l
-  (send *arrow* :newcoords (send (elt (send *ladle* :attention) 1) :copy-worldcoords))
+;; (defun arrange-motion ()
+;;   ;; copy from (transfer-curry) in arrangement-codes.l
+;;   (send *arrow* :newcoords (send (elt (send *ladle* :attention) 1) :copy-worldcoords))
 
-  (dotimes (i 9)
-    (send *arrow* :rotate (deg2rad 10) :y :world)
-    (send *pr2* :rarm :inverse-kinematics
-          (send *arrow* :copy-worldcoords)
-          :move-target (elt (send *ladle* :attention) 1)
-          :rotation-axis t
-          :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation)
-    )
-  (warn "please run (have-the-plate-set-with-dialgue) ~%")
-  )
+;;   (dotimes (i 9)
+;;     (send *arrow* :rotate (deg2rad 10) :y :world)
+;;     (send *pr2* :rarm :inverse-kinematics
+;;           (send *arrow* :copy-worldcoords)
+;;           :move-target (elt (send *ladle* :attention) 1)
+;;           :rotation-axis t
+;;           :debug-view *debug-flag*)
+;;     (send *viewer* :draw-objects)
+;;     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+;;     (send *ri* :wait-interpolation)
+;;     )
+;;   (warn "please run (have-the-plate-set-with-dialgue) ~%")
+;;   )
 
-(defun after-arrange-motion ()
-  (send *pr2* :rarm :move-end-pos #f(0 0 100) :world)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
+;; (defun after-arrange-motion ()
+;;   (send *pr2* :rarm :move-end-pos #f(0 0 100) :world)
+;;   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+;;   (send *ri* :wait-interpolation)
 
-  (let (av avs tms)
-    (dotimes (i 3)
-      (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
+;;   (let (av avs tms)
+;;     (dotimes (i 3)
+;;       (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+;;       (setq av (send *pr2* :angle-vector))
+;;       (setq avs (append avs (list av)))
+;;       (setq tms (append tms (list 400)))
 
-      (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
-    (send *ri* :angle-vector-sequence avs tms)
-    (send *ri* :wait-interpolation))
+;;       (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+;;       (setq av (send *pr2* :angle-vector))
+;;       (setq avs (append avs (list av)))
+;;       (setq tms (append tms (list 400))))
+;;     (send *ri* :angle-vector-sequence avs tms)
+;;     (send *ri* :wait-interpolation))
 
-  ;; avoid-pose的な姿勢になる．
-  (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
-  )
+;;   ;; avoid-pose的な姿勢になる．
+;;   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))
+;;   (send *pr2* :rarm :inverse-kinematics
+;;         (send *arrow* :copy-worldcoords)
+;;         :rotation-axis t
+;;         :debug-view *debug-flag*)
+;;   (send *viewer* :draw-objects)
+;;   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+;;   (send *ri* :wait-interpolation)
+;;   )
 
 (defun open-shelf-with-fail-detection ()
   (let ((tmp-coords (send *shelf-door* :copy-worldcoords)))
@@ -818,6 +820,15 @@
   (ok-wait)
   )
 
+(defun set-ladle-at-arrange ()
+  ;; おたまをセットする
+  (put-ladle-at-arrange)
+  (reset-rarm)
+
+  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
+  (ok-wait)
+  )
+
 ;; スープを注ぐ
 (defun pour-soup ()
   ;; 盛り付けの位置に移動する
@@ -834,7 +845,7 @@
   ;; 止められるまでお湯を注ぐ
   (let ((pour-flag t))
     (until (not pour-flag)
-           (arrange-curry)
+           (arrange-curry);; from arrangement-at-arrange.l
            (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
            (setq pour-flag (listen-speech "はい"))
            ))
