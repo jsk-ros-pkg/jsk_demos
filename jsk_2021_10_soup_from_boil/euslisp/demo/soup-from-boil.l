@@ -1,4 +1,3 @@
-(load "package://jsk_2021_10_soup_from_boil/euslisp/motion/move-to-kitchen-with-map.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/motion/arrangement-at-arrange.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/motion/ih-at-arrange.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/motion/tool-at-arrange.l")

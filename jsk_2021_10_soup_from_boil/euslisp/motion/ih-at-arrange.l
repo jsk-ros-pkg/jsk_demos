@@ -1,6 +1,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/wrench.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
 
 (ros::roseus "ih-at-arrange" :anonymous t)
 

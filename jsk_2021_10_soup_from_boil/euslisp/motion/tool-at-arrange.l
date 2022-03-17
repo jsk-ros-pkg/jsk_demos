@@ -6,6 +6,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
 
 (setq *debug-flag* nil)
 
@@ -241,7 +242,7 @@
   (let ((i 0)   ;; open
         (handle-coords (make-coords))
         av avs tms)
-    (while (< i 99)
+    (while (< i 89)
       (send *shelf-door* :angle-vector (float-vector i))
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
 

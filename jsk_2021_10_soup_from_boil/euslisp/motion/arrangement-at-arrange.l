@@ -1,6 +1,8 @@
+(load "package://jsk_2021_10_soup_from_boil/euslisp/model/my-eng2-coords.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
 
 (defun arrangement-init ()
   ;; set objects

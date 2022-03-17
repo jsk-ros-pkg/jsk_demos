@@ -175,7 +175,7 @@
 ;; 実機の移動
 (defun move-to-kitchen-ri ()
   (send *ri* :clear-costmap)
-  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
+  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1450 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
     (if (eql local-flag t)
       (progn
         (send *ri* :go-pos-unsafe 0.35 0 0)
