@@ -19,6 +19,5 @@
 
 (defun main ()
   ;; 棚からおたまを取り出す
-  ;; TODO: (set-in-shelf-with-dialogue-and-fail-detection)が成功するのにこちらのIKに失敗することがある
   (set-from-shelf-with-failure-detection)
   )

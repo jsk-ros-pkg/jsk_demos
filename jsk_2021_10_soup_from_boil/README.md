@@ -79,6 +79,11 @@ move-to : succeeded
 
 
 ## デモ
+
+棚に物を入れるとき、IKが失敗することがある。
+触覚で位置を補正しているものの、そもそものPR2のmove\_baseによる移動位置が悪ければ、棚の中に物を入れる姿勢のIKが解けない。
+この場合、現状では、PR2の移動（setup関数）からやりなおすことでPR2が良い初期位置に移動するまで繰り返すしかない。
+
 ```
 source ~/soup_ws/devel/setup.bash
 roscd jsk_2021_10_soup_from_boil/euslisp/demo

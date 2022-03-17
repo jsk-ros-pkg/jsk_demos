@@ -191,17 +191,10 @@
   (send *ri* :move-gripper :rarm 0.05)
 
   ;; 棚のノブの位置
+  ;; *shelf-door*は閉じている状態を仮定
+  (send *shelf-door* :angle-vector #f(0))
   (let ((ik-target (send (car (send *shelf-door* :handle)) :copy-worldcoords)))
     (send ik-target :translate (float-vector 100 0 -100) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          (send ik-target :copy-worldcoords)
-          :rotation-axis t
-          :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-    (send *ri* :wait-interpolation)
-
-    (send ik-target :translate (float-vector 0 0 100) :world)
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :rotation-axis t
@@ -210,7 +203,16 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    ;; ノブのところまで手を伸ばす 力覚を入れても良い．
+    (send ik-target :translate (float-vector 0 0 100) :world)
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+
+    ;; ノブのところまで手を伸ばす
     (touch-shelf-knob)
 
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
@@ -241,7 +243,7 @@
       (send *pr2* :rarm :inverse-kinematics (send handle-coords :copy-worldcoords) :rotation-axis t)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 600)))
+      (setq tms (append tms (list 500)))
 
       (setq i (+ i 10))
       )
@@ -253,13 +255,21 @@
 (defun after-open ()
   (send *ri* :stop-grasp :rarm :wait t)
 
-  (send *pr2* :rarm :move-end-pos #f(0 20 -80) :world)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
-
-  (send *pr2* :rarm :move-end-pos #f(0 -100 -100) :world)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
+  (let (av1 av2 av3 av4 (shelf-handle (car (send *shelf-door* :handle))) ik-target)
+    (setq av1 (send *pr2* :rarm :move-end-pos #f(0 20 -80) :world))
+    (setq av2 (send *pr2* :rarm :move-end-pos #f(0 -100 -100) :world))
+    ;; *shelf-door*は開いている状態を仮定
+    (send *shelf-door* :angle-vector #f(90))
+    (setq ik-target (send shelf-handle :copy-worldcoords))
+    (send ik-target :rotate (rad2deg 90) :y)
+    (send ik-target :translate #f(0 -100 0) :world)
+    (setq av3 (send *pr2* :rarm :inverse-kinematics ik-target))
+    (send ik-target :translate #f(0 80 0) :world)
+    (setq av4 (send *pr2* :rarm :inverse-kinematics ik-target))
+    (send *ri* :angle-vector-sequence
+          (list av1 av2 av3 av4)
+          (list 1000 1000 2000 3000))
+    (send *ri* :wait-interpolation))
 
   ;; 中間姿勢になる
   (rarm-middle-pose)
@@ -318,7 +328,7 @@
       (send *pr2* :rarm :inverse-kinematics (send handle-coords :copy-worldcoords) :rotation-axis t)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 1000)))
+      (setq tms (append tms (list 800)))
 
       (setq i (- i 10))
       )
@@ -335,7 +345,7 @@
           :rotation-axis t
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation))
 
   ;; 中間姿勢になる
@@ -353,8 +363,9 @@
     (send ik-target :rotate (deg2rad -90) :x)
 
     ;; 棚の中に手を伸ばす
-    (send *ri* :move-gripper :rarm 0.05)
+    (send *ri* :start-grasp :rarm :wait t)
     (move-rarm-to-ladle-at-shelf)
+    (send *ri* :stop-grasp :rarm :wait t)
 
     ;; 右手をおたまの持ち手の高さに合わせる
     (send ik-target :translate #f(0 0 -100) :world)
@@ -477,10 +488,7 @@
   (send *pr2* :rarm :move-end-pos #f(0 0 -100) :world)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
-  (send *pr2* :rarm :move-end-pos #f(0 0 10) :world :use-torso nil)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *viewer* :draw-objects)
-  (send *ri* :wait-interpolation)
 
   ;;グリッパを微妙に開く
   (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
