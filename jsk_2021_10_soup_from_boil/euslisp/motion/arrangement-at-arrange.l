@@ -1,12 +1,13 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/curry-dish.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 
 (defun arrangement-init ()
   ;; set objects
   (setq *curry-dish* (curry-dish))
   (send *curry-dish* :newcoords (send *curry-dish-coords* :copy-worldcoords))
   (setq *ladle* (ladle))
-  (send *ladle* :newcoords (send *ladle-coords-a* :copy-worldcoords))
+  (send *ladle* :newcoords (send *ladle-coords-at-arrange* :copy-worldcoords))
   ;; def global coords
   (move-to-arrange-irt)
   (objects (list *pr2* *scene* *ladle* *curry-dish*))
@@ -40,7 +41,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :larm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -89,7 +90,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -131,7 +132,7 @@
 
 (defun grasp-obj-rarm ()
   (send *ri* :stop-grasp :rarm :wait t)
-  
+
   ;; targetの位置
   (send *arrow* :newcoords (send *target* :copy-worldcoords))
   (send *arrow* :translate (float-vector 0 0 200) :world)
@@ -142,7 +143,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -179,12 +180,12 @@
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)  
+  (send *ri* :wait-interpolation)
   )
 
 (defun grasp-obj-larm ()
   (send *ri* :stop-grasp :larm :wait t)
-  
+
   ;; targetの位置
   (send *arrow* :newcoords (send *target* :copy-worldcoords))
   (send *arrow* :translate (float-vector 0 0 200) :world)
@@ -195,7 +196,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
-  
+
   (send *arrow* :translate (float-vector 0 0 -100) :world)
   (send *pr2* :larm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
@@ -232,7 +233,7 @@
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)  
+  (send *ri* :wait-interpolation)
   )
 
 
@@ -256,7 +257,7 @@
 (defun scoop-up-curry-2 ()
   ;; (send *arrow* :translate #f(40 60 0) :world)
   (send *arrow* :translate #f(0 0 -10) :world)
-  (send *pr2* :rarm :inverse-kinematics  
+  (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
         :rotation-axis t
@@ -341,7 +342,9 @@
   )
 
 (defun transfer-curry-set ()
-  (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  (send *pr2* :rarm :angle-vector #f(-16.7496 -20.1768 -97.9848 -24.3933 312.645 -99.862 17.5958))
+  ;; (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  (send *arrow* :newcoords (make-coords :pos (float-vector 604.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
@@ -401,7 +404,7 @@
   (send *ri* :wait-interpolation)
   )
 
-(defun now-arrange-curry ()
+(defun arrange-curry ()
   (set-ladle)
   (look-at-pot)
   (scoop-up-curry)
@@ -412,5 +415,12 @@
 
   (transfer-curry-set)
   (transfer-curry)
+  (after-transfer-curry)
+  )
+
+(defun set-plate-with-dialogue ()
+  (transfer-curry-set)
+  (transfer-curry)
+  (have-the-plate-set-with-dialgue)
   (after-transfer-curry)
   )

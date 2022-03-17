@@ -17,11 +17,11 @@
   (shelf-check)
 
   ;; PR2がデモ前におたまなどを棚の中にセットするための関数
-  (now-set-in-shelf-with-dialogue-and-fail-detection)
+  (set-in-shelf-with-dialogue-and-fail-detection)
   )
 
 (defun main ()
   ;; 棚からおたまを取り出す
-  ;; TODO: (now-set-in-shelf-with-dialogue-and-fail-detection)が成功するのにこちらのIKに失敗することがある
-  (now-set-from-shelf-with-failure-detection)
+  ;; TODO: (set-in-shelf-with-dialogue-and-fail-detection)が成功するのにこちらのIKに失敗することがある
+  (set-from-shelf-with-failure-detection)
   )
