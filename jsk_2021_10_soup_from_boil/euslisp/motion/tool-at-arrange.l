@@ -791,57 +791,37 @@
   ;; 棚のノブの位置に手を伸ばす前のPre pose
   (send *ri* :start-grasp :rarm :wait t :gain 100)
   (send *arrow* :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
-  (send *arrow* :translate (float-vector 100 130 0) :world)
+  (send *arrow* :translate (float-vector -50 130 -100) :world)
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :rotation-axis t
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  ;; Detect *shelf-door-coords* by touch
-  ;; Detect x direction for the next z ditection
-  (let (av avs tms)
-    (dotimes (i 20)
-      (send *arrow* :translate (float-vector -10 0 0) :world)
-      (send *pr2* :rarm :inverse-kinematics
-            *arrow*
-            :rotation-axis t
-            :debug-view nil)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
-    (send *ri* :angle-vector-sequence avs tms))
-  (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
-  (send *ri* :angle-vector-sequence
-        (list (send *pr2* :rarm :move-end-pos #f(100 0 -100) :world)
-              (send *pr2* :rarm :move-end-pos #f(-150 0 0) :world))
-        (list 2000 2000))
+  (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
 
   ;; Detect z direction
   (let (av avs tms)
-    (dotimes (i 10)
+    (dotimes (i 15)
       (send *pr2* :rarm :move-end-pos #f(0 0 10) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
+      (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms))
   (cancel-motion-when-touch :arm :rarm :direction :z :threshold -10)
   (send *ri* :angle-vector-sequence
         (list (send *pr2* :rarm :move-end-pos #f(150 0 -50) :world)
               (send *pr2* :rarm :move-end-pos #f(0 0 110) :world))
-        (list 2000 2000))
+        (list 1000 1000))
   (send *ri* :wait-interpolation)
 
   ;; Detect x direction for the next y ditection
   (let (av avs tms)
-    (dotimes (i 10)
+    (dotimes (i 20)
       (send *pr2* :rarm :move-end-pos #f(-10 0 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
+      (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms))
   (cancel-motion-when-touch :arm :rarm :direction :x :threshold -15)
   (send *ri* :angle-vector
