@@ -45,7 +45,6 @@
 
 ;; IH funcs
 (defun push-stove-button ()
-  ;; (send *arrow* :translate #f(130 0 0) :world) ;;をしている前提で始める
   (let (av avs tms)
     (dotimes (i 15)
       (send *pr2* :larm :move-end-pos #f(-10 0 0) :world)
@@ -62,70 +61,67 @@
   ;; If IK fail, try (set-pose)
   (send *ri* :start-grasp :larm :wait t)
 
-  (send *arrow* :newcoords (send *ih-knob-coords* :copy-worldcoords))
-  (send *arrow* :translate #f(100 0 0) :world)
+  (let ((ik-target (send *ih-knob-coords* :copy-worldcoords)))
+    (send ik-target :translate #f(100 0 0) :world)
 
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
 
-  (push-stove-button)
+    (push-stove-button)
 
-  (send *arrow* :newcoords (send *ih-knob-coords* :copy-worldcoords))
-  (send *arrow* :translate #f(100 0 0) :world)
+    (send ik-target (send *ih-knob-coords* :copy-worldcoords))
+    (send ik-target :translate #f(100 0 0) :world)
 
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  )
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
+  ))
 
 (defun grasp-knob ()
   (send *ri* :move-gripper :larm 0.08)
 
-  (send *arrow* :newcoords (send *ih-knob-coords* :copy-worldcoords))
-  (send *arrow* :rotate (deg2rad 90) :x)
-  (send *arrow* :translate #f(100 0 0) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
+  (let ((ik-target (send *ih-knob-coords* :copy-worldcoords)))
+    (send ik-target :rotate (deg2rad 90) :x)
+    (send ik-target :translate #f(100 0 0) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
 
-  (push-stove-button)
+    (push-stove-button)
 
-  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (send *arrow* :newcoords (send (send *pr2* :larm :end-coords) :copy-worldcoords))
-  (send *arrow* :translate #f(10 0 0) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
+    (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (send ik-target :newcoords (send (send *pr2* :larm :end-coords) :copy-worldcoords))
+    (send ik-target :translate #f(10 0 0) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation))
 
   (send *ri* :start-grasp :larm :wait t :gain 100)
   )
 
 (defun rotate-knob (&rest args &key (deg 30) &allow-other-keys)
   ;; rotate
-  (let (av avs tms)
+  (let (av avs tms (ik-target (send (send *pr2* :larm :end-coords) :copy-worldcoords)))
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (send *arrow* :newcoords (send (send *pr2* :larm :end-coords) :copy-worldcoords))
-
     (if (> deg 0)
       (progn
         (dotimes (i (/ deg 10))
-          (send *arrow* :rotate (deg2rad 10) :x)
+          (send ik-target :rotate (deg2rad 10) :x)
           (send *pr2* :larm :inverse-kinematics
-                (send *arrow* :copy-worldcoords)
+                (send ik-target :copy-worldcoords)
                 :rotation-axis t
                 :debug-view nil)
           (setq av (send *pr2* :angle-vector))
@@ -133,9 +129,9 @@
           (setq tms (append tms (list 200)))
           ))
       (dotimes (i (/ (* deg -1) 10))
-        (send *arrow* :rotate (deg2rad -10) :x)
+        (send ik-target :rotate (deg2rad -10) :x)
         (send *pr2* :larm :inverse-kinematics
-              (send *arrow* :copy-worldcoords)
+              (send ik-target :copy-worldcoords)
               :rotation-axis t
               :debug-view nil)
         (setq av (send *pr2* :angle-vector))
@@ -152,24 +148,24 @@
   (send *ri* :stop-grasp :larm :wait t)
 
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-  (send *arrow* :newcoords (send (send *pr2* :larm :end-coords) :copy-worldcoords))
-  (send *arrow* :translate #f(30 0 0) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
+  (let ((ik-target (send (send *pr2* :larm :end-coords) :copy-worldcoords)))
+    (send ik-target :translate #f(30 0 0) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation)
 
-  (send *arrow* :newcoords (send *ih-knob-coords* :copy-worldcoords))
-  (send *arrow* :rotate (deg2rad 90) :x)
-  (send *arrow* :translate #f(100 0 0) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
+    (send ik-target :newcoords (send *ih-knob-coords* :copy-worldcoords))
+    (send ik-target :rotate (deg2rad 90) :x)
+    (send ik-target :translate #f(100 0 0) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector))
+    (send *ri* :wait-interpolation))
   )
 
 ;; pot funcs
@@ -180,29 +176,28 @@
   (send *ri* :wait-interpolation)
 
   ;; potを下から掴む座標
-  (send *arrow* :newcoords (send *pot-larm-from-below* :copy-worldcoords))
+  (let ((ik-target (send *pot-larm-from-below* :copy-worldcoords)))
+    (send ik-target :translate #f(60 0 -60) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
 
-  (send *arrow* :translate #f(60 0 -60) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp :larm :wait t)
 
-  (send *ri* :stop-grasp :larm :wait t)
+    (send ik-target :translate #f(-60 0 60) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
 
-  (send *arrow* :translate #f(-60 0 60) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  (send *ri* :start-grasp :larm :wait t)
+    (send *ri* :start-grasp :larm :wait t))
   )
 
 (defun grasp-pot-from-below-with-fail-detection ()
@@ -225,16 +220,15 @@
 (defun release-pot-from-below ()
   (send *ri* :stop-grasp :larm :wait t)
 
-  (send *arrow* :newcoords (send *pot-larm-from-below* :copy-worldcoords))
-  (send *arrow* :translate #f(100 0 -100) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
+  (let ((ik-target (send *pot-larm-from-below* :copy-worldcoords)))
+    (send ik-target :translate #f(100 0 -100) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation))
   )
 
 (defun grasp-pot-from-below-model ()
@@ -244,27 +238,26 @@
   (send *ri* :wait-interpolation)
 
   ;; potを下から掴む座標
-  (send *arrow* :newcoords (send (send *pot* :handle-handle0) :copy-worldcoords))
+  (let ((ik-target (send (send *pot* :handle-handle0) :copy-worldcoords)))
+    (send ik-target :translate #f(60 0 -60) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
 
-  (send *arrow* :translate #f(60 0 -60) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+    (send *ri* :stop-grasp :larm :wait t)
 
-  (send *ri* :stop-grasp :larm :wait t)
-
-  (send *arrow* :translate #f(-60 0 60) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+    (send ik-target :translate #f(-60 0 60) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation))
 
   (send *ri* :start-grasp :larm :wait t)
   )
@@ -289,15 +282,15 @@
 (defun release-pot-from-below-model ()
   (send *ri* :stop-grasp :larm :wait t)
 
-  (send *arrow* :newcoords (send (send *pot* :handle-handle0) :copy-worldcoords))
-  (send *arrow* :translate #f(100 0 -100) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+  (let ((ik-target (send (send *pot* :handle-handle0) :copy-worldcoords)))
+    (send ik-target :translate #f(100 0 -100) :world)
+    (send *pr2* :larm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation))
 
   ;;腕を引いた姿勢
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
