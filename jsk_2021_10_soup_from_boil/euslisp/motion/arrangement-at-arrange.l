@@ -38,20 +38,27 @@
 (defun scoop-up-curry ()
   (let ((ik-target (make-coords :pos (float-vector 471 8170 31070) :rpy (float-vector -1.603 0.0 3.14)))) ;; wait-pose
   ;; Pre-pose for IK
-    (send *pr2* :angle-vector
-          #f(324.895 27.5033 64.5305 54.0589 -83.4934 -44.0265 -47.123 217.695 -75.2863 3.32114 -91.388 -82.7469 226.169 -11.2871 -143.423 11.7494 47.4173))
-    (send *pr2* :rarm :inverse-kinematics
-          (send ik-target :copy-worldcoords)
-          :move-target (car (send *ladle* :attention))
-          :rotation-axis t
-          :debug-view *debug-flag*)
+
     (send *viewer* :draw-objects)
     ;; Add interpolation poses not to contact ladle with kitchen
     (send *ri* :angle-vector-sequence
           (list
-           #f(324.895 27.5033 64.5305 54.0589 -83.4934 -44.0265 -47.123 217.695 -86.3553 -16.7247 -80.025 -90.9527 266.392 -20.906 -164.124 11.7494 47.4173)
-           #f(324.895 27.5033 64.5305 54.0589 -83.4934 -44.0265 -47.123 217.695 -44.8146 -12.8411 -56.6328 -47.8682 343.944 -86.0331 -146.852 11.7494 47.4173)
-           (send *pr2* :angle-vector))
+           (progn
+             (send *pr2* :rarm :angle-vector #f(-86.3553 -16.7247 -80.025 -90.9527 266.392 -20.906 -164.124))
+             (send *pr2* :angle-vector))
+           (progn
+             (send *pr2* :rarm :angle-vector
+                   #f(-44.8146 -12.8411 -56.6328 -47.8682 343.944 -86.0331 -146.852))
+             (send *pr2* :angle-vector))
+           (progn
+             (send *pr2* :rarm :angle-vector
+                   #f(-75.2863 3.32114 -91.388 -82.7469 226.169 -11.2871 -143.423))
+             (send *pr2* :rarm :inverse-kinematics
+                   (send ik-target :copy-worldcoords)
+                   :move-target (car (send *ladle* :attention))
+                   :rotation-axis t
+                   :debug-view *debug-flag*)
+             (send *pr2* :angle-vector)))
           (list 1500 1500 1500))
     (send *ri* :wait-interpolation)
 
@@ -59,7 +66,7 @@
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :move-target (elt (send *ladle* :attention) 1)
-          :rotation-axis t
+          :rotation-axis :z
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -69,7 +76,7 @@
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :move-target (elt (send *ladle* :attention) 1)
-          :rotation-axis t
+          :rotation-axis :z
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
@@ -79,13 +86,13 @@
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :move-target (elt (send *ladle* :attention) 1)
-          :rotation-axis t
+          :rotation-axis :z
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation))
 
-  (send *pr2* :rarm :move-end-pos #f(0 0 50) :world)
+  (send *pr2* :rarm :move-end-pos #f(30 0 80) :world)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)

@@ -8,7 +8,6 @@
 (defun ih-init ()
   ;; set objects
   (setq *pot* (cooking-pot))
-  (setq *pot-coords* (make-coords :pos (float-vector 450 8030 30850) :rpy (float-vector 3.142 0 0))) ;; arrange original ;;ここを変える
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
 
   ;; def global coords
@@ -393,7 +392,7 @@
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
-    (cancel-motion-when-touch :arm :larm :direction :y :threshold -4))
+    (cancel-motion-when-touch :arm :larm :direction :y :threshold -6))
 
   ;; Calculate *ih-knob-coords*
   (unix:usleep (* 100 1000))

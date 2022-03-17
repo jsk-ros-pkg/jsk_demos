@@ -79,10 +79,7 @@
           (list av1 av2)
           (list 3000 3000))
     (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
-    (send *pr2* :rarm :move-end-pos #f(0 0 10) :world :use-torso nil)
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-    (send *ri* :wait-interpolation))
+    (send *viewer* :draw-objects))
 
   ;; おたまを置く
   (send *ri* :move-gripper :rarm 0.08)
@@ -237,7 +234,7 @@
   (let ((i 0)   ;; open
         (handle-coords (make-coords))
         av avs tms)
-    (while (< i 89)
+    (while (< i 99)
       (send *shelf-door* :angle-vector (float-vector i))
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
 
