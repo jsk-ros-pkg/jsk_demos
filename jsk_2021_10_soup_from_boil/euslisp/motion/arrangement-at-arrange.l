@@ -392,16 +392,13 @@
         (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
         (setq av (send *pr2* :angle-vector))
         (setq avs (append avs (list av)))
-        (setq tms (append tms (list 400))))
+        (setq tms (append tms (list 400)))))
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation))
 
   ;; avoid-pose的な姿勢になる．
   (send *arrow* :newcoords (make-coords :pos (float-vector 628.029 8528.539 31050.217) :rpy (float-vector -3.14 0.18 3.056)))
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
+  (send *pr2* :rarm :angle-vector #f(-73.4895 9.68013 -86.5224 -111.491 188.871 -13.522 68.2161))
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)

@@ -551,10 +551,9 @@
 
 ;; grasp-codes
 (defun grasp-tool-on-table (grasp-target)
-  ;; arrow　はセットしてある前提
   (send *ri* :stop-grasp :rarm :wait t)
 
-  (let ((ik-target (send grasp-target :translate #f(0 0 100) :world)))
+  (let ((ik-target (send (send grasp-target :copy-worldcoords) :translate #f(50 0 100) :world)))
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :rotation-axis t
@@ -563,16 +562,12 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
-    (setq ik-target (send grasp-target :translate #f(0 0 -150) :world))
     (send *pr2* :rarm :inverse-kinematics
-          (send ik-target :copy-worldcoords)
+          (send grasp-target :copy-worldcoords)
           :rotation-axis t
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-    (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
-    (send *pr2* :rarm :move-end-pos #f(0 0 10) :world)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *ri* :wait-interpolation))
 
   (send *ri* :start-grasp :rarm :wait t)
@@ -588,7 +583,7 @@
   (send *ri* :stop-grasp :rarm :wait t)
 
   ;;掴む位置
-  (send *arrow* :newcoords (send *ladle-coords-at-kitchen* :copy-worldcoords))
+  (send *arrow* :newcoords (send *ladle* :copy-worldcoords))
   (send *arrow* :rotate (deg2rad -90) :x)
 
   ;; つかむ
@@ -827,7 +822,6 @@
   ;; (move-to-arrange-with-speech-before-and-before-with-rec)
 
   ;; おたまを掴む
-  (update-pos)
   (set-pose)
   (grasp-ladle-with-fail-detection)
 
