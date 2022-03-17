@@ -346,40 +346,21 @@
 (defun correct-ih-knob-coords ()
   (send *ri* :speak-jp "IHコンロの位置を触って確認します")
   (set-pose)
-  (send *pr2* :rarm :move-end-pos #f(0 200 0) :world)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
-  (send *ri* :wait-interpolation)
   (update-pos)
+  (send *ri* :start-grasp :larm :wait t)
 
   ;; Mainly copied from (push-knob)
   ;; Pre pose
-  (send *ri* :start-grasp :larm :wait t)
-  (send *arrow* :newcoords (send *ih-knob-coords* :copy-worldcoords))
-  ;; (send *arrow* :translate #f(100 120 -110) :world)
-  (send *arrow* :translate #f(100 130 0) :world)
-  (send *pr2* :larm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
-
-  ;; Detect *ih-knob-coords* by touch
-  ;; Detect x direction for the next z ditection
-  (let (av avs tms)
-    (dotimes (i 15)
-      (send *pr2* :larm :move-end-pos #f(-10 0 0) :world)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
-    (send *ri* :angle-vector-sequence avs tms)
-    (cancel-motion-when-touch :arm :larm :direction :x :threshold -15)
+  (let (av1 av2 av3)
+    (setq av1 (send *pr2* :rarm :move-end-pos #f(0 200 0) :world))
+    (send *pr2* :larm :inverse-kinematics
+          (send *ih-knob-coords* :copy-worldcoords))
+    (send *pr2* :larm :move-end-pos #f(100 200 250) :world)
+    (send *pr2* :larm :move-end-rot 90 :x)
+    (setq av2 (send *pr2* :angle-vector))
+    (setq av3 (send *pr2* :larm :move-end-pos #f(-150 0 0) :world))
     (send *ri* :angle-vector-sequence
-          (list (send *pr2* :larm :move-end-pos #f(100 0 100) :world)
-                (send *pr2* :larm :move-end-pos #f(0 0 150) :world)
-                (progn (send *pr2* :larm :move-end-pos #f(-150 50 0) :world)
-                       (send *pr2* :larm :move-end-rot 90 :x)))
-          (list 2000 2000 2000))
+          (list av1 av2 av3) (list 1000 2000 2000))
     (send *ri* :wait-interpolation))
 
   ;; Detect z direction
@@ -388,7 +369,7 @@
       (send *pr2* :larm :move-end-pos #f(0 0 -10) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
+      (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :z :threshold -15)
     (send *ri* :angle-vector-sequence
@@ -396,7 +377,7 @@
                 (send *pr2* :larm :move-end-pos #f(0 -50 -150) :world)
                 (progn (send *pr2* :larm :move-end-pos #f(0 30 -160) :world)
                        (send *pr2* :larm :move-end-rot -90 :x)))
-          (list 2000 2000 2000))
+          (list 1000 1000 1000))
     (send *ri* :wait-interpolation))
 
   ;; Detect x direction for the next y ditection
@@ -405,9 +386,10 @@
       (send *pr2* :larm :move-end-pos #f(-10 0 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
+      (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms)
-    (cancel-motion-when-touch :arm :larm :direction :x :threshold -15))
+    (cancel-motion-when-touch :arm :larm :direction :x :threshold -15)
+    (send *pr2* :larm :move-end-pos #f(5 0 0) :world))
 
   ;; Detect y direction of *ih-knob-coords*
   (let (av avs tms)
@@ -420,7 +402,7 @@
     (cancel-motion-when-touch :arm :larm :direction :y :threshold -4))
 
   ;; Calculate *ih-knob-coords*
-  (unix:usleep (* 500 1000))
+  (unix:usleep (* 100 1000))
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (let* ((ih-knob-coords (copy-object *ih-knob-coords*))
          (fingertip (send (send *pr2* :larm :end-coords :copy-worldcoords)

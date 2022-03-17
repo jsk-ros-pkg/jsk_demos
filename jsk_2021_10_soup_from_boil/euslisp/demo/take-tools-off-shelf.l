@@ -13,9 +13,6 @@
   ;; *pr2*のcoordsの値を書き換えるので、注意
   (correct-pr2-coords-at-kitchen)
 
-  ;;  棚の開閉ができるかテスト
-  (shelf-check)
-
   ;; PR2がデモ前におたまなどを棚の中にセットするための関数
   (set-in-shelf-with-dialogue-and-fail-detection)
   )

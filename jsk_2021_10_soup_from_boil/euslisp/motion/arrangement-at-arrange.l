@@ -344,11 +344,12 @@
 (defun transfer-curry-set ()
   (send *pr2* :rarm :angle-vector #f(-16.7496 -20.1768 -97.9848 -24.3933 312.645 -99.862 17.5958))
   ;; (send *arrow* :newcoords (make-coords :pos (float-vector 504.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
-  (send *arrow* :newcoords (make-coords :pos (float-vector 604.422 8343.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
+  ;; この*arrow*のcoordsに、コップの位置をセットする。
+  (send *arrow* :newcoords (make-coords :pos (float-vector 554.422 8493.425 30917.724) :rpy (float-vector -1.367 0.118 -0.067)))
   (send *pr2* :rarm :inverse-kinematics
         (send *arrow* :copy-worldcoords)
         :move-target (elt (send *ladle* :attention) 1)
-        :rotation-axis t
+        :rotation-axis :z
         :debug-view *debug-flag*)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
@@ -375,21 +376,23 @@
   )
 
 (defun after-transfer-curry ()
-  (send *pr2* :rarm :move-end-pos #f(0 0 100) :world)
+  (send *pr2* :rarm :move-end-pos #f(0 0 100) :world :rotation-axis :z)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
 
+  ;; おたまの先端についている水滴を落とす動作
   (let (av avs tms)
     (dotimes (i 3)
-      (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400)))
-
-      (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
+      ;; IKが失敗することがある。ladleの先端に関して:rotation-axis :zでIkを解くと良いかも。
+      ;; #f(0 0 -40)移動させるIKに失敗したら、何もしない
+      (when (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+        (setq av (send *pr2* :angle-vector))
+        (setq avs (append avs (list av)))
+        (setq tms (append tms (list 400)))
+        (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+        (setq av (send *pr2* :angle-vector))
+        (setq avs (append avs (list av)))
+        (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation))
 

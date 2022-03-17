@@ -74,7 +74,7 @@
                     :debug-view *debug-flag*)
     (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
     (setq av1 (send *pr2* :angle-vector))
-    (setq av2 (send *pr2* :rarm :move-end-pos #f(0 0 -200) :world :use-torso nil))
+    (setq av2 (send *pr2* :rarm :move-end-pos #f(0 0 -150) :world :use-torso nil))
     (send *ri* :angle-vector-sequence
           (list av1 av2)
           (list 3000 3000))
@@ -108,6 +108,7 @@
     (send *ri* :wait-interpolation))
   )
 
+;; おたまをキッチンの上に置く
 (defun put-ladle-at-arrange ()
   (send *arrow* :newcoords (send *ladle-coords-at-arrange* :copy-worldcoords))
   (send *arrow* :rotate (deg2rad -90) :x)
@@ -549,27 +550,30 @@
   )
 
 ;; grasp-codes
-(defun grasp-tool-on-table ()
+(defun grasp-tool-on-table (grasp-target)
   ;; arrow　はセットしてある前提
   (send *ri* :stop-grasp :rarm :wait t)
 
-  (send *arrow* :translate #f(50 0 100) :world)
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+  (let ((ik-target (send grasp-target :translate #f(0 0 100) :world)))
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :wait-interpolation)
 
-  (send *arrow* :translate #f(-50 0 -100) :world)
-  (send *pr2* :rarm :inverse-kinematics
-        (send *arrow* :copy-worldcoords)
-        :rotation-axis t
-        :debug-view *debug-flag*)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-  (send *ri* :wait-interpolation)
+    (setq ik-target (send grasp-target :translate #f(0 0 -150) :world))
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
+    (send *pr2* :rarm :move-end-pos #f(0 0 10) :world)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation))
 
   (send *ri* :start-grasp :rarm :wait t)
   )
@@ -581,15 +585,14 @@
   (send *ri* :wait-interpolation)
 
   (up-rarm)
-
-  ;;掴む位置
-  (send *arrow* :newcoords (send *ladle* :copy-worldcoords))
-  (send *arrow* :rotate (deg2rad -90) :x)
-
   (send *ri* :stop-grasp :rarm :wait t)
 
+  ;;掴む位置
+  (send *arrow* :newcoords (send *ladle-coords-at-kitchen* :copy-worldcoords))
+  (send *arrow* :rotate (deg2rad -90) :x)
+
   ;; つかむ
-  (grasp-tool-on-table)
+  (grasp-tool-on-table *arrow*)
   (send (send *pr2* :rarm :end-coords) :assoc *ladle*)
 
   ;; 手を上げる
@@ -624,6 +627,7 @@
   (send *ri* :wait-interpolation)
   )
 
+;; キッチンの上のおたまを把持する
 (defun grasp-ladle-with-fail-detection ()
   (let ((tmp-coords (send *ladle* :copy-worldcoords)))
     (grasp-ladle)
@@ -799,35 +803,23 @@
   (set-head)
   )
 
-;; Motions with interaction
-(defun set-ladle-at-arrange-and-plate-with-dialogue ()
-  ;; おたまを受け取る
-  (set-pose)
-  (up-rarm)
-  (receive-ladle-with-dialogue)
-
-  ;; 盛り付ける動作をして皿を人にセットしてもらう
-  (arrange-motion-set)
-  (arrange-motion)
-  (have-the-plate-set-with-dialgue)
-  (after-arrange-motion)
-
+(defun set-ladle-at-kitchen ()
   ;; おたまをセットする
-  (put-ladle-at-arrange)
+  (put-ladle-at-kitchen)
   (reset-rarm)
 
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
   (ok-wait)
   )
 
-(defun set-ladle-at-arrange ()
-  ;; おたまをセットする
-  (put-ladle-at-arrange)
-  (reset-rarm)
+;; (defun set-ladle-at-arrange ()
+;;   ;; おたまをセットする
+;;   (put-ladle-at-arrange)
+;;   (reset-rarm)
 
-  (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
-  (ok-wait)
-  )
+;;   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
+;;   (ok-wait)
+;;   )
 
 ;; スープを注ぐ
 (defun pour-soup ()

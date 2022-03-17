@@ -18,10 +18,13 @@
   (ih-check)
 
   ;; 設置するもの：おたまとお皿
-  ;; (set-ladle-at-arrange-and-plate-with-dialogue)
+  ;; 人からおたまを受け取る
   (receive-ladle-with-dialogue)
+  ;; 人に頼んで、コップ（皿）をキッチンに置いてもらう
   (set-plate-with-dialogue)
-  (set-ladle-at-arrange)
+  ;; main()で使うために、おたまをキッチンの上に置く
+  ;; (set-ladle-at-arrange)
+  (set-ladle-at-kitchen)
   )
 
 (defun main ()
