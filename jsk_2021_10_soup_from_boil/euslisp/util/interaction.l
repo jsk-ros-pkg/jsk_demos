@@ -75,22 +75,22 @@
   (let ((msg (cable-test)))
     (if (< 0 (send msg :AC_present))
       (progn
-        (send *ri* :speak-jp "移動するので電源ケーブルを抜いて下さい")
+        (send *ri* :speak-jp "移動するので電源ケーブルを抜いて下さい" :wait t)
         (wait-cable)
-        (send *ri* :speak-jp "ありがとうございます．移動を開始します")
+        (send *ri* :speak-jp "ありがとうございます．移動を開始します" :wait t)
         )
-      (send *ri* :speak-jp "移動を開始します")
+      (send *ri* :speak-jp "移動を開始します" :wait t)
       )
     ))
 
 (defun speech-after-move-with-rec ()
   (let ((msg (cable-test)))
     (if (< 0 (send msg :AC_present))
-      (send *ri* :speak-jp "調理を再開します")
+      (send *ri* :speak-jp "調理を再開します" :wait t)
       (progn
-        (send *ri* :speak-jp "電源ケーブルを挿して下さい")
+        (send *ri* :speak-jp "電源ケーブルを挿して下さい" :wait t)
         (wait-cable-in)
-        (send *ri* :speak-jp "ありがとうございます．調理を再開します")
+        (send *ri* :speak-jp "ありがとうございます．調理を再開します" :wait t)
         ))
     ))
 

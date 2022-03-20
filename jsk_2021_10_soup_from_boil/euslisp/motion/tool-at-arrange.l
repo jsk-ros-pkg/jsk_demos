@@ -30,7 +30,7 @@
   ;; arrange original
   (setq *ladle-coords-at-arrange* (make-coords :pos (float-vector 560 8700 30860) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
 
-  (move-to-arrange-irt)
+  (move-on-irt :arrange)
   (objects (list *pr2* *peeler* *knife* *potato-peeler* *scene* *ladle* *shelf-door*))
   (update-view)
   )

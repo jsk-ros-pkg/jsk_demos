@@ -117,7 +117,7 @@
 (update-view)
 
 (warn "~% If you use real robot, run (update-pos) ~%")
-(warn "please run (move-to-kitchen-ri) , (move-to-sink-ri) or (move-to-stove-ri) and (set-pose)~%")
+(warn "please run (move-real-robot) and (set-pose)~%")
 
 ;; add for grasp detection
 (defun grasp-fail-detection (&rest args &key (g-thre 10) &allow-other-keys)
@@ -137,234 +137,95 @@
         (+ g-num (* 0.001 (send *ri* :state :gripper :rarm :position)))))
 
 ;; IRT上の移動
-(defun move-to-kitchen-irt ()
-  (send *pr2* :move-to (send *kitchen-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-
-(defun move-to-shelf-irt ()
-  (send *pr2* :move-to (send *shelf-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-
-(defun move-to-sink-irt ()
-  (send *pr2* :move-to (send *sink-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-(defun move-to-stove-irt ()
-  (send *pr2* :move-to (send *stove-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-(defun move-to-microwave-irt ()
-  (send *pr2* :move-to (send *microwave-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-(defun move-to-seasoning-irt ()
-  (send *pr2* :move-to (send *seasoning-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-(defun move-to-arrange-irt ()
-  (send *pr2* :move-to (send *arrange-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
-(defun move-to-garbage-irt ()
-  (send *pr2* :move-to (send *garbage-spot* :copy-worldcoords) :world)
-  (update-view)
-  )
+(defun move-on-irt (spot)
+  "
+Arg spot candidates:
+:kitchen, :shelf, :sink, :stove, :microwave, :seasoning, :arrange, :garbage
+"
+  (let (spot-coords)
+    (cond
+     ((eq spot :kitchen) (setq spot-coords *kitchen-spot*))
+     ((eq spot :shelf) (setq spot-coords *shelf-spot*))
+     ((eq spot :sink) (setq spot-coords *sink-spot*))
+     ((eq spot :stove) (setq spot-coords *stove-spot*))
+     ((eq spot :microwave) (setq spot-coords *microwave-spot*))
+     ((eq spot :seasoning) (setq spot-coords *seasoning-spot*))
+     ((eq spot :arrange) (setq spot-coords *arrange-spot*))
+     ((eq spot :garbage) (setq spot-coords *garbage-spot*))
+     )
+    (send *pr2* :move-to (send spot-coords :copy-worldcoords) :world))
+  (update-view))
 
 ;; 実機の移動
-(defun move-to-kitchen-ri ()
+(defun move-real-robot (&key (from nil) (to nil))
+    "
+Arg to candidates:
+:kitchen, :sink, :stove, :microwave, :seasoning, :arrange
+"
+  (set-pose)
+  (send *ri* :speak-jp "移動します。")
   (send *ri* :clear-costmap)
-  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
-    (if (eql local-flag t)
+  (let (target-coords go-pos-unsafe-after go-pos-unsafe-before move-to-succeeded)
+    (cond
+     ((eq to :kitchen)
+      (setq target-coords (make-coords :pos #f(1400 8500 351) :rpy (float-vector pi 0 0)))
+      (setq go-pos-unsafe-after (list 0.35 0 0)))
+     ((eq to :sink)
+      (setq target-coords (make-coords :pos #f(1400 9100 351) :rpy (float-vector pi 0 0)))
+      (setq go-pos-unsafe-after (list 0.29 0 0)))
+     ((eq to :stove)
+      (setq target-coords (make-coords :pos #f(1400 8100 351) :rpy (float-vector pi 0 0)))
+      (setq go-pos-unsafe-after (list 0.2 0 0)))
+     ((eq to :microwave)
+      (setq target-coords (make-coords :pos #f(1600 9300 351) :rpy (float-vector 0 0 0)))
+      (setq go-pos-unsafe-after (list 0 0 0)))
+     ((eq to :seasoning)
+      (setq target-coords (make-coords :pos #f(1700 8900 351) :rpy (float-vector 0 0 0)))
+      (setq go-pos-unsafe-after (list 0 0 0)))
+     ((eq to :arrange)
+      (setq target-coords (make-coords :pos #f(1400 8200 351) :rpy (float-vector pi 0 0)))
+      (setq go-pos-unsafe-after (list 0.2 0 0)))
+     )
+    ;; If arg from is given,
+    ;; PR2 :go-pos-unsafe to the opposite direction of go-pos-unsafe-after before move-to
+    (when from
+      (setq go-pos-unsafe-before (mapcar #'(lambda (x) (* -1 x)) go-pos-unsafe-after))
+      (send* *ri* :go-pos-unsafe go-pos-unsafe-before))
+    ;; Move to
+    (setq move-to-succeeded (send *ri* :move-to target-coords :frame-id "/map"))
+    ;; :go-pos-unsafe after move-to
+    (if (eql move-to-succeeded t)
       (progn
-        (send *ri* :go-pos-unsafe 0.35 0 0)
-        (warn "go-pos unsafe !! ~%"))
-      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
-    (print (send *ri* :state :worldcoords))))
-
-(defun move-to-sink-ri ()
-  ;; コンロまで移動する
-  (send *ri* :clear-costmap)
-  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 9100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
-    (if (eql local-flag t)
-      (send *ri* :go-pos-unsafe 0.29 0 0)
-      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
-    (print (send *ri* :state :worldcoords))))
-
-(defun move-to-stove-ri ()
-  (send *ri* :clear-costmap)
-  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
-    (if (eql local-flag t)
-      (progn
-        (send *ri* :go-pos-unsafe 0.2 0 0)
-        (warn "go-pos unsafe !! ~%"))
-      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
-    (print (send *ri* :state :worldcoords))))
-
-(defun move-to-microwave-ri ()
-  ;; 電子レンジまで移動する
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1600 9300 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-seasoning-ri ()
-  ;; 調味料まで移動する
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1700 8900 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-arrange-ri ()
-  (send *ri* :clear-costmap)
-  (let ((local-flag (send *ri* :move-to (make-coords :pos #f(1400 8200 351) :rpy (float-vector pi 0 0)) :frame-id "/map")))
-    (if (eql local-flag t)
-      (progn
-        (send *ri* :go-pos-unsafe 0.2 0 0)
-        (warn "go-pos unsafe !! ~%"))
-      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい"))
-    (print (send *ri* :state :worldcoords))))
-
-;; direct move funcs
-(defun move-to-kitchen-ri-direct ()
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1200 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-shelf-ri-direct ()
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1110 8500 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-sink-ri-direct ()
-  ;; コンロまで移動する
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1110 9100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-stove-ri-direct ()
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1200 8100 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-microwave-ri-direct ()
-  ;; 電子レンジまで移動する
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1600 9300 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-seasoning-ri-direct ()
-  ;; 調味料まで移動する
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1700 8900 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-arrange-ri-direct ()
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1200 8200 351) :rpy (float-vector pi 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun move-to-garbage-ri-direct ()
-  (send *ri* :clear-costmap)
-  (send *ri* :move-to (make-coords :pos #f(1700 9000 351) :rpy (float-vector 0 0 0)) :frame-id "/map")
-  (print (send *ri* :state :worldcoords))
-  )
-
-;; kitchen spotとsink間の移動
-(defun go-to-sink ()
-  ;; kitchen spotからsinkに移動する
-  (send *ri* :go-pos-unsafe 0 -0.6 0)
-  ;; (send *ri* :go-pos-unsafe 0.09 0 0)
-  (move-to-sink-ri)
+        (send* *ri* :go-pos-unsafe go-pos-unsafe-after)
+        (warn "go-pos unsafeを利用しています。注意してください。~%"))
+      (send *ri* :speak-jp "移動に失敗しました，アシストして下さい" :wait t)))
+  ;; Update position and IRT Viewer
+  (print (format nil "Move to ~A~%" (send *ri* :state :worldcoords)))
   (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
+  (update-view))
 
-(defun go-to-kitchen-from-sink ()
-  ;; sinkからkitchen spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)
-  (send *ri* :go-pos-unsafe 0 0.6 0)
-  (move-to-kitchen-ri)
+(defun move-real-robot-safe (&key (to nil))
+  "
+Arg to candidates:
+:kitchen, :shelf, :sink, :stove, :microwave, :seasoning, :arrange, :garbage
+"
+  (send *ri* :speak-jp "移動します。")
+  (send *ri* :clear-costmap)
+  (let (target-coords)
+    (cond
+     ((eq to :kitchen) (setq target-coords (make-coords :pos #f(1200 8500 351) :rpy (float-vector pi 0 0))))
+     ((eq to :shelf) (setq target-coords (make-coords :pos #f(1110 8500 351) :rpy (float-vector pi 0 0))))
+     ((eq to :sink) (setq target-coords (make-coords :pos #f(1110 9100 351) :rpy (float-vector pi 0 0))))
+     ((eq to :stove) (setq target-coords (make-coords :pos #f(1200 8100 351) :rpy (float-vector pi 0 0))))
+     ((eq to :microwave) (setq target-coords (make-coords :pos #f(1600 9300 351) :rpy (float-vector 0 0 0))))
+     ((eq to :seasoning) (setq target-coords (make-coords :pos #f(1700 8900 351) :rpy (float-vector 0 0 0))))
+     ((eq to :arrange) (setq target-coords (make-coords :pos #f(1200 8200 351) :rpy (float-vector pi 0 0))))
+     ((eq to :garbage) (setq target-coords (make-coords :pos #f(1700 9000 351) :rpy (float-vector 0 0 0))))
+     )
+    (send *ri* :move-to target-coords :frame-id "/map"))
+  (print (format nil "Move to ~A~%" (send *ri* :state :worldcoords)))
   (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-kitchen-from-sink-without-map ()
-  ;; sinkからkitchen spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)
-  (send *ri* :go-pos-unsafe 0 0.6 0)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-stove ()
-  ;; kitchen spotからstoveに移動する
-  (send *ri* :go-pos-unsafe 0 0.4 0)
-  (move-to-stove-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-kitchen-from-stove ()
-  ;; stoveからkitchen spotに移動する
-  (send *ri* :go-pos-unsafe 0 -0.4 0)
-  (move-to-kitchen-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-sink-from-arrange ()
-  ;; arrange spotからsinkに実行する
-  (send *ri* :go-pos-unsafe 0 -0.9 0)
-  (send *ri* :go-pos-unsafe 0.09 0 0)
-  (move-to-sink-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-arrnage-from-sink ()
-  ;; sinkからarrange spotに移動する
-  (send *ri* :go-pos-unsafe -0.09 0 0)
-  (send *ri* :go-pos-unsafe 0 0.9 0)
-  (move-to-arrange-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-sink-from-stove ()
-  ;; stoveからsinkに移動する ;; TODO 確認
-  (send *ri* :go-pos-unsafe 0 -0.4 0)
-  (send *ri* :go-pos-unsafe 0 -0.4 0)
-  (move-to-sink-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
-
-(defun go-to-stove-from-sink ()
-  ;; sinkからstoveに移動する
-  (send *ri* :go-pos-unsafe 0 0.4 0)
-  (send *ri* :go-pos-unsafe 0 0.4 0)
-  (move-to-stove-ri)
-  (update-pos)
-  (update-view)
-  (print (send *ri* :state :worldcoords))
-  )
+  (update-view))
 
 ;; def util-funcs
 (defun set-pose ()
@@ -406,24 +267,16 @@
 ;; Motions with interaction
 ;; ケーブルの状態を確認し、キッチンに移動する。
 (defun move-to-arrange-with-cable-check ()
-  (send *ri* :speak-jp "キッチンに移動します。")
   (speech-before-move-with-rec)
-  (unix:sleep 2)
-  (move-to-arrange-ri)
+  (move-real-robot :to :arrange)
   (speech-after-move-with-rec)
-  (unix:sleep 2)
   (after-move)
-  (update-pos)
   )
 
 ;; ケーブルの状態を確認し、キッチンに移動する。
 (defun move-to-kitchen-with-cable-check ()
-  (send *ri* :speak-jp "キッチンに移動します。")
   (speech-before-move-with-rec)
-  (unix:sleep 2)
-  (move-to-kitchen-ri)
+  (move-real-robot :to :kitchen)
   (speech-after-move-with-rec)
-  (unix:sleep 2)
   (after-move)
-  (update-pos)
   )

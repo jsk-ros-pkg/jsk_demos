@@ -11,7 +11,7 @@
   (setq *ladle* (ladle))
   (send *ladle* :newcoords (send *ladle-coords-at-arrange* :copy-worldcoords))
   ;; def global coords
-  (move-to-arrange-irt)
+  (move-on-irt :arrange)
   (objects (list *pr2* *scene* *ladle* *curry-dish*))
   (update-view)
   )

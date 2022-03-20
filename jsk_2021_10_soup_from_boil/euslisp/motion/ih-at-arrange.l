@@ -19,7 +19,7 @@
   ;; arrange original
   (setq *ih-knob-coords* (make-coords :pos (float-vector 680 8110 30715) :rpy (float-vector -3.047 -0.011 1.512))) ;; ここを変える。(correct-ih-knob-coords)関数で自動的に変更可能
 
-  (move-to-arrange-irt)
+  (move-on-irt :arrange)
   (objects (list *pr2* *scene* *ladle* *pot*))
   (update-view)
   )

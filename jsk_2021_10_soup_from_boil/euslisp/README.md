@@ -15,7 +15,7 @@
     - For example, `(open-shelf)`
   - move-to-kitchen-with-map.l
     - navigation motions in the kitchen
-    - If you go to arrange position, call `(move-to-arrange-ri)`
+    - If you go to arrange position, call `(move-real-robot :to :arrange)`
   - interaction.l
     - speech interaction with the robot.
     - 「OKと合図をしてください」と言われる -> OKと答えるまでPR2は待つ

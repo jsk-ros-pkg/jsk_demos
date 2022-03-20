@@ -9,7 +9,7 @@
 (defun setup ()
   ;; 最初の場所はキッチン。
   (speech-before-move-with-rec)
-  (move-to-kitchen-ri)
+  (move-real-robot :to :kitchen)
   (after-move)
 
   ;; 棚の取っ手の位置を触覚で確認
@@ -21,14 +21,14 @@
   )
 
 (defun setup()
-  ;; 最初の位置はキッチン。(move-to-kitchen-ri)している状態。
+  ;; 最初の位置はキッチン。(move-real-robot :to :kitchen)している状態。
   ;; 棚からおたまを取り出し、キッチンに置く
   ;; TODO: おたまだけでなく、コップも1つ取り出す
   (speech-before-move-with-rec)
   (set-from-shelf-with-failure-detection)
 
   ;; IHコンロの前に移動
-  (go-to-arrange-from-kitchen)
+  (move-real-robot :to :arrange :from :kitchen)
 
   ;; IHコンロの位置を触覚で確認
   ;; *ih-knob-coords*の値を書き換えるので、注意
