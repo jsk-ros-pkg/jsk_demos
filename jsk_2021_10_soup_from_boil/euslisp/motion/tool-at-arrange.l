@@ -358,22 +358,30 @@
 (defun grasp-ladle-at-shelf ()
   (if (not (eql (send *ladle* :parent) nil))
       (send (send *ladle* :parent) :dissoc *ladle*))
-  (send *ladle* :newcoords (send *ladle-coords-at-shelf* :copy-worldcoords))
-  (let ((ik-target (send *ladle* :copy-worldcoords)))
-    (send ik-target :rotate (deg2rad -90) :x)
-
+  ;; (send *ladle* :newcoords (send *ladle-coords-at-shelf* :copy-worldcoords))
+  (let ((ik-target (send *ladle* :copy-worldcoords)) av avs tms)
     ;; 棚の中に手を伸ばす
-    (send *ri* :start-grasp :rarm :wait t)
+    (send *ri* :move-gripper :rarm 0.08 :wait t)
     (move-rarm-to-ladle-at-shelf)
     (send *ri* :stop-grasp :rarm :wait t)
-
-    ;; 右手をおたまの持ち手の高さに合わせる
-    (send ik-target :translate #f(0 0 -100) :world)
+    (send ik-target :translate #f(0 0 50) :world)
     (send *pr2* :rarm :inverse-kinematics
-          (send ik-target :copy-worldcoords)
+          ik-target
           :rotation-axis t
           :debug-view *debug-flag*)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    ;; 右手をおたまの持ち手の高さに合わせる
+    (dotimes (i 10)
+      (send ik-target :translate #f(0 0 -10) :world)
+      (setq av (send *pr2* :rarm :inverse-kinematics
+                     (send ik-target :copy-worldcoords)
+                     :rotation-axis t
+                     :debug-view *debug-flag*))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
     (send *pr2* :rarm :move-end-pos #f(0 0 20) :world :use-torso nil)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
@@ -404,40 +412,59 @@
         ))
   )
 
-(defun move-rarm-to-ladle-at-shelf ()
-    ;; 中間姿勢になる
-  (rarm-middle-pose)
-  (look-at-shelf)
-
+(defun move-rarm-to-ladle-at-shelf (&key (reverse nil))
   ;; ladleを置く位置
-  (let (av1 av2 av3 (ik-target (send *ladle-coords-at-shelf* :copy-worldcoords))
-            av avs tms)
-    (send ik-target :rotate (deg2rad -90) :x)
-    (send ik-target :translate #f(280 0 -70) :world)
-    (setq av1 (send *pr2* :rarm :inverse-kinematics
+  ;; 中間姿勢を多めに入れないと、IKがすぐに失敗する
+  (let (av0 av1 av2 av3 av4 ik-target av avs tms)
+    ;; Pre pose
+    (setq ik-target (make-coords :pos (float-vector 570 8500 31100) :rpy (float-vector 3.14 0.0 0.0)))
+    (send *pr2* :reset-manip-pose)
+    (send *pr2* :torso :waist-z :joint-angle 325)
+    (send *pr2* :head :look-at (send *shelf-look-coords* :worldpos))
+    (setq av0 (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis :z
                     :debug-view *debug-flag*))
-    (send ik-target :translate #f(50 -30 100) :world)
-    (send ik-target :rotate (deg2rad 20) :z)
-    (setq av2 (send *pr2* :rarm :inverse-kinematics
-                    (send ik-target :copy-worldcoords)
-                    :rotation-axis t
+    ;; Set av1 ~ av4 おたまの先端を棚に入れるための姿勢
+    (send (send *pr2* :rarm :end-coords) :dissoc *ladle*)
+    (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
+    (send (send *pr2* :rarm :end-coords) :assoc *ladle*)
+    (setq ik-target (send *ladle-coords-at-shelf* :copy-worldcoords))
+    (send ik-target :rotate (deg2rad 45) :z)
+    (send ik-target :rotate (deg2rad 45) :y)
+    (setq av1 (send *pr2* :rarm :inverse-kinematics
+                    (send ik-target :translate #f(200 0 50) :world)
+                    :move-target (car (send *ladle* :attention))
+                    :rotation-axis :t
                     :debug-view *debug-flag*))
+
+    (send ik-target :rotate (deg2rad -30) :y)
+    (send ik-target :rotate (deg2rad -30) :z)
+    (send ik-target :translate #f(-50 0 50) :world)
+    (setq av2 (send *pr2* :rarm :inverse-kinematics
+                    ik-target
+                    :move-target (car (send *ladle* :attention))
+                    :rotation-axis :z
+                    :debug-view *debug-flag*))
+    (setq ik-target (send *ladle-coords-at-shelf* :copy-worldcoords))
+    (send ik-target :rotate (deg2rad -90) :x)
+    (send ik-target :translate #f(200 70 30) :world)
     (send ik-target :rotate (deg2rad -20) :z)
-    (send ik-target :translate #f(-130 80 0) :world)
     (setq av3 (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
                     :debug-view *debug-flag*))
+    (send ik-target :rotate (deg2rad 20) :z)
+    (send ik-target :translate #f(0 30 -10) :world)
+    (setq av4 (send *pr2* :rarm :inverse-kinematics
+                    (send ik-target :copy-worldcoords)
+                    :rotation-axis t
+                    :debug-view *debug-flag*))
     (send *viewer* :draw-objects)
-    (send *ri* :angle-vector-sequence
-          (list av1 av2 av3)
-          (list 3000 3000 1000))
-    (send *ri* :wait-interpolation)
-
-    ;; 手をスライドさせる
-    (dotimes (i 28)
+    (setq avs (list av0 av1 av2 av3 av4))
+    (setq tms (list 2000 2000 2000 2000 1000))
+    ;; 手を棚の奥にスライドさせる
+    (dotimes (i 25)
       (send ik-target :translate (float-vector -10 0 0) :world)
       (send *pr2* :rarm :inverse-kinematics
             ik-target
@@ -446,39 +473,11 @@
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
-  (send *ri* :angle-vector-sequence avs tms)
-  (send *ri* :wait-interpolation)))
-
-;; This function is almost reverse motion of (move-rarm-to-ladle-at-shelf)
-;; PR2の右手がladle-at-shelfの姿勢になっていることが前提
-(defun rarm-middle-pose-from-ladle-at-shelf ()
-  (let (av avs tms)
-    (dotimes (i 28)
-      (send *pr2* :rarm :move-end-pos #f(10 0 0) :world :use-torso nil)
-      (setq av (send *pr2* :angle-vector))
-      (setq avs (append avs (list av)))
-      (setq tms (append tms (list 400))))
-    (send *ri* :angle-vector-sequence avs tms)
-    (send *ri* :wait-interpolation))
-
-  (let (av1 av2 av3 tmp-coords)
-    (setq av1 (send *pr2* :rarm :move-end-pos #f(50 0 0) :world :use-torso nil))
-    (setq tmp-coords (send *pr2* :rarm :end-coords :copy-worldcoords))
-    (send tmp-coords :translate #f(50 0 -50) :world)
-    (setq av2 (send *pr2* :rarm :inverse-kinematics tmp-coords
-                    :use-torso nil :rotation-axis :z))
-    (send tmp-coords :translate #f(50 0 -100) :world)
-    (send tmp-coords :rotate (deg2rad 90) :z)
-    (setq av3 (send *pr2* :rarm :inverse-kinematics tmp-coords
-                    :use-torso nil :rotation-axis :nil))
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector-sequence
-          (list av1 av2 av3)
-          (list 1000 1000 3000))
-    (send *ri* :wait-interpolation))
-
-  (rarm-middle-pose)
-  )
+    ;; 実機を動かす。:reverseのキーワード引数がtになると、動作を逆再生する。
+    (if reverse
+      (send *ri* :angle-vector-sequence (reverse avs) (reverse tms))
+      (send *ri* :angle-vector-sequence avs tms))
+    (send *ri* :wait-interpolation)))
 
 ;; おたまを棚の中に置く
 (defun put-ladle-at-shelf ()
@@ -495,6 +494,7 @@
     (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper)))
 
   (send *pr2* :rarm :end-coords :dissoc *ladle*)
+  (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
   (send *pr2* :rarm :move-end-pos #f(60 0 30) :world)
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -708,7 +708,7 @@
   ;; おたまを棚から取り出し、キッチンにセットする
   (rarm-middle-pose)
   (grasp-ladle-at-shelf-with-fail-detection)
-  (rarm-middle-pose-from-ladle-at-shelf)
+  (move-rarm-to-ladle-at-shelf :reverse t)
   (put-ladle-at-kitchen)
 
   ;; 棚の扉を閉める
