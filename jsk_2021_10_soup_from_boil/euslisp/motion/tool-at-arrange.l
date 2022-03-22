@@ -23,7 +23,6 @@
   (setq *pot* (cooking-pot))
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
   ;; set equipment
-  ;; *shelf-door*のcoordsは、(correct-shelf-door-coords)で自動調整可能
   (setq *shelf-door* (shelf-door))
   (send *shelf-door* :newcoords (send *shelf-door-coords* :copy-worldcoords))
   (setq *shelf-look-coords* (send (send *shelf-door* :handle-handle0) :copy-worldcoords))
