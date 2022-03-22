@@ -2,6 +2,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/wrench.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/pr2-random-coords.l")
 
 (ros::roseus "ih-at-arrange" :anonymous t)
 
@@ -406,6 +407,9 @@
     (setq diff (v- (send *ih-knob-coords* :worldpos)
                    (send new-ih-knob-coords :worldpos)))
     (send *pr2* :translate diff :world)
+    ;; random coords when kinematics simulator
+    (if (send *ri* :simulation-modep)
+        (send *pr2* :move-to (send (random-coords (send *arrange-spot* :copy-worldcoords) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
     (format t "*pr2* coords is updated to ~A~%"
             (send *pr2* :worldcoords)))
 

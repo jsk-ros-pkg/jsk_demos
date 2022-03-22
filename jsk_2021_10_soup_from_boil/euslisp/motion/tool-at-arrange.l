@@ -7,6 +7,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/util/pr2-random-coords.l")
 
 (setq *debug-flag* nil)
 
@@ -881,6 +882,9 @@
     (setq diff (v- (car (send *shelf-door* :handle :worldpos))
                    (send new-shelf-door-handle :worldpos)))
     (send *pr2* :translate diff :world)
+    ;; random coords when kinematics simulator
+    (if (send *ri* :simulation-modep)
+        (send *pr2* :move-to (send (random-coords (make-coords :pos #f(1050 8500 30000) :rpy (float-vector pi 0 0)) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
     (format t "*pr2* coords is updated to ~A~%"
             (send *pr2* :worldcoords)))
 
