@@ -11,3 +11,9 @@ include_directories(
 )
 
 include_directories(include ${catkin_INCLUDE_DIRS})
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED COMPONENTS rostest)
+  add_rostest(test/soup-from-boil.test)
+  add_rostest(test/take-tools-off-shelf.test)
+endif()

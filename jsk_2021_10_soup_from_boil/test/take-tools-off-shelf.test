@@ -1,0 +1,4 @@
+<launch>
+  <test test-name="take_tools_off_shelf_test" pkg="roseus" type="roseus"
+        args="$(find jsk_2021_10_soup_from_boil)/test/take-tools-off-shelf.l" time-limit="1800" />
+</launch>
