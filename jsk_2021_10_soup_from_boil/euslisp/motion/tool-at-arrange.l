@@ -74,7 +74,8 @@
                     :debug-view *debug-flag*)
     (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
     (setq av1 (send *pr2* :angle-vector))
-    (setq av2 (send *pr2* :rarm :move-end-pos #f(0 0 -150) :world :use-torso nil))
+    (send *pr2* :rarm :move-end-pos #f(0 0 -150) :world :use-torso nil)
+    (setq av2 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
           (list av1 av2)
           (list 3000 3000))
@@ -398,11 +399,11 @@
   (grasp-ladle-at-shelf)
 
   ;; 失敗を検知する
-  (grasp-fail-detection :g-thre 10)
+  (grasp-fail-detection :rarm :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
     (progn
         (grasp-ladle-at-shelf)
-        (grasp-fail-detection :g-thre 10)
+        (grasp-fail-detection :rarm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (send *ri* :speak-jp "おたまの把持が失敗しました，渡す準備をしてokと合図をして下さい")
@@ -490,8 +491,10 @@
   (send *viewer* :draw-objects)
 
   ;;グリッパを微妙に開く
-  (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
-    (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper)))
+  (if (send *ri* :simulation-modep)
+    (send *ri* :move-gripper :rarm 0.08 :wait t)
+    (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
+      (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper))))
 
   (send *pr2* :rarm :end-coords :dissoc *ladle*)
   (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -615,14 +618,14 @@
     (grasp-ladle)
 
     ;; 失敗を検知する
-    (grasp-fail-detection :g-thre 10)
+    (grasp-fail-detection :rarm :g-thre 10)
     (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (if (not (eql (send *ladle* :parent) nil))
           (send (send *ladle* :parent) :dissoc *ladle*))
         (send *ladle* :newcoords tmp-coords)
         (grasp-ladle)
-        (grasp-fail-detection :g-thre 10)
+        (grasp-fail-detection :rarm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
           (progn
             (send *ri* :speak-jp "おたまの把持が失敗しました，渡す準備をしてokと合図をして下さい")
@@ -652,14 +655,14 @@
     (open-shelf-set)
 
     ;; 失敗を検知する
-    (grasp-fail-detection :g-thre 10)
+    (grasp-fail-detection :rarm :g-thre 10)
     (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (if (not (eql (send *shelf-door* :parent) nil))
           (send (send *shelf-door* :parent) :dissoc *shelf-door*))
         (send *shelf-door* :newcoords tmp-coords)
         (open-shelf-set)
-        (grasp-fail-detection :g-thre 10)
+        (grasp-fail-detection :rarm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
           (progn
             (rarm-middle-pose) ;; 中間姿勢になる
@@ -754,7 +757,9 @@
     (until (not pour-flag)
            (arrange-curry);; from arrangement-at-arrange.l
            (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
-           (setq pour-flag (listen-speech "はい"))
+           (if (send *ri* :simulation-modep)
+             (setq pour-flag nil)
+             (setq pour-flag (listen-speech "はい")))
            ))
 
   ;; 鍋とおたまを手から離す
@@ -766,8 +771,6 @@
   ;;完成！！
   (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
   (ok-wait)
-
-  (unix:sleep 2)
   )
 
 ;; スープを冷ます

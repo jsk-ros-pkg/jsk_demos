@@ -4,11 +4,15 @@
 
 ;; Wait until speech
 (defun listen-speech (&optional (expected-speech "はい"))
+  (if (send *ri* :simulation-modep)
+    (return-from listen-speech t))
   (ros::unsubscribe "/speech_to_text")
   (let ((speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
     (equal (send speech :transcript) (list expected-speech))))
 
 (defun ok-wait ()
+  (if (send *ri* :simulation-modep)
+    (return-from ok-wait t))
   (ros::unsubscribe "/speech_to_text")
   (let ((speech (instance speech_recognition_msgs::SpeechRecognitionCandidates :init)))
     (while (not (equal (send speech :transcript) '("OK")))
@@ -36,7 +40,8 @@
 (defun boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
   (let ((yes-flag nil))
     (until yes-flag
-         (unix:sleep sleep-time)
+         (unless (send *ri* :simulation-modep)
+           (unix:sleep sleep-time))
          ;; (send *ri* :speak-jp "画像を記録します" :wait t)
          ;; (send *ri* :speak-jp "記録しました" :wait t)
          (send *ri* :speak-jp "鍋の中身は沸騰していますか？" :wait t)
@@ -51,6 +56,8 @@
 
 ;; Wait until movable (cable checks)
 (defun wait-cable ()
+  (when (send *ri* :simulation-modep)
+    (return-from wait-cable t))
   (let ((cable t))
     (while cable
       (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
@@ -59,6 +66,8 @@
     ))
 
 (defun wait-cable-in ()
+  (when (send *ri* :simulation-modep)
+    (return-from wait-cable-in t))
   (let ((cable t))
     (while cable
       (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
@@ -67,11 +76,15 @@
     ))
 
 (defun cable-test ()
+  (when (send *ri* :simulation-modep)
+    (return-from cable-test t))
   (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
     (format t "now AC_present is ~A ~%" (send msg :AC_present))
     msg))
 
 (defun speech-before-move-with-rec ()
+  (when (send *ri* :simulation-modep)
+    (return-from speech-before-move-with-rec t))
   (let ((msg (cable-test)))
     (if (< 0 (send msg :AC_present))
       (progn
@@ -84,6 +97,8 @@
     ))
 
 (defun speech-after-move-with-rec ()
+  (when (send *ri* :simulation-modep)
+    (return-from speech-after-move-with-rec t))
   (let ((msg (cable-test)))
     (if (< 0 (send msg :AC_present))
       (send *ri* :speak-jp "調理を再開します" :wait t)

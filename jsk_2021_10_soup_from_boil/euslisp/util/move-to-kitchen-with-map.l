@@ -98,8 +98,9 @@
 ;; def utils
 (defun update-view ()
   (send *pr2* :copy-worldcoords)
+  ;; (send *irtviewer* :look-all *pr2*)
+  (send *irtviewer* :viewer :viewing :look #f(3121.66 3235.13 33071.2) #f(842.417 8604.7 30832.0) #f(0 0 1))
   (send *viewer* :draw-objects)
-  (send *irtviewer* :look-all *pr2*)
   )
 
 (defun update-scene ()
@@ -120,15 +121,12 @@
 (warn "please run (move-real-robot) and (set-pose)~%")
 
 ;; add for grasp detection
-(defun grasp-fail-detection (&rest args &key (g-thre 10) &allow-other-keys)
+(defun grasp-fail-detection (arm &rest args &key (g-thre 10) &allow-other-keys)
   (setq *fail-flag* nil)
-  (if (< (send *ri* :state :gripper :rarm :position) g-thre)
-      (setq *fail-flag* t)))
-
-(defun grasp-fail-detection-larm (&rest args &key (g-thre 10) &allow-other-keys)
-  (setq *fail-flag* nil)
-  (if (< (send *ri* :state :gripper :larm :position) g-thre)
-      (setq *fail-flag* t)))
+  (if (send *ri* :simulation-modep)
+    (setq *fail-flag* nil)
+    (if (< (send *ri* :state :gripper arm :position) g-thre)
+      (setq *fail-flag* t))))
 
 ;; release gripper
 (defun release-object (&rest args &key (g-num 0.025) &allow-other-keys)
@@ -192,6 +190,9 @@ Arg to candidates:
       (setq go-pos-unsafe-before (mapcar #'(lambda (x) (* -1 x)) go-pos-unsafe-after))
       (send* *ri* :go-pos-unsafe go-pos-unsafe-before))
     ;; Move to
+    ;; In simulation mode, move *ri* to z=30000
+    (if (send *ri* :simulation-modep)
+      (send target-coords :translate (float-vector 0 0 (- 30000 (elt (send target-coords :worldpos) 2)))))
     (setq move-to-succeeded (send *ri* :move-to target-coords :frame-id "/map"))
     ;; :go-pos-unsafe after move-to
     (if (eql move-to-succeeded t)

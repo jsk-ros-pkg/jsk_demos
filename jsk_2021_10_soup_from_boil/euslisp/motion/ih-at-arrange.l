@@ -35,13 +35,6 @@
 
 (warn "If you use real robot, run (update-pos) ~%")
 
-;; add for grasp detection
-(defun grasp-fail-detection-larm (&rest args &key (g-thre 10) &allow-other-keys)
-  (setq *fail-flag* nil)
-  (if (< (send *ri* :state :gripper :larm :position) g-thre)
-      (setq *fail-flag* t))
-  )
-
 ;; IH funcs
 (defun push-stove-button ()
   (let (av avs tms)
@@ -72,7 +65,7 @@
 
     (push-stove-button)
 
-    (send ik-target (send *ih-knob-coords* :copy-worldcoords))
+    (send ik-target :newcoords (send *ih-knob-coords* :copy-worldcoords))
     (send ik-target :translate #f(100 0 0) :world)
 
     (send *pr2* :larm :inverse-kinematics
@@ -203,11 +196,11 @@
   (grasp-pot-from-below)
 
   ;; 失敗を検知する
-  (grasp-fail-detection-larm :g-thre 10)
+  (grasp-fail-detection :larm :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (grasp-pot-from-below)
-        (grasp-fail-detection-larm :g-thre 10)
+        (grasp-fail-detection :larm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (send *ri* :speak-jp "鍋を掴むのが失敗しました，鍋の柄を掴ませる準備をしてokと合図して下さい")
@@ -265,11 +258,11 @@
   (grasp-pot-from-below-model)
 
   ;; 失敗を検知する
-  (grasp-fail-detection-larm :g-thre 10)
+  (grasp-fail-detection :larm :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (grasp-pot-from-below-model)
-        (grasp-fail-detection-larm :g-thre 10)
+        (grasp-fail-detection :larm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (send *ri* :speak-jp "鍋を掴むのが失敗しました，鍋の柄を掴ませる準備をしてokと合図して下さい")
@@ -312,13 +305,13 @@
 
   (grasp-knob)
   ;; 失敗を検知する
-  (grasp-fail-detection-larm :g-thre 10)
+  (grasp-fail-detection :larm :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
       (progn
         (release-knob)
         (push-knob)
         (grasp-knob)
-        (grasp-fail-detection-larm :g-thre 10)
+        (grasp-fail-detection :larm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
               (release-knob)
