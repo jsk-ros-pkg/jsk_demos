@@ -109,7 +109,9 @@
   )
 
 (defun update-pos ()
-  (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
+  ;; In simulation mode, do not move *pr2*
+  (unless (send *ri* :simulation-modep)
+    (send *pr2* :move-to (send *ri* :state :worldcoords) :world))
   (update-view)
   (print (send *ri* :state :worldcoords))
   )
@@ -156,10 +158,14 @@ Arg spot candidates:
 
 ;; 実機の移動
 (defun move-real-robot (&key (from nil) (to nil))
-    "
+  "
 Arg to candidates:
 :kitchen, :sink, :stove, :microwave, :seasoning, :arrange
 "
+  ;; In simulation mode, do not move *ri*
+  (if (send *ri* :simulation-modep)
+    (return-from move-real-robot t))
+
   (set-pose)
   (send *ri* :speak-jp "移動します。")
   (send *ri* :clear-costmap)
@@ -190,9 +196,6 @@ Arg to candidates:
       (setq go-pos-unsafe-before (mapcar #'(lambda (x) (* -1 x)) go-pos-unsafe-after))
       (send* *ri* :go-pos-unsafe go-pos-unsafe-before))
     ;; Move to
-    ;; In simulation mode, move *ri* to z=30000
-    (if (send *ri* :simulation-modep)
-      (send target-coords :translate (float-vector 0 0 (- 30000 (elt (send target-coords :worldpos) 2)))))
     (setq move-to-succeeded (send *ri* :move-to target-coords :frame-id "/map"))
     ;; :go-pos-unsafe after move-to
     (if (eql move-to-succeeded t)
@@ -210,6 +213,10 @@ Arg to candidates:
 Arg to candidates:
 :kitchen, :shelf, :sink, :stove, :microwave, :seasoning, :arrange, :garbage
 "
+  ;; In simulation mode, do not move *ri*
+  (if (send *ri* :simulation-modep)
+    (return-from move-real-robot-safe t))
+
   (send *ri* :speak-jp "移動します。")
   (send *ri* :clear-costmap)
   (let (target-coords)
