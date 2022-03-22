@@ -89,16 +89,18 @@
   ;; 手を上げる
   (let (av1 av2 (ik-target (send (send *pr2* :rarm :end-coords) :copy-worldcoords)))
     (send ik-target :translate #f(0 0 100) :world)
-    (setq av1 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av1 (send *pr2* :angle-vector))
     (setq ik-target (send (send *pr2* :rarm :end-coords) :copy-worldcoords))
     (send ik-target :translate #f(60 100 170) :world)
-    (setq av2 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av2 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
           (list av1 av2)
           (list 2000 2000))
@@ -257,16 +259,20 @@
   (send *ri* :stop-grasp :rarm :wait t)
 
   (let (av1 av2 av3 av4 (shelf-handle (car (send *shelf-door* :handle))) ik-target)
-    (setq av1 (send *pr2* :rarm :move-end-pos #f(0 20 -80) :world))
-    (setq av2 (send *pr2* :rarm :move-end-pos #f(0 -100 -100) :world))
+    (send *pr2* :rarm :move-end-pos #f(0 20 -80) :world)
+    (setq av1 (send *pr2* :angle-vector))
+    (send *pr2* :rarm :move-end-pos #f(0 -100 -100) :world)
+    (setq av2 (send *pr2* :angle-vector))
     ;; *shelf-door*は開いている状態を仮定
     (send *shelf-door* :angle-vector #f(90))
     (setq ik-target (send shelf-handle :copy-worldcoords))
     (send ik-target :rotate (rad2deg 90) :y)
     (send ik-target :translate #f(0 -100 0) :world)
-    (setq av3 (send *pr2* :rarm :inverse-kinematics ik-target))
+    (send *pr2* :rarm :inverse-kinematics ik-target)
+    (setq av3 (send *pr2* :angle-vector))
     (send ik-target :translate #f(0 80 0) :world)
-    (setq av4 (send *pr2* :rarm :inverse-kinematics ik-target))
+    (send *pr2* :rarm :inverse-kinematics ik-target)
+    (setq av4 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
           (list av1 av2 av3 av4)
           (list 1000 1000 2000 3000))
@@ -286,28 +292,32 @@
   (let (av1 av2 av3 av4 (ik-target (make-coords :pos (float-vector 628.029 8828.539 31050.217) :rpy (float-vector -3.14 0.18 -0.086))))
     (send *pr2* :reset-manip-pose)
     (send *pr2* :torso :waist-z :joint-angle 325)
-    (setq av1 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis :z
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av1 (send *pr2* :angle-vector))
     (send *shelf-door* :angle-vector (float-vector 100))
     (setq ik-target (send (car (send *shelf-door* :handle)) :copy-worldcoords))
     (send ik-target :rotate (deg2rad -70) :y)
     (send ik-target :translate #f(-150 0 150))
-    (setq av2 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av2 (send *pr2* :angle-vector))
     (send ik-target :translate (float-vector 150 0 0))
-    (setq av3 (send *pr2* :rarm :inverse-kinematics
-                    (send ik-target :copy-worldcoords)
-                    :rotation-axis t
-                    :debug-view *debug-flag*))
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :rotation-axis t
+          :debug-view *debug-flag*)
+    (setq av3 (send *pr2* :angle-vector))
     (send ik-target :translate (float-vector 0 0 -150))
-    (setq av4 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av4 (send *pr2* :angle-vector))
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector-sequence
           (list av1 av2 av3 av4)
@@ -376,10 +386,11 @@
     ;; 右手をおたまの持ち手の高さに合わせる
     (dotimes (i 10)
       (send ik-target :translate #f(0 0 -10) :world)
-      (setq av (send *pr2* :rarm :inverse-kinematics
+      (send *pr2* :rarm :inverse-kinematics
                      (send ik-target :copy-worldcoords)
                      :rotation-axis t
-                     :debug-view *debug-flag*))
+                     :debug-view *debug-flag*)
+      (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
@@ -422,10 +433,11 @@
     (send *pr2* :reset-manip-pose)
     (send *pr2* :torso :waist-z :joint-angle 325)
     (send *pr2* :head :look-at (send *shelf-look-coords* :worldpos))
-    (setq av0 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis :z
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av0 (send *pr2* :angle-vector))
     ;; Set av1 ~ av4 おたまの先端を棚に入れるための姿勢
     (send (send *pr2* :rarm :end-coords) :dissoc *ladle*)
     (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
@@ -433,34 +445,38 @@
     (setq ik-target (send *ladle-coords-at-shelf* :copy-worldcoords))
     (send ik-target :rotate (deg2rad 45) :z)
     (send ik-target :rotate (deg2rad 45) :y)
-    (setq av1 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :translate #f(200 0 50) :world)
                     :move-target (car (send *ladle* :attention))
                     :rotation-axis :t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av1 (send *pr2* :angle-vector))
 
     (send ik-target :rotate (deg2rad -30) :y)
     (send ik-target :rotate (deg2rad -30) :z)
     (send ik-target :translate #f(-50 0 50) :world)
-    (setq av2 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     ik-target
                     :move-target (car (send *ladle* :attention))
                     :rotation-axis :z
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av2 (send *pr2* :angle-vector))
     (setq ik-target (send *ladle-coords-at-shelf* :copy-worldcoords))
     (send ik-target :rotate (deg2rad -90) :x)
     (send ik-target :translate #f(200 70 30) :world)
     (send ik-target :rotate (deg2rad -20) :z)
-    (setq av3 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av3 (send *pr2* :angle-vector))
     (send ik-target :rotate (deg2rad 20) :z)
     (send ik-target :translate #f(0 30 -10) :world)
-    (setq av4 (send *pr2* :rarm :inverse-kinematics
+    (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
                     :rotation-axis t
-                    :debug-view *debug-flag*))
+                    :debug-view *debug-flag*)
+    (setq av4 (send *pr2* :angle-vector))
     (send *viewer* :draw-objects)
     (setq avs (list av0 av1 av2 av3 av4))
     (setq tms (list 2000 2000 2000 2000 1000))
@@ -820,10 +836,14 @@
       (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms))
   (cancel-motion-when-touch :arm :rarm :direction :z :threshold -10)
-  (send *ri* :angle-vector-sequence
-        (list (send *pr2* :rarm :move-end-pos #f(150 0 -50) :world)
-              (send *pr2* :rarm :move-end-pos #f(0 0 110) :world))
-        (list 1000 1000))
+  (setq avs nil)
+  (setq tms nil)
+  (dolist (move-pos (list #f(150 0 -50) #f(0 0 110)))
+    (send *pr2* :rarm :move-end-pos move-pos :world)
+    (setq av (send *pr2* :angle-vector))
+    (setq avs (append avs (list av)))
+    (setq tms (append tms (list 1000))))
+  (send *ri* :angle-vector-sequence avs tms)
   (send *ri* :wait-interpolation)
 
   ;; Detect x direction for the next y ditection

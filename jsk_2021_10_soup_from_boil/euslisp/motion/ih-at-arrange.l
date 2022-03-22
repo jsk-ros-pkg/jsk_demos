@@ -338,13 +338,15 @@
   ;; Mainly copied from (push-knob)
   ;; Pre pose
   (let (av1 av2 av3)
-    (setq av1 (send *pr2* :rarm :move-end-pos #f(0 200 0) :world))
+    (send *pr2* :rarm :move-end-pos #f(0 200 0) :world)
+    (setq av1 (send *pr2* :angle-vector))
     (send *pr2* :larm :inverse-kinematics
           (send *ih-knob-coords* :copy-worldcoords))
     (send *pr2* :larm :move-end-pos #f(100 200 250) :world)
     (send *pr2* :larm :move-end-rot 90 :x)
     (setq av2 (send *pr2* :angle-vector))
-    (setq av3 (send *pr2* :larm :move-end-pos #f(-150 0 0) :world))
+    (send *pr2* :larm :move-end-pos #f(-150 0 0) :world)
+    (setq av3 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
           (list av1 av2 av3) (list 1000 2000 2000))
     (send *ri* :wait-interpolation))
@@ -357,13 +359,18 @@
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms)
-    (cancel-motion-when-touch :arm :larm :direction :z :threshold -15)
+    (cancel-motion-when-touch :arm :larm :direction :z :threshold -15))
+
+  (let (av1 av2 av3)
+    (send *pr2* :larm :move-end-pos #f(150 -30 100) :world)
+    (setq av1 (send *pr2* :angle-vector))
+    (send *pr2* :larm :move-end-pos #f(0 -50 -150) :world)
+    (setq av2 (send *pr2* :angle-vector))
+    (send *pr2* :larm :move-end-pos #f(0 30 -160) :world)
+    (send *pr2* :larm :move-end-rot -90 :x)
+    (setq av3 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
-          (list (send *pr2* :larm :move-end-pos #f(150 -30 100) :world)
-                (send *pr2* :larm :move-end-pos #f(0 -50 -150) :world)
-                (progn (send *pr2* :larm :move-end-pos #f(0 30 -160) :world)
-                       (send *pr2* :larm :move-end-rot -90 :x)))
-          (list 1000 1000 1000))
+          (list av1 av2 av3) (list 1000 1000 1000))
     (send *ri* :wait-interpolation))
 
   ;; Detect x direction for the next y ditection
