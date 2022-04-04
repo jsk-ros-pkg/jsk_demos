@@ -98,7 +98,7 @@
     (send ik-target :translate #f(60 100 170) :world)
     (send *pr2* :rarm :inverse-kinematics
                     (send ik-target :copy-worldcoords)
-                    :rotation-axis t
+                    :rotation-axis :z
                     :debug-view *debug-flag*)
     (setq av2 (send *pr2* :angle-vector))
     (send *ri* :angle-vector-sequence
