@@ -39,7 +39,6 @@
   (let ((ik-target (make-coords :pos (float-vector 471 8170 31070) :rpy (float-vector -1.603 0.0 3.14)))) ;; wait-pose
   ;; Pre-pose for IK
 
-    (send *viewer* :draw-objects)
     ;; Add interpolation poses not to contact ladle with kitchen
     (send *ri* :angle-vector-sequence
           (list
@@ -58,7 +57,7 @@
              (send *pr2* :rarm :inverse-kinematics
                    (send ik-target :copy-worldcoords)
                    :move-target (car (send *ladle* :attention))
-                   :rotation-axis t
+                   :rotation-axis :z
                    :debug-view *debug-flag*)
              (update-view)
              (send *pr2* :angle-vector)))

@@ -413,7 +413,7 @@
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
-    (cancel-motion-when-touch :arm :larm :direction :y :threshold -6))
+    (cancel-motion-when-touch :arm :larm :direction :y :threshold -5))
   (update-view)
 
   ;; Calculate *ih-knob-coords*
