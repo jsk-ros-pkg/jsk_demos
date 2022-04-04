@@ -33,6 +33,7 @@
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 (warn "If you use real robot, run (update-pos) ~%")
@@ -76,6 +77,7 @@
           :debug-view *debug-flag*)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
+    (update-view)
   ))
 
 (defun grasp-knob ()
@@ -136,6 +138,7 @@
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)
     )
+  (update-view)
   )
 
 (defun release-knob ()
@@ -160,6 +163,7 @@
           :debug-view *debug-flag*)
     (send *ri* :angle-vector (send *pr2* :angle-vector))
     (send *ri* :wait-interpolation))
+  (update-view)
   )
 
 ;; pot funcs
@@ -228,6 +232,7 @@
 (defun grasp-pot-from-below-model ()
   ;;腕を引いた姿勢
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
 
@@ -238,7 +243,7 @@
           (send ik-target :copy-worldcoords)
           :rotation-axis t
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
@@ -249,7 +254,7 @@
           (send ik-target :copy-worldcoords)
           :rotation-axis t
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation))
 
@@ -282,12 +287,13 @@
           (send ik-target :copy-worldcoords)
           :rotation-axis t
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation))
 
   ;;腕を引いた姿勢
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
   )
@@ -298,6 +304,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 ;; tool funcs
@@ -400,7 +407,7 @@
 
   ;; Detect y direction of *ih-knob-coords*
   (let (av avs tms)
-    (dotimes (i 15)
+    (dotimes (i 25)
       (send *pr2* :larm :move-end-pos #f(0 -10 0) :world)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
@@ -434,14 +441,10 @@
 (defun ih-check ()
   (send *ri* :speak-jp "IHコンロを操作できるかチェックします")
   (set-pose)
-  (update-view)
   ;; Check if PR2 can handle IH kitchen
   (start-ih-with-fail-detection :deg 10)
-  (update-view)
   (push-knob)
-  (update-view)
   (set-pose)
-  (update-view)
   )
 
 ;; Motions with interation
@@ -451,11 +454,9 @@
 
   ;; 着火する
   (start-ih-with-fail-detection :deg 10)
-  (update-view)
 
   ;; 沸騰するまで待つ
   (look-at-pot)
-  (update-view)
   (ros::spin-once)
   (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
         max-temp)
@@ -476,9 +477,7 @@
 
   ;; 火を止める
   (push-knob)
-  (update-view)
   (set-pose-3)
-  (update-view)
 
   (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
   (send *ri* :speak-jp "次の工程に移ります" :wait t)

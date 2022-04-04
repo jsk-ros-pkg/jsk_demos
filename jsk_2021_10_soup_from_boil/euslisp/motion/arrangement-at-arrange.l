@@ -21,7 +21,7 @@
 (defun look-at-dish ()
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :head :look-at (send (send *curry-dish* :copy-worldcoords) :worldpos))
-  (send *viewer* :draw-objects)
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   )
@@ -29,7 +29,7 @@
 (defun look-at-pot ()
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :head :look-at (send (send (send *pot* :attention-attention0) :copy-worldcoords) :worldpos))
-  (send *viewer* :draw-objects)
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
   )
@@ -45,10 +45,12 @@
           (list
            (progn
              (send *pr2* :rarm :angle-vector #f(-86.3553 -16.7247 -80.025 -90.9527 266.392 -20.906 -164.124))
+             (update-view)
              (send *pr2* :angle-vector))
            (progn
              (send *pr2* :rarm :angle-vector
                    #f(-44.8146 -12.8411 -56.6328 -47.8682 343.944 -86.0331 -146.852))
+             (update-view)
              (send *pr2* :angle-vector))
            (progn
              (send *pr2* :rarm :angle-vector
@@ -58,6 +60,7 @@
                    :move-target (car (send *ladle* :attention))
                    :rotation-axis t
                    :debug-view *debug-flag*)
+             (update-view)
              (send *pr2* :angle-vector)))
           (list 1500 1500 1500))
     (send *ri* :wait-interpolation)
@@ -68,7 +71,7 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
     (send *ri* :wait-interpolation)
 
@@ -78,7 +81,7 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
 
@@ -88,7 +91,7 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation)
 
@@ -98,7 +101,7 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation))
 
@@ -112,7 +115,7 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation))
 
@@ -128,8 +131,7 @@
             :move-target (elt (send *ladle* :attention) 1)
             :rotation-axis :z
             :debug-view *debug-flag*)
-      ;; (send *pr2* :rarm :move-end-pos #f(0 100 0) :world)
-      (send *viewer* :draw-objects)
+      (update-view)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
       (send *ri* :wait-interpolation)
       ))
@@ -145,10 +147,9 @@
           :move-target (elt (send *ladle* :attention) 1)
           :rotation-axis :z
           :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
+    (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
     (send *ri* :wait-interpolation))
-
   (warn "please run (transfer-curry) ~%")
   )
 
@@ -161,7 +162,7 @@
             :move-target (elt (send *ladle* :attention) 1)
             :rotation-axis t
             :debug-view *debug-flag*)
-      (send *viewer* :draw-objects)
+      (update-view)
       (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
       (send *ri* :wait-interpolation)
     ))
@@ -170,6 +171,7 @@
 
 (defun after-transfer-curry ()
   (send *pr2* :rarm :move-end-pos #f(0 0 100) :world :rotation-axis :z)
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
 
@@ -179,10 +181,12 @@
       ;; IKが失敗することがある。ladleの先端に関して:rotation-axis :zでIkを解くと良いかも。
       ;; #f(0 0 -40)移動させるIKに失敗したら、何もしない
       (when (send *pr2* :rarm :move-end-pos #f(0 0 -40) :world)
+        (update-view)
         (setq av (send *pr2* :angle-vector))
         (setq avs (append avs (list av)))
         (setq tms (append tms (list 400)))
         (send *pr2* :rarm :move-end-pos #f(0 0 40) :world)
+        (update-view)
         (setq av (send *pr2* :angle-vector))
         (setq avs (append avs (list av)))
         (setq tms (append tms (list 400)))))
@@ -191,9 +195,10 @@
 
   ;; avoid-pose的な姿勢になる．
   (send *pr2* :rarm :angle-vector #f(-73.4895 9.68013 -86.5224 -111.491 188.871 -13.522 68.2161))
-  (send *viewer* :draw-objects)
+  (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 (defun arrange-curry ()
@@ -212,11 +217,7 @@
 
 (defun set-plate-with-dialogue ()
   (transfer-curry-set)
-  (update-view)
   (transfer-curry)
-  (update-view)
   (have-the-plate-set-with-dialgue)
-  (update-view)
   (after-transfer-curry)
-  (update-view)
   )

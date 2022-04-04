@@ -249,6 +249,7 @@ Arg to candidates:
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 (defun pre-ik-pose ()
@@ -272,6 +273,7 @@ Arg to candidates:
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 (defun after-move ()
