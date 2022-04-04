@@ -334,7 +334,7 @@
 (defun correct-ih-knob-coords ()
   (when (send *ri* :simulation-modep)
     (send *pr2* :move-to
-          (make-coords :pos #f(1247.602 8254.205 30013.269) :rpy #f(3.132 0.018 -0.008)))
+          (make-coords :pos #f(1247.602 8254.205 30013.269) :rpy #f(3.132 0.018 -0.008)) :world)
     (return-from correct-ih-knob-coords))
   ;; ;; random coords when kinematics simulator
   ;; (if (send *ri* :simulation-modep)
@@ -360,6 +360,7 @@
     (send *ri* :angle-vector-sequence
           (list av1 av2 av3) (list 1000 2000 2000))
     (send *ri* :wait-interpolation))
+  (update-view)
 
   ;; Detect z direction
   (let (av avs tms)
@@ -370,6 +371,7 @@
       (setq tms (append tms (list 200))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :z :threshold -15))
+  (update-view)
 
   (let (av1 av2 av3)
     (send *pr2* :larm :move-end-pos #f(150 -30 100) :world)
@@ -382,6 +384,7 @@
     (send *ri* :angle-vector-sequence
           (list av1 av2 av3) (list 1000 1000 1000))
     (send *ri* :wait-interpolation))
+  (update-view)
 
   ;; Detect x direction for the next y ditection
   (let (av avs tms)
@@ -393,6 +396,7 @@
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :x :threshold -15)
     (send *pr2* :larm :move-end-pos #f(5 0 0) :world))
+  (update-view)
 
   ;; Detect y direction of *ih-knob-coords*
   (let (av avs tms)
@@ -403,6 +407,7 @@
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms)
     (cancel-motion-when-touch :arm :larm :direction :y :threshold -6))
+  (update-view)
 
   ;; Calculate *ih-knob-coords*
   (unix:usleep (* 100 1000))
@@ -423,15 +428,20 @@
   (send *pr2* :larm :move-end-pos #f(100 0 0) :world)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
+  (update-view)
   )
 
 (defun ih-check ()
   (send *ri* :speak-jp "IHコンロを操作できるかチェックします")
   (set-pose)
+  (update-view)
   ;; Check if PR2 can handle IH kitchen
   (start-ih-with-fail-detection :deg 10)
+  (update-view)
   (push-knob)
+  (update-view)
   (set-pose)
+  (update-view)
   )
 
 ;; Motions with interation
@@ -441,9 +451,11 @@
 
   ;; 着火する
   (start-ih-with-fail-detection :deg 10)
+  (update-view)
 
   ;; 沸騰するまで待つ
   (look-at-pot)
+  (update-view)
   (ros::spin-once)
   (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
         max-temp)
@@ -464,7 +476,9 @@
 
   ;; 火を止める
   (push-knob)
+  (update-view)
   (set-pose-3)
+  (update-view)
 
   (send *ri* :speak-jp "沸騰させる調理を行いました．" :wait t)
   (send *ri* :speak-jp "次の工程に移ります" :wait t)

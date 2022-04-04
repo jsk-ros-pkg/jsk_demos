@@ -50,14 +50,18 @@
 
 (defun receive-ladle-with-dialogue ()
   (rarm-middle-pose)
+  (update-view)
   (set-ladle)
+  (update-view)
   ;; (arrange-motion-set)
   (transfer-curry-set);; from arrangement-at-arrange.l
+  (update-view)
   (send *ri* :speak-jp "おたまを渡す準備をして，okと合図をして下さい")
   (receive-with-dialogue)
+  (update-view)
   (send *ri* :start-grasp :rarm :wait t :gain 100)
   (set-ladle)
-  (send *viewer* :draw-objects)
+  (update-view)
 
   (warn "please run (put-ladle-kitchen) or (put-ladle-at-shelf) ~%")
   )
@@ -244,6 +248,7 @@
       (send handle-coords :newcoords (send (car (send *shelf-door* :handle)) :copy-worldcoords))
 
       (send *pr2* :rarm :inverse-kinematics (send handle-coords :copy-worldcoords) :rotation-axis t)
+      (update-view)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 500)))
@@ -337,6 +342,7 @@
       (send handle-coords :rotate (deg2rad -70) :y)
 
       (send *pr2* :rarm :inverse-kinematics (send handle-coords :copy-worldcoords) :rotation-axis t)
+      (update-view)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 800)))
@@ -487,6 +493,7 @@
             ik-target
             :rotation-axis t
             :debug-view nil)
+      (update-view)
       (setq av (send *pr2* :angle-vector))
       (setq avs (append avs (list av)))
       (setq tms (append tms (list 400))))
@@ -683,21 +690,30 @@
 
   ;; 棚の扉を開ける
   (look-at-shelf)
+  (update-view)
   ;; Close *shelf-door* model
   (send *shelf-door* :angle-vector #f(0))
   (open-shelf-with-fail-detection)
+  (update-view)
 
   ;; おたまを人から受け取り、棚の中にセットする
   (set-head)
+  (update-view)
   (receive-ladle-with-dialogue)
+  (update-view)
   (put-ladle-at-shelf)
+  (update-view)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
+  (update-view)
   (close-shelf)
+  (update-view)
   (after-close)
+  (update-view)
 
   (set-head)
+  (update-view)
   )
 
 ;; PR2がデモ本番に、棚を開けて道具を取り出してセットする関数
@@ -705,28 +721,40 @@
 (defun set-from-shelf-with-failure-detection ()
   ;; 棚の扉を開ける
   (look-at-shelf)
+  (update-view)
   ;; Close *shelf-door* model
   (send *shelf-door* :angle-vector #f(0))
   (open-shelf-with-fail-detection)
+  (update-view)
 
   ;; おたまを棚から取り出し、キッチンにセットする
   (rarm-middle-pose)
+  (update-view)
   (grasp-ladle-at-shelf-with-fail-detection)
+  (update-view)
   (move-rarm-to-ladle-at-shelf :reverse t)
+  (update-view)
   (put-ladle-at-kitchen)
+  (update-view)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
+  (update-view)
   (close-shelf)
+  (update-view)
   (after-close)
+  (update-view)
 
   (set-head)
+  (update-view)
   )
 
 (defun set-ladle-at-kitchen ()
   ;; おたまをセットする
   (put-ladle-at-kitchen)
+  (update-view)
   (reset-rarm)
+  (update-view)
 
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
   (ok-wait)
@@ -748,10 +776,13 @@
 
   ;; おたまを掴む
   (set-pose)
+  (update-view)
   (grasp-ladle-with-fail-detection)
+  (update-view)
 
   ;; 鍋を掴む
   (grasp-pot-from-below-model-with-fail-detection)
+  (update-view)
 
   ;; 止められるまでお湯を注ぐ
   (let ((pour-flag t))
@@ -762,12 +793,16 @@
              (setq pour-flag nil)
              (setq pour-flag (listen-speech "はい")))
            ))
+  (update-view)
 
   ;; 鍋とおたまを手から離す
   (release-pot-from-below-model)
+  (update-view)
   (put-ladle-at-arrange)
+  (update-view)
   (reset-rarm)
   (set-pose)
+  (update-view)
 
   ;;完成！！
   (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
@@ -777,6 +812,7 @@
 ;; スープを冷ます
 (defun cool-soup ()
   (look-at-dish)
+  (update-view)
   (ros::spin-once)
   (let ((max-temp-msg (one-shot-subscribe "/thermal/max_temp" std_msgs::Int16 :timeout 1000))
         max-temp)
@@ -797,7 +833,7 @@
 (defun correct-pr2-coords-at-kitchen ()
   (when (send *ri* :simulation-modep)
     (send *pr2* :move-to
-          (make-coords :pos #f(1081.642 8408.347 30038.963) :rpy #f(3.11 0.017 -0.009)))
+          (make-coords :pos #f(1081.642 8408.347 30038.963) :rpy #f(3.11 0.017 -0.009)) :world)
     (return-from correct-pr2-coords-at-kitchen))
   ;; ;; random coords when kinematics simulator
   ;; (if (send *ri* :simulation-modep)
@@ -806,6 +842,7 @@
   (set-pose)
   (look-at-shelf)
   (update-pos)
+  (update-view)
 
   ;; 棚のノブの位置に手を伸ばす前のPre pose
   (send *ri* :start-grasp :rarm :wait t :gain 100)
@@ -818,6 +855,7 @@
   (send *viewer* :draw-objects)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
   (send *ri* :wait-interpolation)
+  (update-view)
 
   ;; Detect z direction
   (let (av avs tms)
@@ -837,6 +875,7 @@
     (setq tms (append tms (list 1000))))
   (send *ri* :angle-vector-sequence avs tms)
   (send *ri* :wait-interpolation)
+  (update-view)
 
   ;; Detect x direction for the next y ditection
   (let (av avs tms)
@@ -851,6 +890,7 @@
         (send *pr2* :rarm :move-end-pos #f(15 0 0) :world)
         2000)
   (send *ri* :wait-interpolation)
+  (update-view)
 
   ;; Detect y direction
   (let (av avs tms)
@@ -861,6 +901,7 @@
       (setq tms (append tms (list 400))))
     (send *ri* :angle-vector-sequence avs tms))
   (cancel-motion-when-touch :arm :rarm :direction :y :threshold -6)
+  (update-view)
 
   ;; Calculate *shelf-door-coords*
   (unix:usleep (* 500 1000))
@@ -881,6 +922,7 @@
   (send *pr2* :rarm :move-end-pos #f(100 0 -100) :world)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
+  (update-view)
 )
 
 (defun shelf-check ()

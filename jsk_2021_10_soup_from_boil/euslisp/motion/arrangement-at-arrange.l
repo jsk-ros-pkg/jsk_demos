@@ -212,7 +212,11 @@
 
 (defun set-plate-with-dialogue ()
   (transfer-curry-set)
+  (update-view)
   (transfer-curry)
+  (update-view)
   (have-the-plate-set-with-dialgue)
+  (update-view)
   (after-transfer-curry)
+  (update-view)
   )

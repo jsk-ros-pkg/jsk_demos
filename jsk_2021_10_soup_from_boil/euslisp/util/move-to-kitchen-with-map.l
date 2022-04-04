@@ -16,6 +16,7 @@
   ;; init PR2
   (unless (boundp '*pr2*) (setq *pr2* (instance pr2-sensor-robot :init)))
   (unless (boundp '*ri*) (setq *ri* (instance pr2-interface :init)))
+  (warn (format nil "~A~%" *pr2*))
   (send *pr2* :move-to (send *ri* :state :worldcoords) :world)
   (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
 
@@ -98,9 +99,15 @@
 ;; def utils
 (defun update-view ()
   (send *pr2* :copy-worldcoords)
+  ;; (send *pr2* :draw-on :flush t)
   ;; (send *irtviewer* :look-all *pr2*)
+  ;; (send *irtviewer* :draw-objects)
+  ;; (send *pr2* :copy-worldcoords)
+  ;; (send *pr2* :draw-on :flush t)
   (send *irtviewer* :viewer :viewing :look #f(3121.66 3235.13 33071.2) #f(842.417 8604.7 30832.0) #f(0 0 1))
-  (send *viewer* :draw-objects)
+  (send *irtviewer* :draw-objects)
+  (warn (format nil "~A~%" (send *pr2* :copy-worldcoords)))
+  ;; (send *pr2* :draw-on :flush t)
   )
 
 (defun update-scene ()
@@ -279,6 +286,7 @@ Arg to candidates:
   (move-real-robot :to :arrange)
   (speech-after-move-with-rec)
   (after-move)
+  (update-view)
   )
 
 ;; ケーブルの状態を確認し、キッチンに移動する。
@@ -287,4 +295,5 @@ Arg to candidates:
   (move-real-robot :to :kitchen)
   (speech-after-move-with-rec)
   (after-move)
+  (update-view)
   )
