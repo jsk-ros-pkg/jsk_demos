@@ -7,7 +7,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
-(load "package://jsk_2021_10_soup_from_boil/euslisp/util/pr2-random-coords.l")
+(load "package://jsk_2021_10_soup_from_boil/test/pr2-random-coords.l")
 
 (setq *debug-flag* nil)
 
@@ -542,19 +542,6 @@
     (send *viewer* :draw-objects)
     (send *ri* :wait-interpolation)))
 
-(defun up-rarm ()
-  ;; 手を上げる
-  (let ((ik-target (send (send *pr2* :rarm :end-coords) :copy-worldcoords)))
-    (send ik-target :translate #f(0 0 50) :world)
-    (send *pr2* :rarm :inverse-kinematics
-          (send *arrow* :copy-worldcoords)
-          :rotation-axis t
-          :debug-view *debug-flag*)
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
-    (send *ri* :wait-interpolation))
-  )
-
 ;; grasp-codes
 (defun grasp-tool-on-table (grasp-target)
   (send *ri* :stop-grasp :rarm :wait t)
@@ -584,8 +571,6 @@
   (send *pr2* :larm :angle-vector #f(117.007 48.3805 113.439 -103.326 38.7107 -5.72958 14.4628))
   (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
-
-  (up-rarm)
   (send *ri* :stop-grasp :rarm :wait t)
 
   ;;掴む位置
@@ -810,6 +795,13 @@
 ;; correct position of IH by touch and wrench
 ;; BE CAREFUL that this function changes *pr2* coords
 (defun correct-pr2-coords-at-kitchen ()
+  (when (send *ri* :simulation-modep)
+    (send *pr2* :move-to
+          (make-coords :pos #f(1081.642 8408.347 30038.963) :rpy #f(3.11 0.017 -0.009)))
+    (return-from correct-pr2-coords-at-kitchen))
+  ;; ;; random coords when kinematics simulator
+  ;; (if (send *ri* :simulation-modep)
+  ;;   (send *pr2* :move-to (send (random-coords (make-coords :pos #f(1050 8500 30000) :rpy (float-vector pi 0 0)) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
   (send *ri* :speak-jp "ドアの取っ手の位置を触って確認します")
   (set-pose)
   (look-at-shelf)
@@ -882,9 +874,6 @@
     (setq diff (v- (car (send *shelf-door* :handle :worldpos))
                    (send new-shelf-door-handle :worldpos)))
     (send *pr2* :translate diff :world)
-    ;; random coords when kinematics simulator
-    (if (send *ri* :simulation-modep)
-        (send *pr2* :move-to (send (random-coords (make-coords :pos #f(1050 8500 30000) :rpy (float-vector pi 0 0)) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
     (format t "*pr2* coords is updated to ~A~%"
             (send *pr2* :worldcoords)))
 

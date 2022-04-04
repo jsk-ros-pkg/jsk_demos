@@ -3,7 +3,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/wrench.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
-(load "package://jsk_2021_10_soup_from_boil/euslisp/util/pr2-random-coords.l")
+(load "package://jsk_2021_10_soup_from_boil/test/pr2-random-coords.l")
 
 (ros::roseus "ih-at-arrange" :anonymous t)
 
@@ -332,6 +332,14 @@
 ;; correct position of IH by touch and wrench
 ;; BE CAREFUL that this function changes *ih-knob-coords* variable
 (defun correct-ih-knob-coords ()
+  (when (send *ri* :simulation-modep)
+    (send *pr2* :move-to
+          (make-coords :pos #f(1247.602 8254.205 30013.269) :rpy #f(3.132 0.018 -0.008)))
+    (return-from correct-ih-knob-coords))
+  ;; ;; random coords when kinematics simulator
+  ;; (if (send *ri* :simulation-modep)
+  ;;   (send *pr2* :move-to (send (random-coords (send *arrange-spot* :copy-worldcoords) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
+
   (send *ri* :speak-jp "IHコンロの位置を触って確認します")
   (set-pose)
   (update-pos)
@@ -408,9 +416,6 @@
     (setq diff (v- (send *ih-knob-coords* :worldpos)
                    (send new-ih-knob-coords :worldpos)))
     (send *pr2* :translate diff :world)
-    ;; random coords when kinematics simulator
-    (if (send *ri* :simulation-modep)
-        (send *pr2* :move-to (send (random-coords (send *arrange-spot* :copy-worldcoords) :x 10 :y 10 :theta 5) :copy-worldcoords) :world))
     (format t "*pr2* coords is updated to ~A~%"
             (send *pr2* :worldcoords)))
 

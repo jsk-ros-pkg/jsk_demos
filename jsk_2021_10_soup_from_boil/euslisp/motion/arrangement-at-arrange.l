@@ -90,12 +90,17 @@
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-    (send *ri* :wait-interpolation))
+    (send *ri* :wait-interpolation)
 
-  (send *pr2* :rarm :move-end-pos #f(30 0 80) :world)
-  (send *viewer* :draw-objects)
-  (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-  (send *ri* :wait-interpolation)
+    (send ik-target :translate #f(30 0 80) :world)
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :copy-worldcoords)
+          :move-target (elt (send *ladle* :attention) 1)
+          :rotation-axis :z
+          :debug-view *debug-flag*)
+    (send *viewer* :draw-objects)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+    (send *ri* :wait-interpolation))
 
   (warn "please run (carry-curry-set) ~%")
   )
@@ -105,7 +110,7 @@
     (send *pr2* :rarm :inverse-kinematics
           (send ik-target :copy-worldcoords)
           :move-target (elt (send *ladle* :attention) 1)
-          :rotation-axis t
+          :rotation-axis :z
           :debug-view *debug-flag*)
     (send *viewer* :draw-objects)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
@@ -116,11 +121,18 @@
 
 (defun carry-curry ()
   (dotimes (i 2)
-    (send *pr2* :rarm :move-end-pos #f(0 100 0) :world)
-    (send *viewer* :draw-objects)
-    (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
-    (send *ri* :wait-interpolation)
-    )
+    (let ((ik-target (send (elt (send *ladle* :attention) 1) :copy-worldcoords)))
+      (send ik-target :translate #f(0 100 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            (send ik-target :copy-worldcoords)
+            :move-target (elt (send *ladle* :attention) 1)
+            :rotation-axis :z
+            :debug-view *debug-flag*)
+      ;; (send *pr2* :rarm :move-end-pos #f(0 100 0) :world)
+      (send *viewer* :draw-objects)
+      (send *ri* :angle-vector (send *pr2* :angle-vector) 3000)
+      (send *ri* :wait-interpolation)
+      ))
   (warn "please run (transfer-curry-set) ~%")
   )
 
