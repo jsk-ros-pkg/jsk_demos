@@ -1,4 +1,8 @@
 <launch>
+  <arg name="test_ik" default="true" />
+
   <test test-name="soup_from_boil_test" pkg="roseus" type="roseus"
-        args="$(find jsk_2021_10_soup_from_boil)/test/soup-from-boil.l" time-limit="1800" />
+        args="$(find jsk_2021_10_soup_from_boil)/test/soup-from-boil.l" time-limit="1800">
+    <param name="test_ik" value="$(arg test_ik)" />
+  </test>
 </launch>
