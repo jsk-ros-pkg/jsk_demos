@@ -1,0 +1,10 @@
+<launch>
+  <!-- map launch -->
+  <include file="$(find jsk_maps)/launch/start_map_eng2.launch" />
+
+  <!-- test node -->
+  <test test-name="test_eng2_scene" pkg="roseus" type="roseus"
+        args="$(find jsk_maps)/test/test-eng2-scene.l"
+        time-limit="120" />
+
+</launch>

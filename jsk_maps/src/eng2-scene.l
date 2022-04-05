@@ -1,4 +1,6 @@
 (load "package://jsk_maps/src/building-model.l")
+(when (find :ros *features*)
+  (require :db-building-model "package://jsk_maps/src/db-building-model.l"))
 
 (load "models/elevator_call_panel_eng2-object.l")
 (load "models/elevator_inside_panel_eng2-object.l")
@@ -336,11 +338,13 @@
     (push (elevator_inside_panel_eng2 :name "elevator_inside_panel") objects)
 
     (setq scene
-	  (instance
-	   building-model :init :name "/eng2"
-	   :objects
-	   (append maps objects)
-	   ))
+          (instance
+           (if (boundp 'db-building-model) db-building-model building-model)
+           :init
+           :name "/eng2"
+           :objects
+           (append maps objects)
+           ))
 
     ;; scene -> map
     ;;(send scene :assoc map)
