@@ -18,7 +18,7 @@
 
   ;; 設置するもの：おたまとお皿
   ;; 人からおたまを受け取る
-  (receive-ladle-with-dialogue)
+  (receive-object-with-dialogue :object :ladle)
   ;; 人に頼んで、コップ（皿）をキッチンに置いてもらう
   (set-plate-with-dialogue)
   ;; main()で使うために、おたまをキッチンの上に置く

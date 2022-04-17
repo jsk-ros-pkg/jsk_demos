@@ -4,6 +4,7 @@
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/potato-peeler.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/ladle.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/cooking-pot-73b2.l")
+(load "package://jsk_2021_10_soup_from_boil/euslisp/model/red-cup.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/model/shelf-door.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/interaction.l")
 (load "package://jsk_2021_10_soup_from_boil/euslisp/util/move-to-kitchen-with-map.l")
@@ -23,6 +24,8 @@
   (send *ladle* :newcoords (send *ladle-coords-at-kitchen* :copy-worldcoords))
   (setq *pot* (cooking-pot))
   (send *pot* :newcoords (send *pot-coords* :copy-worldcoords))
+  (setq *rcup* (red-cup))
+  (send *rcup* :newcoords (send *rcup-coords* :copy-worldcoords))
   ;; set equipment
   (setq *shelf-door* (shelf-door))
   (send *shelf-door* :newcoords (send *shelf-door-coords* :copy-worldcoords))
@@ -31,7 +34,7 @@
   (setq *ladle-coords-at-arrange* (make-coords :pos (float-vector 560 8700 30860) :rpy (float-vector 3.128 -0.098 1.514))) ;; おたま，盛り付け時
 
   (move-on-irt :arrange)
-  (objects (list *pr2* *peeler* *knife* *potato-peeler* *scene* *ladle* *shelf-door*))
+  (objects (list *pr2* *peeler* *knife* *potato-peeler* *scene* *ladle* *rcup* *shelf-door*))
   (update-view)
   )
 
@@ -49,23 +52,36 @@
   (update-view)
   )
 
-(defun receive-ladle-with-dialogue ()
+(defun receive-object-with-dialogue (&key ((:object obj) :ladle))
   (rarm-middle-pose)
-  (set-ladle)
-  ;; (arrange-motion-set)
-  (transfer-curry-set);; from arrangement-at-arrange.l
-  (send *ri* :speak-jp "おたまを渡す準備をして，okと合図をして下さい")
+  (cond
+   ((eq obj :ladle)
+    (set-ladle)
+    (transfer-curry-set);; from arrangement-at-arrange.l
+    (send *ri* :speak-jp "おたまを渡す準備をして，okと合図をして下さい"))
+   ((eq obj :cup)
+    (send *ri* :stop-grasp :rarm :wait t)
+    (send *ri* :speak-jp "コップを渡す準備をして，okと合図をして下さい")))
   (receive-with-dialogue)
   (send *ri* :start-grasp :rarm :wait t :gain 100)
-  (set-ladle)
-
+  (cond
+   ((eq obj :ladle)
+    (set-ladle)))
   (warn "please run (put-ladle-kitchen) or (put-ladle-at-shelf) ~%")
   )
 
 ;; rarm-middle-poseから、おたまをキッチンの上にセットする
-(defun put-ladle-at-kitchen ()
+(defun put-object-at-kitchen (&key ((:object obj) :ladle))
   ;; キッチン台に手が当たるまで腕を下げる
-  (let (av1 av2 (ik-target (send *ladle-coords-at-kitchen* :copy-worldcoords)))
+  (let (av1 av2 ik-target grasp-obj)
+    (cond
+     ((eq obj :ladle)
+      (setq ik-target (send *ladle-coords-at-kitchen* :copy-worldcoords))
+      (setq grasp-obj *ladle*))
+     ((eq obj :cup)
+      (setq ik-target (send *ladle-coords-at-kitchen* :copy-worldcoords))
+      (send ik-target :translate #f(0 150 0) :world)
+      (setq grasp-obj *rcup*)))
     (send ik-target :rotate (deg2rad -90) :x)
     (send ik-target :translate #f(0 0 100) :world)
     (send *pr2* :rarm :inverse-kinematics
@@ -82,11 +98,11 @@
           (list av1 av2)
           (list 3000 3000))
     (cancel-motion-when-touch :arm :rarm :direction :z :threshold 15)
-    (send *viewer* :draw-objects))
+    (send *viewer* :draw-objects)
 
-  ;; おたまを置く
-  (send *ri* :move-gripper :rarm 0.08)
-  (send *pr2* :rarm :end-coords :dissoc *ladle*)
+    ;; おたまを置く
+    (send *ri* :move-gripper :rarm 0.08)
+    (send *pr2* :rarm :end-coords :dissoc grasp-obj))
 
   ;; 手を上げる
   (let (av1 av2 (ik-target (send (send *pr2* :rarm :end-coords) :copy-worldcoords)))
@@ -382,15 +398,23 @@
   (reset-rarm)
   )
 
-;; 棚の中のおたまを掴む
-(defun grasp-ladle-at-shelf ()
-  (if (not (eql (send *ladle* :parent) nil))
-      (send (send *ladle* :parent) :dissoc *ladle*))
-  ;; (send *ladle* :newcoords (send *ladle-coords-at-shelf* :copy-worldcoords))
-  (let ((ik-target (send *ladle* :copy-worldcoords)) av avs tms)
+;; 棚の中の物体（おたまorコップ）を掴む
+(defun grasp-object-at-shelf (&key ((:object obj) :ladle))
+  (let (grasp-obj ik-target av avs tms)
+    (cond
+     ((eq obj :ladle)
+      (setq grasp-obj *ladle*)
+      (if (not (eql (send grasp-obj :parent) nil))
+        (send (send grasp-obj :parent) :dissoc grasp-obj)))
+     ((eq obj :cup) (setq grasp-obj *rcup*)))
+    (setq ik-target (send grasp-obj :copy-worldcoords))
     ;; 棚の中に手を伸ばす
     (send *ri* :move-gripper :rarm 0.08 :wait t)
-    (move-rarm-to-ladle-at-shelf)
+    (cond
+     ((eq obj :ladle)
+      (move-rarm-to-ladle-at-shelf))
+      ((eq obj :cup)
+       (move-rarm-to-cup-at-shelf)))
     (send *ri* :stop-grasp :rarm :wait t)
     (send ik-target :translate #f(0 0 50) :world)
     (send *pr2* :rarm :inverse-kinematics
@@ -401,7 +425,7 @@
     (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
     (send *ri* :wait-interpolation)
 
-    ;; 右手をおたまの持ち手の高さに合わせる
+    ;; 右手をおたまorコップの持ち手の高さに合わせる
     (dotimes (i 10)
       (send ik-target :translate #f(0 0 -10) :world)
       (send *pr2* :rarm :inverse-kinematics
@@ -418,22 +442,22 @@
     (update-view)
     (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
     (send *viewer* :draw-objects)
-    (send *ri* :wait-interpolation))
+    (send *ri* :wait-interpolation)
 
   ;; おたまを掴む
   (send *ri* :start-grasp :rarm :wait t)
-  (send (send *pr2* :rarm :end-coords) :assoc *ladle*)
-  (warn "please run (put-ladle-at-kitchen) ~%")
+  (send (send *pr2* :rarm :end-coords) :assoc grasp-obj))
+  (warn "please run (put-object-at-kitchen) ~%")
   )
 
-(defun grasp-ladle-at-shelf-with-fail-detection ()
-  (grasp-ladle-at-shelf)
+(defun grasp-object-at-shelf-with-fail-detection (&key ((:object obj) :ladle))
+  (grasp-object-at-shelf :object obj)
 
   ;; 失敗を検知する
   (grasp-fail-detection :rarm :g-thre 10)
   (if (equal *fail-flag* t) ;; 一度失敗したらもう一度挑戦する
     (progn
-        (grasp-ladle-at-shelf)
+        (grasp-object-at-shelf :object obj)
         (grasp-fail-detection :rarm :g-thre 10)
         (if (equal *fail-flag* t) ;; 二度失敗したら人に助けてもらう
             (progn
@@ -522,9 +546,54 @@
       (send *ri* :angle-vector-sequence avs tms))
     (send *ri* :wait-interpolation)))
 
+(defun move-rarm-to-cup-at-shelf (&key (reverse nil))
+  (send *pr2* :reset-manip-pose)
+  (send *pr2* :torso :waist-z :joint-angle 325)
+  (send *pr2* :head :look-at (send *shelf-look-coords* :worldpos))
+
+  (let ((ik-target (make-coords :pos #f(290 8700 31478))) av1 av2 avs tms)
+    (send (send *pr2* :rarm :end-coords) :dissoc *rcup*)
+    (send *rcup* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
+    (send (send *pr2* :rarm :end-coords) :assoc *rcup*)
+    ;; Set angle vectors
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :translate #f(200 0 0) :world)
+          :rotation-axis nil)
+    (setq av1 (send *pr2* :angle-vector))
+    (setq avs (append avs (list av1)))
+    (setq tms (append tms (list 4000)))
+    (update-view)
+    (send *pr2* :rarm :inverse-kinematics
+          (send ik-target :translate #f(-100 0 0) :world)
+          :rotation-axis :z)
+    (setq av2 (send *pr2* :angle-vector))
+    (setq avs (append avs (list av2)))
+    (setq tms (append tms (list 2000)))
+    (update-view)
+    (dotimes (i 10)
+      (send ik-target :translate (float-vector -10 0 0) :world)
+      (send *pr2* :rarm :inverse-kinematics
+            ik-target
+            :rotation-axis :z
+            :debug-view nil)
+      (update-view)
+      (setq av (send *pr2* :angle-vector))
+      (setq avs (append avs (list av)))
+      (setq tms (append tms (list 400))))
+    ;; Move PR2
+    (if reverse
+      (send *ri* :angle-vector-sequence (reverse avs) (reverse tms))
+      (send *ri* :angle-vector-sequence avs tms))
+    (send *ri* :wait-interpolation)
+  ))
+
 ;; おたまを棚の中に置く
-(defun put-ladle-at-shelf ()
-  (move-rarm-to-ladle-at-shelf)
+(defun put-object-at-shelf (&key ((:object obj) :ladle))
+  (cond
+   ((eq obj :ladle)
+    (move-rarm-to-ladle-at-shelf))
+   ((eq obj :cup)
+    (move-rarm-to-cup-at-shelf)))
 
   ;; おたまが棚に当たるまで腕を下ろす
   (send *pr2* :rarm :move-end-pos #f(0 0 -100) :world)
@@ -538,8 +607,14 @@
     (let ((tmp-gripper (* 0.001 (send *ri* :state :gripper :rarm :position))))
       (send *ri* :move-gripper :rarm (+ 0.025 tmp-gripper))))
 
-  (send *pr2* :rarm :end-coords :dissoc *ladle*)
-  (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))
+  (cond
+   ((eq obj :ladle)
+    (send *pr2* :rarm :end-coords :dissoc *ladle*)
+    (send *ladle* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords)))
+   ((eq obj :cup)
+    (send *pr2* :rarm :end-coords :dissoc *rcup*)
+    (send *rcup* :newcoords (send *pr2* :rarm :end-coords :copy-worldcoords))))
+
   (send *pr2* :rarm :move-end-pos #f(60 0 30) :world)
   (update-view)
   (send *ri* :angle-vector (send *pr2* :angle-vector) 4000)
@@ -717,8 +792,12 @@
 
   ;; おたまを人から受け取り、棚の中にセットする
   (set-head)
-  (receive-ladle-with-dialogue)
-  (put-ladle-at-shelf)
+  (receive-object-with-dialogue :object :ladle)
+  (put-object-at-shelf :object :ladle)
+
+  ;; コップを人から受け取り、棚の中にセットする
+  (receive-object-with-dialogue :object :cup)
+  (put-object-at-shelf :object :cup)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
@@ -739,9 +818,15 @@
 
   ;; おたまを棚から取り出し、キッチンにセットする
   (rarm-middle-pose)
-  (grasp-ladle-at-shelf-with-fail-detection)
+  (grasp-object-at-shelf-with-fail-detection :object :ladle)
   (move-rarm-to-ladle-at-shelf :reverse t)
-  (put-ladle-at-kitchen)
+  (put-object-at-kitchen :object :ladle)
+
+  ;; コップを棚から取り出し、キッチンにセットする
+  (rarm-middle-pose)
+  (grasp-object-at-shelf-with-fail-detection :object :cup)
+  (move-rarm-to-cup-at-shelf :reverse t)
+  (put-object-at-kitchen :object :cup)
 
   ;; 棚の扉を閉める
   (close-shelf-set)
@@ -753,7 +838,7 @@
 
 (defun set-ladle-at-kitchen ()
   ;; おたまをセットする
-  (put-ladle-at-kitchen)
+  (put-object-at-kitchen :object :ladle)
   (reset-rarm)
 
   (send *ri* :speak-jp "準備を行いました．確認してokと合図をして下さい" :wait t)
