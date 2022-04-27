@@ -24,6 +24,9 @@
     <remap from="initialpose_out" to="initialpose" />
   </node>
 
+  <!-- change floor server -->
+  <node name="change_floor_server" pkg="jsk_maps" type="change-floor-server.l"/>
+
   <node name="publish_spot" pkg="roseus" type="roseus"
         args="$(find jsk_maps)/tools/publish_spot.l"
         machine="$(arg MACHINE)"
