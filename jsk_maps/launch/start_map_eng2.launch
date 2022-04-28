@@ -5,6 +5,7 @@
   <arg name="use_machine" default="false" />
   <arg name="use_pictogram" default="false" />
   <arg name="base_frame_id" default="base_link" />
+  <arg name="move_base_node" default="move_base" />
 
   <machine name="localhost" address="localhost" if="$(arg use_machine)" />
 
@@ -29,7 +30,7 @@
   <node name="change_floor_server" pkg="jsk_maps" type="change-floor-server.l">
     <rosparam subst_value="true">
       base_frame_id: $(arg base_frame_id)
-      move_base_node: move_base
+      move_base_node: $(arg move_base_node)
     </rosparam>
   </node>
 
