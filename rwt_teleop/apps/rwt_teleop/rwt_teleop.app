@@ -40,7 +40,7 @@ plugins:
       video_height: 480
       video_width: 640
       video_framerate: 15
-      video_encoding: RGB
+      video_encoding: BGR
   - name: rosbag_recorder_plugin
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
