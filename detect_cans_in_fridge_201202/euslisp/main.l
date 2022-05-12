@@ -90,7 +90,7 @@
            (speak-jp (format nil "Please take ~a." *type*)))
           (t (speak-jp (format nil "~aをどうぞ。" *type*))))
        (speak-jp (format nil "~a を どうぞ" *type*)))
-     (hand-over use-arm :wait-shock t))
+     (hand-over use-arm :wait-shock t :tuckarm :rarm))
     )
   t
   )
@@ -119,7 +119,7 @@
         (speak-jp (format nil "I will look for ~a and bring it. Please wait a minute." *type*)))
        (t (speak-jp (format nil "~aを持って行きます。少々、お待ちください。" *type*))))
     (speak-jp (format nil "~a を もってきます  しょうしょう おまち ください" *type*)))
-  (pr2-tuckarm-pose)
+  (pr2-tuckarm-pose :rarm)
 
   (setq *opose* (send *ri* :state :worldcoords))
   )
