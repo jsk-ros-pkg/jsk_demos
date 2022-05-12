@@ -15,7 +15,11 @@ plugins:
       audio_sample_rate: 16000
       audio_format: wave
       audio_sample_format: S16LE
+      # use raw topic to suppress data transmission between c1 and c2
+      # video_topic_name: /kinect_head/rgb/image_rect_color
       video_topic_name: /kinect_head/rgb/image_rect_color
+      use_compressed: true
+      video_decompressed_topic_name: /kinect_head/pick_object/rgb/image_rect_color
       video_height: 480
       video_width: 640
       video_framerate: 30
@@ -31,10 +35,12 @@ plugins:
       audio_format: wave
       audio_sample_format: S16LE
       video_topic_name: /edgetpu_human_pose_estimator/output/image
+      use_compressed: true
+      video_decompressed_topic_name: /edgetpu_human_pose_estimator/pick_object/output/image
       video_height: 480
       video_width: 640
       video_framerate: 15
-      video_encoding: RGB
+      video_encoding: BGR
   - name: rosbag_recorder_plugin
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
@@ -67,6 +73,11 @@ plugins:
         - /kinect_head/rgb/throttled/image_rect_color/compressed
         - /kinect_head/depth_registered/throttled/image_rect/compressedDepth
         - /audio
+  - name: result_recorder_plugin
+    type: app_recorder/result_recorder_plugin
+    plugin_args:
+      result_path: /tmp
+      result_title: pick_object_result.yaml
   - name: gdrive_uploader_plugin
     type: app_uploader/gdrive_uploader_plugin
     plugin_args:
@@ -74,10 +85,12 @@ plugins:
         - /tmp/pick_object_kinect_head.avi
         - /tmp/pick_object_kinect_head_human_pose_estimator.avi
         - /tmp/pick_object_rosbag.bag
+        - /tmp/pick_object_result.yaml
       upload_file_titles:
         - pick_object_kinect_head.avi
         - pick_object_kinect_head_human_pose_estimator.avi
         - pick_object_rosbag.bag
+        - pick_object_result.yaml
       upload_parents_path: pr2_fridge_pick_object
       upload_server_name: /gdrive_server
   - name: speech_notifier_plugin
@@ -95,6 +108,7 @@ plugin_order:
     - kinect_head_video_recorder_plugin
     - human_pose_estimator_video_recorder_plugin
     - rosbag_recorder_plugin
+    - result_recorder_plugin
     - gdrive_uploader_plugin
     - speech_notifier_plugin
     - mail_notifier_plugin
@@ -102,6 +116,7 @@ plugin_order:
     - kinect_head_video_recorder_plugin
     - human_pose_estimator_video_recorder_plugin
     - rosbag_recorder_plugin
+    - result_recorder_plugin
     - gdrive_uploader_plugin
     - speech_notifier_plugin
     - mail_notifier_plugin
