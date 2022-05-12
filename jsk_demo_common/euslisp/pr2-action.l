@@ -1516,11 +1516,11 @@
     (send client :wait-for-result :timeout timeout))
   )
 
-(defun hand-over (arm &key (wait-shock nil))
+(defun hand-over (arm &key (wait-shock nil) (tuckarm nil))
   (ros::spin-once)
   (let* ((av (send *ri* :state :potentio-vector))
-         (tuckarm (check-tuckarm-pose))
-         (isfreearm (eq arm tuckarm))
+         (tuckfreearm (if tuckarm tuckarm (check-tuckarm-pose)))
+         (isfreearm (eq arm tuckfreearm))
          ;; this is for :larm
          (avs (list #f(12 0 64 70 -122 50 -115 160 -4 74 -105 -90 70 -5 20 2 15)
                     #f(12 6 9 106 -77 35 -124 -128 -4 75 -104 -89 70 0 20 3 30)
@@ -1545,7 +1545,7 @@
 	(setq avs (subseq avs (- avs-length 2))
 	      tms (subseq tms (- avs-length 2))
 	      av (send *ri* :state :potentio-vector)))
-      (setq tuckarm arm))
+      (if (not tuckarm) (setq tuckfreearm arm)))
     ;;
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)
@@ -1565,7 +1565,7 @@
     (send *ri* :wait-interpolation)
     ;;
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (pr2-tuckarm-pose tuckarm)
+    (pr2-tuckarm-pose tuckfreearm)
     ))
 
 (defun tray-detection (obj)
