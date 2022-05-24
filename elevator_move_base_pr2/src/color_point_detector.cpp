@@ -22,7 +22,7 @@ class FrameDrawer
 
   std::string current_frame_;
   double x,y,r;
-  CvScalar target_color_;
+  cv::Scalar target_color_;
 
   std::vector<tf::StampedTransform> button_pose_;
 
@@ -40,7 +40,7 @@ public:
     private_nh_.param("red", r, 196);
     private_nh_.param("green", g, 196);
     private_nh_.param("blue", b, 64);
-    target_color_ = CV_RGB(r,g,b);
+    target_color_ = cv::Scalar(b,g,r);
   }
 
   void pointCb(const geometry_msgs::PointStamped::ConstPtr& point_msg)
@@ -113,11 +113,11 @@ public:
     }
 
     // for debug image
-    cv::circle(img, cv::Point2f(x, y), r, CV_RGB(255,0,0), 3);
+    cv::circle(img, cv::Point2f(x, y), r, cv::Scalar(0,0,255), 3);
     char text[32];
     sprintf(text, "brightness = %.3f", max_score);
     cv::putText (img, std::string(text), cv::Point(x-100, y+70+r),
-		 0, 0.7, CV_RGB(255,0,0),
+		 0, 0.7, cv::Scalar(0,0,255),
 		 2, 8, false);
 
     std_msgs::Float32 score_msg;
