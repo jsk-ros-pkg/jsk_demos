@@ -16,6 +16,7 @@
 
   <run_depend>opencv_apps</run_depend>
   <run_depend>fetcheus</run_depend>
+  <run_depend>jsk_fetch_startup</run_depend>
   <run_depend>speech_recognition_msgs</run_depend>
   <run_depend>julius_ros</run_depend>
 

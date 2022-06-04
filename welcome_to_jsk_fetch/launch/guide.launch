@@ -1,0 +1,23 @@
+<launch>
+
+  <arg name="launch_face_detection" default="true"
+       doc="Currently face_detection is not launch in fetch"/>
+  <arg name="launch_julius" default="false"
+       doc="Currently julius is launch in fetch"/>
+
+  <node pkg="welcome_to_jsk_fetch" type="guide.l" name="guide" output="screen"
+        args="&quot;(main)&quot;"/>
+
+  <include if="$(arg launch_face_detection)"
+           file="$(find opencv_apps)/launch/face_detection.launch">
+    <arg name="image" value="/head_camera/rgb/image_rect_color" />
+    <arg name="debug_view" value="false" />
+  </include>
+
+  <include if="$(arg launch_julius)" file="$(find julius_ros)/launch/julius.launch">
+    <arg name="launch_audio_capture" value="false"/>
+    <arg name="launch_sound_play" value="false"/>
+    <arg name="speech_to_text_topic" value="speech_to_text_julius"/>
+  </include>
+
+</launch>
