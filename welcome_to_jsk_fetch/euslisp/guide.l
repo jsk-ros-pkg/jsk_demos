@@ -7,7 +7,9 @@
   (fetch-init)
 
   ;; Reset-pose
-  (send *ri* :angle-vector (send *fetch* :reset-pose))
+  (send *fetch* :reset-pose)
+  (send *fetch* :torso_lift_joint :joint-angle 500)
+  (send *ri* :angle-vector (send *fetch* :angle-vector))
   (send *ri* :wait-interpolation)
 
   ;; Register place names to julius
@@ -21,5 +23,7 @@
   (unix:sleep 2) ;; Wait 2 seconds not to recognize fetch's own voice at next function
 
   ;; Go to spot from speech
+  (send *fetch* :reset-pose)
+  (send *ri* :wait-interpolation)
   (go-to-spot-from-speech)
   )
