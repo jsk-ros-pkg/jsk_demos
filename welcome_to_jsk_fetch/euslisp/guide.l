@@ -17,7 +17,7 @@
 
   (do-until-key
     ;; Wait for person by face recognition and then greeting
-    (greeting)
+    (greeting :use-people-detection t)
 
     ;; Ask destination
     (send *ri* :speak-jp "どこにいきますか？" :wait t)

@@ -20,4 +20,7 @@
     <arg name="speech_to_text_topic" value="speech_to_text_julius"/>
   </include>
 
+  <include file="$(find welcome_to_jsk_fetch)/launch/people_detection.launch" >
+  </include>
+
 </launch>
