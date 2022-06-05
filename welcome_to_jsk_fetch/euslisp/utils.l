@@ -1,8 +1,10 @@
 (load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
 (load "package://fetcheus/fetch-interface.l")
 (load "package://welcome_to_jsk_fetch/euslisp/roseus-utils.l")
+(load "package://welcome_to_jsk_fetch/euslisp/fetch-interface-utils.l")
 (ros::load-ros-manifest "speech_recognition_msgs")
 (ros::load-ros-manifest "opencv_apps")
+
 
 (defvar spot-names
   ;; list of (spot name, pin name, relative rot [rad])
