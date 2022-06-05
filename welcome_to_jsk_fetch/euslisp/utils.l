@@ -130,18 +130,19 @@
 
 
 (defun greeting (&key (use-people-detection nil))
-  ;; Look up
-  (send *fetch* :angle-vector
-        (send *ri* :state :potentio-vector :wait-until-update t))
-  (send *fetch* :head :neck-p :joint-angle -20)
-  (send *fetch* :head :neck-y :joint-angle 0)
-  (send *ri* :angle-vector (send *fetch* :angle-vector))
-  (send *ri* :wait-interpolation)
   (if use-people-detection
       (progn
         (ros::ros-info "Searching for people...")
         (find-people))
       (let (faces face-x face-y)
+        ;; Look up
+        (send *fetch* :angle-vector
+              (send *ri* :state :potentio-vector :wait-until-update t))
+        (send *fetch* :head :neck-p :joint-angle -20)
+        (send *fetch* :head :neck-y :joint-angle 0)
+        (send *ri* :angle-vector (send *fetch* :angle-vector))
+        (send *ri* :wait-interpolation)
+
         ;; Wait until face is found
         (do-until-key
             (format t "Searching for people ...~%")
