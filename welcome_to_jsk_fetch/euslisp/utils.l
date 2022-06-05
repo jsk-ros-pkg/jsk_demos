@@ -96,7 +96,11 @@
         (when (check-stop-words speech-recognition-result)
           (return)))
       (setq move-base-result (send *ri* :move-to-wait-once :retry 0 :wait-for-result-duration-time 1)))
-    (restore-params)))
+    (restore-params)
+
+    (when (eq move-base-result actionlib_msgs::GoalStatus::*succeeded*)
+      (send *ri* :speak-jp
+            (format nil "ここが~Aです" spot-name) :wait t))))
 
 
 (defun guide-pose ()
