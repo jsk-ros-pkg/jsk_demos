@@ -10,12 +10,12 @@
                              (let ((st (send msg :header :stamp)))
                                (when (> (send st :to-sec)
                                         (send after-stamp :to-sec))
-                                 (when (or (and (not (null condition)) (funccall condition msg)) (null condition))
+                                 (when (or (and (not (null condition)) (funcall condition msg)) (null condition))
                                    (setq lmsg msg)))))))
         (t
          (ros::subscribe topic-name mclass
                          #'(lambda (msg)
-                             (when (or (and (not (null condition)) (funccall condition msg)) (null condition))
+                             (when (or (and (not (null condition)) (funcall condition msg)) (null condition))
                                (setq lmsg msg)))))))
     (let ((finishtm (if timeout (ros::time-now))))
       (when finishtm
