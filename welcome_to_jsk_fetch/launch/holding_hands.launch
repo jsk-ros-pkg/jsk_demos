@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="namespace" default="end_effector" />
+  <arg name="publish_frequency" default="50.0"/>
+  <arg name="time_constant" default="0.3"/>
+  <arg name="root" default="torso_lift_link"/>
+  <arg name="tip"  default="gripper_link"/>
+  <arg name="target_frame_id"  default="base_link"/>
+
+  <node name="joint_states_appender"
+        pkg="jsk_calibration" type="joint_states_appender.py" >
+  </node>
+
+  <group ns="$(arg namespace)" >
+    <node name="virtual_force_publisher"
+          pkg="virtual_force_publisher" type="virtual_force_publisher" >
+      <remap from="joint_states" to="/joint_states_appended"/>
+      <param name="publish_frequency" value="$(arg publish_frequency)"/>
+      <param name="time_constant" value="$(arg time_constant)"/>
+      <param name="root" value="$(arg root)"/>
+      <param name="tip" value="$(arg tip)"/>
+    </node>
+
+    <node name="transform_wrench"
+          pkg="jsk_topic_tools" type="transform_wrench.py" >
+      <remap from="~input" to="wrench" />
+      <remap from="~output" to="wrench_transformed" />
+      <rosparam subst_value="true" >
+        target_frame_id: $(arg target_frame_id)
+      </rosparam>
+    </node>
+  </group>
+
+</launch>
