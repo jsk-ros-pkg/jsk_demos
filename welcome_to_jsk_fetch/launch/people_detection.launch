@@ -3,17 +3,69 @@
   <arg name="INPUT_PEOPLE_POSE" default="/edgetpu_human_pose_estimator/output/poses" />
   <arg name="INPUT_DEPTH_IMAGE" default="/head_camera/depth_registered/hw_registered/image_rect" />
   <arg name="INPUT_CAMERA_INFO" default="/head_camera/rgb/camera_info" />
+  <arg name="depth_threshold" default="1.5"/>
 
-  <node name="people_pose_2d_to_3d"
-        pkg="welcome_to_jsk_fetch" type="people_pose_2d_to_3d.py"
-        output="screen" >
-    <remap from="~input/pose" to="$(arg INPUT_PEOPLE_POSE)" />
-    <remap from="~input/info" to="$(arg INPUT_CAMERA_INFO)" />
-    <remap from="~input/depth" to="$(arg INPUT_DEPTH_IMAGE)" />
-    <rosparam subst_value="true">
-      approximate_sync: true
-      queue_size: 30
-    </rosparam>
-  </node>
+  <!-- filter background as mask based on depth_threshold -->
+  <group ns="welcome_to_jsk" >
+
+    <node name="depth_image_filter"
+          pkg="jsk_perception" type="depth_image_filter.py"
+          output="screen" respawn="true">
+      <remap from="~input" to="$(arg INPUT_DEPTH_IMAGE)" />
+      <remap from="~output/mask" to="$(arg INPUT_DEPTH_IMAGE)/mask" />
+      <rosparam subst_value="true" >
+        threshold: $(arg depth_threshold)
+      </rosparam>
+    </node>
+
+    <!-- morphology operation on mask to handle transparent bottle and other noisy pixels -->
+    <node name="morphology_close" pkg="opencv_apps" type="morphology" >
+      <remap from="image" to="$(arg INPUT_DEPTH_IMAGE)/mask" />
+      <remap from="~image" to="$(arg INPUT_DEPTH_IMAGE)/mask/close_operation" />
+      <param name="use_camera_info" value="false" />
+      <param name="debug_view" value="false" />
+      <param name="queue_size" value="10" />
+      <param name="morph_operator" value="1" />
+      <param name="morph_element" value="0" />
+      <param name="morph_size" value="40" />
+    </node>
+    <node name="morphology_open" pkg="opencv_apps" type="morphology" >
+      <remap from="image" to="$(arg INPUT_DEPTH_IMAGE)/mask/close_operation" />
+      <remap from="~image" to="$(arg INPUT_DEPTH_IMAGE)/mask/open_operation" />
+      <param name="use_camera_info" value="false" />
+      <param name="debug_view" value="false" />
+      <param name="queue_size" value="10" />
+      <param name="morph_operator" value="0" />
+      <param name="morph_element" value="0" />
+      <param name="morph_size" value="40" />
+    </node>
+
+    <!-- use filtered mask to extract foreground rgb image -->
+    <node name="apply_mask_image"
+          pkg="nodelet" type="nodelet"
+          args="standalone jsk_perception/ApplyMaskImage">
+      <remap from="~input" to="$(arg INPUT_DEPTH_IMAGE)" />
+      <remap from="~input/mask" to="$(arg INPUT_DEPTH_IMAGE)/mask/open_operation" />
+      <remap from="~output" to="$(arg INPUT_DEPTH_IMAGE)/depth_filtered" />
+      <remap from="~output/mask" to="$(arg INPUT_DEPTH_IMAGE)/depth_filtered/mask" />
+      <rosparam>
+        approximate_sync: true
+        clip: false
+        cval: 0
+      </rosparam>
+    </node>
+
+    <node name="people_pose_2d_to_3d"
+          pkg="welcome_to_jsk_fetch" type="people_pose_2d_to_3d.py"
+          output="screen" >
+      <remap from="~input/pose" to="$(arg INPUT_PEOPLE_POSE)" />
+      <remap from="~input/info" to="$(arg INPUT_CAMERA_INFO)" />
+      <remap from="~input/depth" to="$(arg INPUT_DEPTH_IMAGE)/depth_filtered" />
+      <rosparam subst_value="true">
+        approximate_sync: true
+        queue_size: 30
+      </rosparam>
+    </node>
+  </group>
 
 </launch>
