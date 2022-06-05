@@ -6,7 +6,8 @@
        doc="Currently julius is launch in fetch"/>
 
   <node pkg="welcome_to_jsk_fetch" type="guide.l" name="guide" output="screen"
-        args="&quot;(main)&quot;"/>
+        args="&quot;(main)&quot;"
+        required="true" />
 
   <include if="$(arg launch_face_detection)"
            file="$(find opencv_apps)/launch/face_detection.launch">
