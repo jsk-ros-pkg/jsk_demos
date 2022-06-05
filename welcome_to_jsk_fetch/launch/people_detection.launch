@@ -66,6 +66,12 @@
         queue_size: 30
       </rosparam>
     </node>
+
+    <node name="people_poses_to_poses"
+          pkg="jsk_recognition_msgs" type="people_pose_array_to_pose_array.py">
+      <remap from="~input" to="people_pose_2d_to_3d/output/pose" />
+    </node>
+
   </group>
 
 </launch>
