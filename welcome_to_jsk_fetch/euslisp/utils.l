@@ -2,6 +2,7 @@
 (load "package://fetcheus/fetch-interface.l")
 (load "package://welcome_to_jsk_fetch/euslisp/roseus-utils.l")
 (load "package://welcome_to_jsk_fetch/euslisp/fetch-interface-utils.l")
+(load "package://welcome_to_jsk_fetch/euslisp/speech-recognition-client.l")
 (ros::load-ros-manifest "actionlib_msgs")
 (ros::load-ros-manifest "speech_recognition_msgs")
 (ros::load-ros-manifest "opencv_apps")
@@ -75,16 +76,22 @@
          (pin-name (name-to-pin spot-name))
          (relative-rot (name-to-relative-rot spot-name))
          move-base-result
-         (move-base-count 0))
+         (move-base-count 0)
+         (speech-recognition-client (instance speech-recognition-client :init "/speech_to_text_google"))
+         speech-recognition-result)
     ;; Start navigation
     (send *ri* :speak-jp
           (format nil "~Aに移動します。動きますから注意してください。" spot-name))
     (store-params)
     (inflation-loose)
     (go-to-spot pin-name :relative-rot relative-rot)
-    (while (and (or (not (= ret actionlib_msgs::GoalStatus::*succeeded*))
-                    (not (= ret actionlib_msgs::GoalStatus::*aborted*)))
+    (while (and (not (eq move-base-result actionlib_msgs::GoalStatus::*succeeded*))
+                (not (eq move-base-result actionlib_msgs::GoalStatus::*aborted*))
                 (<= move-base-count move-base-retry))
+      (ros::spin-once)
+      (setq speech-recognition-result (send speech-recognition-client :result))
+      (when speech-recognition-result
+        (ros::ros-info "Speech Recognition Recognized ~A" speech-recognition-result))
       (setq move-base-result (send *ri* :move-to-wait-once :retry 0 :wait-for-result-duration-time 1)))
     (restore-params)))
 
