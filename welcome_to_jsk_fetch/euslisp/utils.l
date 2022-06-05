@@ -3,6 +3,7 @@
 (load "package://welcome_to_jsk_fetch/euslisp/roseus-utils.l")
 (load "package://welcome_to_jsk_fetch/euslisp/fetch-interface-utils.l")
 (load "package://welcome_to_jsk_fetch/euslisp/speech-recognition-client.l")
+(load "package://welcome_to_jsk_fetch/euslisp/language-utils.l")
 (ros::load-ros-manifest "actionlib_msgs")
 (ros::load-ros-manifest "speech_recognition_msgs")
 (ros::load-ros-manifest "opencv_apps")
@@ -91,7 +92,9 @@
       (ros::spin-once)
       (setq speech-recognition-result (send speech-recognition-client :result))
       (when speech-recognition-result
-        (ros::ros-info "Speech Recognition Recognized ~A" speech-recognition-result))
+        (ros::ros-info "Speech Recognition Recognized ~A" speech-recognition-result)
+        (when (check-stop-words speech-recognition-result)
+          (return)))
       (setq move-base-result (send *ri* :move-to-wait-once :retry 0 :wait-for-result-duration-time 1)))
     (restore-params)))
 
