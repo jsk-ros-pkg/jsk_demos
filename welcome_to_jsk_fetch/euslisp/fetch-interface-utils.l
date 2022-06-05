@@ -12,7 +12,8 @@
                          (send self :robot-interface-simulation-callback))
                        (return-from :move-to-wait t)) ;; simulation-modep
                      (if (null move-base-goal-msg) (return-from :move-to-wait nil))
-                     (while (and (null ret) (<= count retry))
+                     (while (and (or (not (= ret actionlib_msgs::GoalStatus::*succeeded*))
+                                     (not (= ret actionlib_msgs::GoalStatus::*aborted*))) (<= count retry))
                        (when (> count 0) ;; retry
                          (send self :clear-costmap)
                          (send move-base-goal-msg :header :seq count)
@@ -23,10 +24,9 @@
                        (ros::ros-info "get-state ~A" (send move-base-action :get-state))
                        (when (eq (send move-base-action :get-state)
                                  actionlib_msgs::GoalStatus::*preempted*)
-                         (setq ret nil)
+                         (setq ret actionlib_msgs::GoalStatus::*preempted*)
                          (return))
                        (if (eq (send move-base-action :get-state) actionlib_msgs::GoalStatus::*succeeded*)
-                           (setq ret t))
+                           (setq ret actionlib_msgs::GoalStatus::*succeeded*))
                        (incf count))
-                     (ros::ros-info "move-to : ~A" (if ret 'succeeded 'failed))
                      ret)))

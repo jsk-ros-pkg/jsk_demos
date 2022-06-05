@@ -2,6 +2,7 @@
 (load "package://fetcheus/fetch-interface.l")
 (load "package://welcome_to_jsk_fetch/euslisp/roseus-utils.l")
 (load "package://welcome_to_jsk_fetch/euslisp/fetch-interface-utils.l")
+(ros::load-ros-manifest "actionlib_msgs")
 (ros::load-ros-manifest "speech_recognition_msgs")
 (ros::load-ros-manifest "opencv_apps")
 
@@ -29,21 +30,64 @@
     (send (send req :vocabulary) :words (mapcar #'car spot-names))
     (ros::service-call "speech_recognition" req nil)))
 
-(defun go-to-spot-from-speech ()
+
+(defun go-to-spot (name &key (relative-pos nil) (relative-rot nil) (undock-rotate nil) (clear-costmap t))
+  ;; undock if fetch is docking
+  (unless (boundp '*ri*)
+    (require :fetch-interface "package://fetcheus/fetch-interface.l")
+    (fetch-init))
+  (if clear-costmap (send *ri* :clear-costmap))
+  (let ((undock-success nil))
+    (block go-to-spot-undock
+      (dotimes (i 3)
+        (let* ((battery-charging-state (get-battery-charging-state)))
+          ;; You may fail to subscribe /battery_state
+          ;; because of message md5 difference between melodic and indigo.
+          (unless battery-charging-state
+            (ros::ros-warn "Failed to subscribe /battery_state")
+            (ros::ros-warn "Skip undocking, so please make sure that Fetch is already undocked.")
+            (return-from go-to-spot-undock t))
+          (if (equal battery-charging-state :charging)
+            (progn
+              (setq undock-success (auto-undock :n-trial 3 :rotate-in-place undock-rotate)))
+            (return-from go-to-spot-undock t))
+          (if (not undock-success)
+            (progn
+              (ros::ros-error "Failed to undock")
+            (send *ri* :speak "I failed to undock.")))))
+      (if (not undock-success) (return-from go-to-spot nil))))
+  ;; go to spot
+  (let* ((ret (get-spot-coords name))
+         (goal-pose (car ret))
+         (frame-id (cdr ret)))
+    (when relative-pos
+      (setq goal-pose (send goal-pose :translate relative-pos :world)))
+    (when relative-rot
+      (setq goal-pose (send goal-pose :rotate relative-rot :z :local)))
+    (send *ri* :move-to goal-pose :frame-id frame-id :no-wait t)))
+
+
+(defun go-to-spot-from-speech (&key (move-base-retry 10))
   (let* ((speech (one-shot-subscribe
                   "speech_to_text_julius"
                   speech_recognition_msgs::SpeechRecognitionCandidates))
          (spot-name (car (send speech :transcript)))
          (pin-name (name-to-pin spot-name))
-         (relative-rot (name-to-relative-rot spot-name)))
+         (relative-rot (name-to-relative-rot spot-name))
+         move-base-result
+         (move-base-count 0))
     ;; Start navigation
     (send *ri* :speak-jp
           (format nil "~Aに移動します。動きますから注意してください。" spot-name))
     (store-params)
     (inflation-loose)
     (go-to-spot pin-name :relative-rot relative-rot)
-    (restore-params)
-    ))
+    (while (and (or (not (= ret actionlib_msgs::GoalStatus::*succeeded*))
+                    (not (= ret actionlib_msgs::GoalStatus::*aborted*)))
+                (<= move-base-count move-base-retry))
+      (setq move-base-result (send *ri* :move-to-wait-once :retry 0 :wait-for-result-duration-time 1)))
+    (restore-params)))
+
 
 (defun guide-pose ()
   (send *ri* :start-grasp)
