@@ -6,6 +6,10 @@
   ;; Init fetch-interface
   (fetch-init)
 
+  ;; Reset-pose
+  (send *ri* :angle-vector (send *fetch* :reset-pose))
+  (send *ri* :wait-interpolation)
+
   ;; Register place names to julius
   (register-spots-to-julius)
 
