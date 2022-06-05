@@ -67,7 +67,7 @@
     (send *ri* :move-to goal-pose :frame-id frame-id :no-wait t)))
 
 
-(defun go-to-spot-from-speech (&key (move-base-retry 10))
+(defun go-to-spot-from-speech (&key (move-base-retry 100000))
   (let* ((speech (one-shot-subscribe
                   "speech_to_text_julius"
                   speech_recognition_msgs::SpeechRecognitionCandidates))

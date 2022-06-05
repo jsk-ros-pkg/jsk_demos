@@ -3,7 +3,7 @@
 (defmethod fetch-interface
     (:move-to-wait-once
      (&rest args &key (retry 0) (frame-id "world") (wait-for-result-duration-time 0) &allow-other-keys)
-                   (let (ret (count 0) (tm (ros::time-now))
+                   (let ((ret 0) (count 0) (tm (ros::time-now))
 	                           (map-to-frame move-base-goal-map-to-frame)
                              (coords move-base-goal-coords))
                      (when (send self :simulation-modep)
