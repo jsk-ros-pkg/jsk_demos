@@ -16,6 +16,21 @@
         (list "えれべーた" "/eng2/7f/elevator-outside" 0)
         ))
 
+
+(defun inflation-loose (&key
+                          (local-costmap-inflation-radius 0.35)
+                          (global-costmap-inflation-radius 0.7))
+  ;; Increase the global inflation to generate a path
+  ;; that is less sensitive to differences between the map shape and the actual object placement.
+  (ros::set-dynamic-reconfigure-param
+   "/move_base/global_costmap/inflater" "inflation_radius" :double global-costmap-inflation-radius)
+  ;; Decrease the local inflation to generate a path
+  ;; that allows the robot to pass close to the object.
+  (ros::set-dynamic-reconfigure-param
+   "/move_base/local_costmap/inflater" "inflation_radius" :double local-costmap-inflation-radius)
+  t)
+
+
 (defun name-to-pin (spot-name)
   (dolist (sn spot-names)
     (when (equal spot-name (car sn))
@@ -84,7 +99,7 @@
     (send *ri* :speak-jp
           (format nil "~Aに移動します。動きますから注意してください。" spot-name))
     (store-params)
-    (inflation-loose)
+    (inflation-loose :local-costmap-inflation-radius 0.2)
     (go-to-spot pin-name :relative-rot relative-rot)
     (while (and (not (eq move-base-result actionlib_msgs::GoalStatus::*succeeded*))
                 (not (eq move-base-result actionlib_msgs::GoalStatus::*aborted*))
