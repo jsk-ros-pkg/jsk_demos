@@ -1,7 +1,13 @@
 (load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
 (load "package://fetcheus/fetch-interface.l")
+(load "package://welcome_to_jsk_fetch/euslisp/roseus-utils.l")
+(load "package://welcome_to_jsk_fetch/euslisp/fetch-interface-utils.l")
+(load "package://welcome_to_jsk_fetch/euslisp/speech-recognition-client.l")
+(load "package://welcome_to_jsk_fetch/euslisp/language-utils.l")
+(ros::load-ros-manifest "actionlib_msgs")
 (ros::load-ros-manifest "speech_recognition_msgs")
 (ros::load-ros-manifest "opencv_apps")
+
 
 (defvar spot-names
   ;; list of (spot name, pin name, relative rot [rad])
@@ -9,6 +15,21 @@
         (list "ろうか" "/eng2/7f/room73A3-front" pi)
         (list "えれべーた" "/eng2/7f/elevator-outside" 0)
         ))
+
+
+(defun inflation-loose (&key
+                          (local-costmap-inflation-radius 0.35)
+                          (global-costmap-inflation-radius 0.7))
+  ;; Increase the global inflation to generate a path
+  ;; that is less sensitive to differences between the map shape and the actual object placement.
+  (ros::set-dynamic-reconfigure-param
+   "/move_base/global_costmap/inflater" "inflation_radius" :double global-costmap-inflation-radius)
+  ;; Decrease the local inflation to generate a path
+  ;; that allows the robot to pass close to the object.
+  (ros::set-dynamic-reconfigure-param
+   "/move_base/local_costmap/inflater" "inflation_radius" :double local-costmap-inflation-radius)
+  t)
+
 
 (defun name-to-pin (spot-name)
   (dolist (sn spot-names)
@@ -26,21 +47,76 @@
     (send (send req :vocabulary) :words (mapcar #'car spot-names))
     (ros::service-call "speech_recognition" req nil)))
 
-(defun go-to-spot-from-speech ()
+
+(defun go-to-spot (name &key (relative-pos nil) (relative-rot nil) (undock-rotate nil) (clear-costmap t))
+  ;; undock if fetch is docking
+  (unless (boundp '*ri*)
+    (require :fetch-interface "package://fetcheus/fetch-interface.l")
+    (fetch-init))
+  (if clear-costmap (send *ri* :clear-costmap))
+  (let ((undock-success nil))
+    (block go-to-spot-undock
+      (dotimes (i 3)
+        (let* ((battery-charging-state (get-battery-charging-state)))
+          ;; You may fail to subscribe /battery_state
+          ;; because of message md5 difference between melodic and indigo.
+          (unless battery-charging-state
+            (ros::ros-warn "Failed to subscribe /battery_state")
+            (ros::ros-warn "Skip undocking, so please make sure that Fetch is already undocked.")
+            (return-from go-to-spot-undock t))
+          (if (equal battery-charging-state :charging)
+            (progn
+              (setq undock-success (auto-undock :n-trial 3 :rotate-in-place undock-rotate)))
+            (return-from go-to-spot-undock t))
+          (if (not undock-success)
+            (progn
+              (ros::ros-error "Failed to undock")
+            (send *ri* :speak "I failed to undock.")))))
+      (if (not undock-success) (return-from go-to-spot nil))))
+  ;; go to spot
+  (let* ((ret (get-spot-coords name))
+         (goal-pose (car ret))
+         (frame-id (cdr ret)))
+    (when relative-pos
+      (setq goal-pose (send goal-pose :translate relative-pos :world)))
+    (when relative-rot
+      (setq goal-pose (send goal-pose :rotate relative-rot :z :local)))
+    (send *ri* :move-to goal-pose :frame-id frame-id :no-wait t)))
+
+
+(defun go-to-spot-from-speech (&key (move-base-retry 100000))
   (let* ((speech (one-shot-subscribe
                   "speech_to_text_julius"
                   speech_recognition_msgs::SpeechRecognitionCandidates))
          (spot-name (car (send speech :transcript)))
          (pin-name (name-to-pin spot-name))
-         (relative-rot (name-to-relative-rot spot-name)))
+         (relative-rot (name-to-relative-rot spot-name))
+         move-base-result
+         (move-base-count 0)
+         (speech-recognition-client (instance speech-recognition-client :init "/speech_to_text_google"))
+         speech-recognition-result)
     ;; Start navigation
     (send *ri* :speak-jp
           (format nil "~Aに移動します。動きますから注意してください。" spot-name))
     (store-params)
-    (inflation-loose)
+    (inflation-loose :local-costmap-inflation-radius 0.2)
     (go-to-spot pin-name :relative-rot relative-rot)
+    (while (and (not (eq move-base-result actionlib_msgs::GoalStatus::*succeeded*))
+                (not (eq move-base-result actionlib_msgs::GoalStatus::*aborted*))
+                (<= move-base-count move-base-retry))
+      (ros::spin-once)
+      (setq speech-recognition-result (send speech-recognition-client :result))
+      (when speech-recognition-result
+        (ros::ros-info "Speech Recognition Recognized ~A" speech-recognition-result)
+        (when (check-stop-words speech-recognition-result)
+          (return)))
+      (setq move-base-result (send *ri* :move-to-wait-once :retry 0 :wait-for-result-duration-time 1)))
     (restore-params)
-    ))
+
+    (when (eq move-base-result actionlib_msgs::GoalStatus::*succeeded*)
+      (send *ri* :speak-jp
+            (format nil "ここが~Aです" spot-name) :wait t))))
+
 
 (defun guide-pose ()
   (send *ri* :start-grasp)
@@ -60,31 +136,51 @@
       (unix:usleep (* 1000 100)))
     (if find-face faces nil)))
 
-(defun greeting ()
-  ;; Look up
-  (send *fetch* :angle-vector
-        (send *ri* :state :potentio-vector :wait-until-update t))
-  (send *fetch* :head :neck-p :joint-angle -20)
-  (send *fetch* :head :neck-y :joint-angle 0)
-  (send *ri* :angle-vector (send *fetch* :angle-vector))
-  (send *ri* :wait-interpolation)
-  (let (faces face-x face-y)
-    ;; Wait until face is found
-    (do-until-key
-     (format t "Searching for faces ...~%")
-     (if (setq faces (find-face))
-       (return)
-       (unix:sleep 1)))
-    ;; Look at the found face
-    (format t "find faces~%")
-    (send *fetch* :angle-vector
-          (send *ri* :state :potentio-vector :wait-until-update t))
-    (setq face-x (send (send (car faces) :face) :x))
-    (setq face-y (send (send (car faces) :face) :y))
-    (send *fetch* :head :neck-y :joint-angle (- (send *fetch* :head :neck-y :joint-angle) (/ (max -40 (min 40 (- face-x 320))) 5.0)))
-    (send *fetch* :head :neck-p :joint-angle (+ (send *fetch* :head :neck-p :joint-angle) (/ (max -20 (min 20 (- face-y 240))) 5.0))))
-  (send *ri* :angle-vector (send *fetch* :angle-vector) 300)
-  (send *ri* :wait-interpolation)
+
+(defun find-people ()
+  (one-shot-subscribe
+   "/welcome_to_jsk/people_pose_aggregated_detector/output/detected"
+   std_msgs::Bool
+   :condition #'(lambda (msg) (send msg :data))))
+
+
+(defun greeting (&key (use-people-detection nil))
+  (if use-people-detection
+      (progn
+        (send *fetch* :angle-vector
+              (send *ri* :state :potentio-vector :wait-until-update t))
+        (send *fetch* :head :neck-p :joint-angle -0)
+        (send *fetch* :head :neck-y :joint-angle 0)
+        (send *ri* :angle-vector (send *fetch* :angle-vector))
+        (send *ri* :wait-interpolation)
+
+        (ros::ros-info "Searching for people...")
+        (find-people))
+      (let (faces face-x face-y)
+        ;; Look up
+        (send *fetch* :angle-vector
+              (send *ri* :state :potentio-vector :wait-until-update t))
+        (send *fetch* :head :neck-p :joint-angle -20)
+        (send *fetch* :head :neck-y :joint-angle 0)
+        (send *ri* :angle-vector (send *fetch* :angle-vector))
+        (send *ri* :wait-interpolation)
+
+        ;; Wait until face is found
+        (do-until-key
+            (format t "Searching for people ...~%")
+          (if (setq faces (find-people))
+              (return)
+              (unix:sleep 1)))
+        ;; Look at the found face
+        (format t "find faces~%")
+        (send *fetch* :angle-vector
+              (send *ri* :state :potentio-vector :wait-until-update t))
+        (setq face-x (send (send (car faces) :face) :x))
+        (setq face-y (send (send (car faces) :face) :y))
+        (send *fetch* :head :neck-y :joint-angle (- (send *fetch* :head :neck-y :joint-angle) (/ (max -40 (min 40 (- face-x 320))) 5.0)))
+        (send *fetch* :head :neck-p :joint-angle (+ (send *fetch* :head :neck-p :joint-angle) (/ (max -20 (min 20 (- face-y 240))) 5.0)))
+        (send *ri* :angle-vector (send *fetch* :angle-vector) 300)
+        (send *ri* :wait-interpolation)))
   (send *ri* :speak-jp "JSKへようこそ。見学はこちらになります。" :wait t))
 
 (defun intro ()

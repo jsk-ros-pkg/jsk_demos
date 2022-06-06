@@ -4,9 +4,12 @@
        doc="Currently face_detection is not launch in fetch"/>
   <arg name="launch_julius" default="false"
        doc="Currently julius is launch in fetch"/>
+  <arg name="rosbag" default=""
+       doc="Path to rosbag file path to be recorded. If not empty, fetch records rosbag."/>
 
   <node pkg="welcome_to_jsk_fetch" type="guide.l" name="guide" output="screen"
-        args="&quot;(main)&quot;"/>
+        args="&quot;(main)&quot;"
+        required="true" />
 
   <include if="$(arg launch_face_detection)"
            file="$(find opencv_apps)/launch/face_detection.launch">
@@ -18,6 +21,14 @@
     <arg name="launch_audio_capture" value="false"/>
     <arg name="launch_sound_play" value="false"/>
     <arg name="speech_to_text_topic" value="speech_to_text_julius"/>
+  </include>
+
+  <include file="$(find welcome_to_jsk_fetch)/launch/people_detection.launch" >
+  </include>
+
+  <include unless="$(eval rosbag=='')"
+           file="$(find jsk_fetch_startup)/launch/rosbag_record.launch">
+    <arg name="rosbag" value="$(arg rosbag)" />
   </include>
 
 </launch>
