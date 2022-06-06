@@ -29,3 +29,6 @@ The following programs are launched.
 - `julius_ros/julius.launch`
   - Speech recognition
   - Usually we use julius.launch launched by fetch1075, so julius.launch is not launched by this launch)
+- `jsk_fetch_startup/rosbag_record.launch`
+  - Record fetch's main rostopics to rosbag
+  - Note that `jsk_fetch_startup` needs to be sourced.
