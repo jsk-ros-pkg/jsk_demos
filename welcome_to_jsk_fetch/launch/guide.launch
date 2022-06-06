@@ -4,6 +4,8 @@
        doc="Currently face_detection is not launch in fetch"/>
   <arg name="launch_julius" default="false"
        doc="Currently julius is launch in fetch"/>
+  <arg name="rviz" default="true"
+       doc="Path to rosbag file path to be recorded. If not empty, fetch records rosbag."/>
   <arg name="rosbag" default=""
        doc="Path to rosbag file path to be recorded. If not empty, fetch records rosbag."/>
 
@@ -25,6 +27,12 @@
 
   <include file="$(find welcome_to_jsk_fetch)/launch/people_detection.launch" >
   </include>
+
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" if="$(arg rviz)"
+        args="-d $(find jsk_fetch_startup)/config/jsk_startup_record.rviz">
+    <env name="DISPLAY" value=":0" />
+    <env name="HOME" value="/home/fetch" />
+  </node>
 
   <include unless="$(eval rosbag=='')"
            file="$(find jsk_fetch_startup)/launch/rosbag_record.launch">
