@@ -11,6 +11,5 @@
                      "ストップ"
                      )))
           (dolist (s stop-words)
-            (print s)
             (when (string= text s)
               (return-from check-stop-words t)))))
