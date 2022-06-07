@@ -18,34 +18,12 @@
       </rosparam>
     </node>
 
-    <!-- morphology operation on mask to handle transparent bottle and other noisy pixels -->
-    <node name="morphology_close" pkg="opencv_apps" type="morphology" >
-      <remap from="image" to="$(arg INPUT_DEPTH_IMAGE)/mask" />
-      <remap from="~image" to="$(arg INPUT_DEPTH_IMAGE)/mask/close_operation" />
-      <param name="use_camera_info" value="false" />
-      <param name="debug_view" value="false" />
-      <param name="queue_size" value="10" />
-      <param name="morph_operator" value="1" />
-      <param name="morph_element" value="0" />
-      <param name="morph_size" value="40" />
-    </node>
-    <node name="morphology_open" pkg="opencv_apps" type="morphology" >
-      <remap from="image" to="$(arg INPUT_DEPTH_IMAGE)/mask/close_operation" />
-      <remap from="~image" to="$(arg INPUT_DEPTH_IMAGE)/mask/open_operation" />
-      <param name="use_camera_info" value="false" />
-      <param name="debug_view" value="false" />
-      <param name="queue_size" value="10" />
-      <param name="morph_operator" value="0" />
-      <param name="morph_element" value="0" />
-      <param name="morph_size" value="40" />
-    </node>
-
     <!-- use filtered mask to extract foreground rgb image -->
     <node name="apply_mask_image"
           pkg="nodelet" type="nodelet"
           args="standalone jsk_perception/ApplyMaskImage">
       <remap from="~input" to="$(arg INPUT_DEPTH_IMAGE)" />
-      <remap from="~input/mask" to="$(arg INPUT_DEPTH_IMAGE)/mask/open_operation" />
+      <remap from="~input/mask" to="$(arg INPUT_DEPTH_IMAGE)/mask" />
       <remap from="~output" to="$(arg INPUT_DEPTH_IMAGE)/depth_filtered" />
       <remap from="~output/mask" to="$(arg INPUT_DEPTH_IMAGE)/depth_filtered/mask" />
       <rosparam>
