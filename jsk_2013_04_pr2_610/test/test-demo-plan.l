@@ -5,10 +5,11 @@
 
 (defparameter *msg* nil)
 (defmacro subscribe-and-count (name)
+  (push (cons name 0) *msg*)
   `(ros::subscribe ,name std_msgs::String
                    #'(lambda (m)
                        (ros::ros-info "Received ~A" (send m :data))
-                       (push m *msg*))))
+                       (incf (cdr (assoc (send m :data) *msg* :test #'equal))))))
 
 (init-unit-test)
 
@@ -29,14 +30,14 @@
 
   (ros::rate 1)
   (dotimes (i 100)
-    (when (eq 20 (length *msg*))
+    (when (every #'(lambda (x) (> x 0)) (mapcar #'cdr *msg*))
       (return))
-    (ros::ros-info "waiting for actions.. ~A" (length *msg*))
+    (ros::ros-info "waiting for actions.. ~A" *msg*)
     (ros::spin-once)
     (ros::sleep))
 
-  (ros::ros-warn "Received *msg* are ~A" (length *msg*))
-  (assert (eq (length *msg*) 20))
+  (ros::ros-warn "Received *msg* are ~A (~A)" *msg* (length *msg*))
+  (assert (every #'(lambda (x) (> x 0)) (mapcar #'cdr *msg*)))
 )
 
 (ros::roseus "test_demo_plan")
