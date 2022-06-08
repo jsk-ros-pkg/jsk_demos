@@ -26,7 +26,7 @@
   (subscribe-and-count "sweep")
   (subscribe-and-count "sweep_under")
   (subscribe-and-count "pull_chair")
-  (subscribe-and-count "push_chair")
+;;  (subscribe-and-count "push_chair")
 
   (ros::rate 1)
   (dotimes (i 100)
