@@ -10,7 +10,7 @@ env:
 jobs:
   ros:
     runs-on: ubuntu-latest
-    continue-on-error: true # ${{ matrix.experimental }}
+    continue-on-error: false
     strategy:
       fail-fast: false
       matrix:
@@ -31,6 +31,7 @@ jobs:
             CONTAINER: jskrobotics/ros-ubuntu:18.04-pcl
           - ROS_DISTRO: noetic
             CONTAINER: jskrobotics/ros-ubuntu:20.04-pcl
+            continue-on-error: true
 
     container: ${{ matrix.CONTAINER }}
     steps:
