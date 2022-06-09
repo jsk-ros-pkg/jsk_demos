@@ -117,7 +117,7 @@
 
 (defun publish-spot ()
   (let* ((stamp (ros::time-now))
-         (header (instance std_msgs::header :init :stamp stamp :frame_id "/map"))
+         (header (instance std_msgs::header :init :stamp stamp :frame_id "map"))
          current-map-coords spots)
 
     ;; resolve /world -> /eng/2f
