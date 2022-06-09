@@ -7,14 +7,9 @@
     <arg name="description" value="$(find jsk_2013_04_pr2_610)/pddl/description.l"/>
     <arg name="planner" value="downward" />
     <arg name="use_planner_option" value="true" />
-    <arg name="planner_option" value="--heuristic &quot;hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true)&quot;
-                                      --heuristic &quot;hff=ff()&quot;
-                                      --search &quot;iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),
-                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),
-                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),
-                                      lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],
-                                      repeat_last=false)&quot;" />
+    <arg name="planner_option" value="--heuristic hlm=lmcount(lm_rhw(reasonable_orders=true,lm_cost_type=2,cost_type=2),pref=true) --heuristic hff=ff() --search iterated([lazy_greedy([hff,hlm],preferred=[hff,hlm]),lazy_wastar([hff,hlm],preferred=[hff,hlm],w=5),lazy_wastar([hff,hlm],preferred=[hff,hlm],w=3),lazy_wastar([hff,hlm],preferred=[hff,hlm],w=2)],repeat_last=false)" />
     <arg name="debug" value="true" />
     <arg name="gui" value="false" />
+    <arg name="exit_on_finish" value="false"/>
   </include>
 </launch>
