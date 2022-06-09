@@ -64,13 +64,13 @@
     (if (send realtime-ik-instance :realtime-ik-p)
       (progn
         (send *robot* :inverse-kinematics (list larm-tgt rarm-tgt)
-          :move-target (list (send *robot* :larm :end-coords) (send *robot* :rarm :end-coords))
-          :translation-axis (list t t)
-          :rotation-axis (list t t)
-          :use-torso nil
-          :stop 2
-          :revert-if-fail nil :debug-view nil
-          )
+              :move-target (list (send *robot* :larm :end-coords) (send *robot* :rarm :end-coords))
+              :translation-axis (list t t)
+              :rotation-axis (list t t)
+              :use-torso nil
+              :stop 2
+              :revert-if-fail nil :debug-view nil
+              )
         (send *robot* :head :neck-p :joint-angle (rad2deg (elt (car (rpy-angle (send head-tgt :rot))) 1)))
         (send *robot* :head :neck-y :joint-angle (rad2deg (elt (car (rpy-angle (send head-tgt :rot))) 0)))
         (send *robot* :torso_lift_joint :joint-angle (+ 200 (elt (send head-tgt :pos) 2)))
@@ -79,9 +79,9 @@
         (send *irtviewer* :draw-objects :flush nil)
         (dolist (tgt (list larm-tgt rarm-tgt)) (send tgt :draw-on :flush t))
         ;; (x::window-main-one)
-      ))
-      (ros::spin-once)
-      (ros::sleep)
+        ))
+    (ros::spin-once)
+    (ros::sleep)
     )
   )
 
