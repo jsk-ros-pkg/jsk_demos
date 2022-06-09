@@ -1,0 +1,110 @@
+<launch>
+  <arg name="device" default="kinect_head"/>
+
+  <arg name="input" default="/$(arg device)/depth_registered/points"/>
+  <arg name="clipped_points" default="/extract_indices/output"/>
+  
+  <node name="sample_manager" pkg="nodelet" type="nodelet" args="manager"/>
+
+  <node name="attention_clipper" pkg="nodelet" type="nodelet" args="load jsk_pcl/AttentionClipper sample_manager">
+    <remap from="~input/points" to="$(arg input)" />
+    <rosparam>
+      initial_pos: [1, 0.0, 1.57]
+      initial_rot: [0, 0, 0]
+      dimension_x: 2
+      dimension_y: 2
+      dimension_z: 2
+      frame_id: base_link
+    </rosparam>
+  </node>
+
+  <node name="extract_indices" pkg="jsk_pcl_ros" type="extract_indices">
+    <remap from="~input" to="$(arg input)" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+    <rosparam>
+      keep_organized: false
+    </rosparam>
+  </node>
+  
+  <node name="normal_estimation_omp"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/NormalEstimationOMP sample_manager">
+    <remap from="~input" to="$(arg clipped_points)"/>
+    <rosparam>
+      k_search: 10
+    </rosparam>
+  </node>
+
+  <!-- <node name="region_growing_multiple_plane_segmentation" -->
+  <!--       pkg="nodelet" type="nodelet" -->
+  <!--       args="load jsk_pcl/RegionGrowingMultiplePlaneSegmentation sample_manager"> -->
+  <!--   <remap from="~input" to="$(arg input)"/> -->
+  <!--   <remap from="~input_normal" to="normal_estimation_omp/output"/> -->
+  <!--   <rosparam> -->
+  <!--     angular_threshold: 0.05 -->
+  <!--     distance_threshold: 0.01 -->
+  <!--     max_curvature: 0.001 -->
+  <!--     min_size: 2000 -->
+  <!--   </rosparam> -->
+  <!-- </node> -->
+
+  <node name="color_based_region_growing_segmentation" pkg="nodelet" type="nodelet"
+	args="load jsk_pcl/ColorBasedRegionGrowingSegmentation sample_manager">
+    <remap from="~input" to="$(arg clipped_points)"/>
+    <remap from="~input_normal" to="normal_estimation_omp/output"/>
+    <rosparam>
+      distance_threshold: 1000
+      point_color_threshold: 10
+      region_color_threshold: 10
+      min_cluster_size: 500
+    </rosparam>
+  </node>
+
+  <node name="cluster_point_indices_decomposer" pkg="nodelet" type="nodelet"
+  	args="load jsk_pcl/ClusterPointIndicesDecomposer sample_manager">
+    <remap from="~input" to="$(arg clipped_points)"/>
+    <!-- <remap from="~target" to="/region_growing_multiple_plane_segmentation/output/clustering_result"/> -->
+    <remap from="~target" to="/color_based_region_growing_segmentation/output"/>
+    <rosparam>
+      min_size: 100
+      max_size: 10000
+      sort_by: z_axis
+      publish_clouds: false
+      align_boxes: true
+      align_boxes_with_plane: false
+      target_frame_id: base_link
+    </rosparam>
+  </node>
+
+  <node name="colorize_labels" pkg="nodelet" type="nodelet" args="load jsk_perception/ColorizeLabels sample_manager">
+    <remap from="~input" to="/cluster_point_indices_decomposer/label"/>
+  </node>
+
+  <node name="depth_image_creator" pkg="nodelet" type="nodelet" args="load jsk_pcl/DepthImageCreator sample_manager">
+    <remap from="~input" to="/cluster_point_indices_decomposer/debug_output" />
+    <remap from="~info" to="/$(arg device)/rgb/camera_info" />
+    <rosparam>
+      use_approximate: true
+      max_queue_size: 100
+      max_pub_queue_size: 1
+      max_sub_queue_size: 1
+    </rosparam>
+  </node>
+
+  <node name="adding_images" pkg="opencv_apps" type="adding_images">
+    <remap from="/image1" to="/$(arg device)/rgb/image_color" />
+    <remap from="/image2" to="/depth_image_creator/output_image" />
+    <rosparam>
+      alpha: 0.7
+      gamma: 50
+    </rosparam>
+  </node>
+
+  <node name="user_click_relay" pkg="topic_tools" type="relay" args="/adding_images/image/screenpoint /$(arg device)/rgb/image_raw/screenpoint"/>
+
+  <node name="PickNearestBoundingBox" pkg="teleop_dual_arm" type="PickNearestBoundingBox.py">
+    <remap from="~input_point" to="/pointcloud_screenpoint_nodelet/output_point" />
+    <remap from="~input_boxes" to="/cluster_point_indices_decomposer/boxes" />
+  </node>
+  
+</launch>
