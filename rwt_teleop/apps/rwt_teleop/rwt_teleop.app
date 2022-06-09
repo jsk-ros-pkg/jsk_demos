@@ -39,8 +39,8 @@ plugins:
       video_decompressed_topic_name: /edgetpu_human_pose_estimator/rwt_teleop/output/image
       video_height: 480
       video_width: 640
-      video_framerate: 15
-      video_encoding: RGB
+      video_framerate: 10
+      video_encoding: BGR
   - name: rosbag_recorder_plugin
     type: app_recorder/rosbag_recorder_plugin
     launch_args:
