@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>jsk_demo_common</name>
-  <version>0.0.4</version>
+  <version>0.0.5</version>
   <description>The jsk_demo_common package</description>
   <maintainer email="mikita@jsk.imi.i.u-tokyo.ac.jp">Hiroyuki Mikita</maintainer>
   <license>BSD</license>

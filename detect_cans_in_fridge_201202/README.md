@@ -30,14 +30,11 @@ If you want to execute on real robot, see On real robot.
 
 #### Installation
 
-**NOTE** `indigo` distribution is assumed. Please replace it if you want to use on other distribution.
-
 **NOTE** Assumed that catkin workspace has been installed on your environment. If you don't yet have catkin workspace, please follow [the instruction](http://wiki.ros.org/catkin/Tutorials/create_a_workspace).
 
 **NOTE** In simulation mode, the fridge front spot is referenced from `models/room73b2-scene.l` in [euslisp](http://github.com/euslisp/EusLisp) package. So, Please make sure to build [euslisp](http://github.com/euslisp/EusLisp) package.
 
 ```bash
-source /opt/ros/indigo/setup.bash
 cd /path/to/your_catkin_ws
 mkdir src
 wstool init src
@@ -62,7 +59,6 @@ roscore
   ```bash
 # Terminal 2
 roseus
-(setq *logging* nil)
 (load "package://detect_cans_in_fridge_201202/euslisp/main.l")
 (demo)
 ```

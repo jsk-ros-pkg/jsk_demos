@@ -2,6 +2,27 @@
 Changelog for package jsk_demo_common
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2021-07-17)
+------------------
+* [jsk_demo_common] use :stop-grasp in open fridge (`#1275 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1275>`_)
+* Refine 73B2 fridge demo motion (`#1264 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1264>`_)
+* add fridge demo with voice command (`#1263 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1263>`_)
+
+  * refine fridge move motion
+  * add app-utils.l to jsk_demo_common
+
+* 2019/04/10 Fridge demo (`#1262 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1262>`_)
+
+  * jsk_demo_common: pr2-action.l: wait for openning gripper before approaching to cans
+  * use new color histogram
+
+* [jsk_demo_common] some bugfix (`#1222 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1222>`_)
+
+  * [jsk_demo_common][pr2-action.l] add missing move-arm
+  * [jsk_demo_common][pr2-action.l] fix docstring order
+
+* Contributors: Kei Okada, Shingo Kitagawa, Yuki Furuta
+
 0.0.4 (2017-03-15)
 ------------------
 * [jsk_demo_common][pr2-action.l] remove implicit dependency to jsk_smart_gui
