@@ -32,6 +32,9 @@ jobs:
             CONTAINER: jskrobotics/ros-ubuntu:16.04-pcl
           - ROS_DISTRO: melodic
             CONTAINER: jskrobotics/ros-ubuntu:18.04-pcl
+          - ROS_DISTRO: melodic
+            CONTAINER: jskrobotics/ros-ubuntu:18.04-pcl
+            BEFORE_SCRIPT: "TEST_ROBOT=fetch ./jsk_demos/.travis.before_script.sh"
           - ROS_DISTRO: noetic
             CONTAINER: jskrobotics/ros-ubuntu:20.04-pcl
             continue-on-error: true
