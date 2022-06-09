@@ -2,6 +2,19 @@
 Changelog for package elevator_move_base_pr2
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.0.5 (2021-07-17)
+------------------
+
+* elevator_move_base_pr2: fix for testing (`#1238 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1238>`_)
+
+  * elevator_move_base_pr2: remove old files
+  * elevator_move_base_pr2: fix for indigo
+  * elevator_move_base_pr2: minor bugfix
+
+* travis: drop hydro (`#1231 <https://github.com/jsk-ros-pkg/jsk_demos/issues/1231>`_)
+
+* Contributors: Yuki Furuta
+
 0.0.4 (2017-03-15)
 ------------------
 * add catkin_INCLUDE_DIRS
