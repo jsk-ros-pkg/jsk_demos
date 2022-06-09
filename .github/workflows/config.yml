@@ -19,11 +19,11 @@ jobs:
             CONTAINER: jskrobotics/ros-ubuntu:14.04-pcl
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04-pcl
-            # BEFORE_SCRIPT: "TEST_ROBOT=pr2 ./jsk_demos/.travis.before_script.sh"
+            BEFORE_SCRIPT: "ls -al; ls -al jsk_demos/; TEST_ROBOT=pr2 ./jsk_demos/.travis.before_script.sh"
             TEST_PKGS : "detect_cans_in_fridge_201202 elevator_move_base_pr2 interactive_behavior_201409 jsk_2011_07_pr2_semantic jsk_2013_04_pr2_610 jsk_demo_common jsk_maps"
           - ROS_DISTRO: indigo
             CONTAINER: jskrobotics/ros-ubuntu:14.04-pcl
-            # BEFORE_SCRIPT: "TEST_ROBOT=fetch ./jsk_demos/.travis.before_script.sh"
+            BEFORE_SCRIPT: "TEST_ROBOT=fetch ./jsk_demos/.travis.before_script.sh"
             TEST_PKGS: "jsk_2017_10_semi jsk_maps"
           - ROS_DISTRO: kinetic
             CONTAINER: jskrobotics/ros-ubuntu:16.04-pcl
