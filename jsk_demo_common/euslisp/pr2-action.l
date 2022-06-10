@@ -396,14 +396,14 @@
 
 (defun move-fridge-traj (hand cds-traj
                               ;; &key ((:rotation-axis ra) :z) (use-torso 0.0025)
-                              &key ((:rotation-axis ra) :z) (use-torso nil)
+                              &key ((:rotation-axis ra) :z) (use-torso nil) (use-base nil)
                               (fix-waist-z 130) (return-sequence) (wait-time 1)
                               (grasp-check t)  (move-robot t) (start-sec 1000) (func-time 20) &allow-other-keys)
   (let* ((st0 (car cds-traj))
 	 (st1 (cadr cds-traj))
 	 (lst (cddr cds-traj))
 	 (time-tick (/ (* (- func-time 16) 1000) (length lst)));;changing opening-door speed
-	 avs tms)
+	 avs base-cds-list traj-points tms)
     (when move-robot  ;; open-gripper
       (send *ri* :stop-grasp hand :wait nil))
     (when fix-waist-z
@@ -429,30 +429,55 @@
         (ros::ros-warn "Grasp handle failed, return from execute-open")
         (return-from move-fridge-traj nil)))
 
-    (dolist (rr lst)
-      (let ((ik-solved
-             (send *pr2* :inverse-kinematics
-                   (send rr :worldcoords)
-                   :use-torso use-torso
-                   :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
-        (unless (or ik-solved (eq ra nil))
-          (warn ";; retry ~A~%" rr);
-          (setq ik-solved
-                (send *pr2* :inverse-kinematics
-                      (send rr :copy-worldcoords)
-                      :use-torso use-torso
-                      :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
-        (unless ik-solved (warn ";; failed ~A~%" rr))
-        (when ik-solved
-          (push (send *pr2* :angle-vector) avs)
-          (push time-tick tms))
-        ))
+    (let ((init-av (send *pr2* :angle-vector))
+          (init-base-cds (send *pr2* :copy-worldcoords))
+          diff-cds diff-v)
+      (dolist (rr lst)
+        (let ((ik-solved
+               (send *pr2* :inverse-kinematics
+                     (send rr :worldcoords)
+                     :use-torso use-torso
+                     :use-base use-base
+                     :move-arm hand :rotation-axis ra :debug-view nil :warnp nil)))
+          (unless (or ik-solved (eq ra nil))
+            (warn ";; retry ~A~%" rr);
+            (setq ik-solved
+                  (send *pr2* :inverse-kinematics
+                        (send rr :copy-worldcoords)
+                        :use-torso use-torso
+                        :use-base use-base
+                        :move-arm hand :rotation-axis nil :debug-view nil :warnp nil)))
+          (unless ik-solved (warn ";; failed ~A~%" rr))
+          (when ik-solved
+            (push (send *pr2* :copy-worldcoords) base-cds-list)
+            (push (send *pr2* :angle-vector) avs)
+            (push time-tick tms))
+          ))
+      (send *pr2* :angle-vector init-av)
+      (send *pr2* :move-to init-base-cds :world)
+
+      (when use-base
+        (dotimes (i (length base-cds-list))
+          (setq diff-cds (send (send *pr2* :copy-worldcoords)
+                               :transformation (elt base-cds-list i)))
+          (setq diff-v (send diff-cds :pos))
+          (push (float-vector (/ (elt diff-v 0) 1000.0)
+                              (/ (elt diff-v 1) 1000.0)
+                              (vector-angle #f(1 0 0)
+                                            (matrix-column (send diff-cds :worldrot) 0)
+                                            #f(0 0 1)))
+                                  traj-points))))
     (when return-sequence
-      (return-from move-fridge-traj (list (reverse avs) tms)))
+      (if use-base
+        (return-from move-fridge-traj (list (reverse avs) traj-points tms))
+        (return-from move-fridge-traj (list (reverse avs) tms))))
 
     (when move-robot
       (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
-      (send *ri* :angle-vector-sequence (reverse avs) tms))
+      (send *ri* :angle-vector-sequence (reverse avs) tms)
+      (if traj-points
+        (send *ri* :move-trajectory-sequence traj-points tms :send-action t)))
+
     ;; finalize
     (cond
      ((integerp wait-time)
@@ -469,6 +494,8 @@
     ;; ;;
     (send *ri* :ros-wait 0.0 :spin t :spin-self t) ;; attention-check ...
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+    (if use-base (send *pr2* :move-to (car base-cds-list) :world))
+
     (let ((end-pt (send *pr2* hand :end-coords :worldpos))
           idx)
       (setq idx (position (find-extream lst #'(lambda(x) (distance (send x :worldpos) end-pt)) #'<) lst))
@@ -476,6 +503,31 @@
       (if (send *ri* :simulation-modep) (return-from move-fridge-traj t))
       (when (< idx (/ (length lst) 2))
         (return-from move-fridge-traj nil)))
+    (when (and use-base move-robot)
+      (let ((back-traj-points nil))
+        (send *ri* :ros-wait 0.0 :spin-self t)
+        (send *ri* :stop-grasp hand)
+        (send *pr2* hand :move-end-pos (float-vector 50 -100 0) :world :rotation-axis nil)
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation)
+        (send *pr2* hand :move-end-pos (float-vector -150 0 0) :world :rotation-axis nil)
+        (send *ri* :angle-vector (send *pr2* :angle-vector))
+        (send *ri* :wait-interpolation)
+        (swipe-fridge-door :door-type door-type :use-arm hand
+                           :controller-type (if (eq hand :larm) :larm-controller :rarm-controller))
+        (dolist (base-cds (reverse base-cds-list))
+          (setq diff-cds (send (send (car base-cds-list) :copy-worldcoords)
+                               :transformation base-cds))
+          (setq diff-v (send diff-cds :pos))
+          (push (float-vector (/ (elt diff-v 0) 1000.0)
+                              (/ (elt diff-v 1) 1000.0)
+                              (vector-angle #f(1 0 0)
+                                            (matrix-column (send diff-cds :worldrot) 0)
+                                            #f(0 0 1)))
+                                  back-traj-points))
+        (send *ri* :move-trajectory-sequence back-traj-points tms :send-action t)
+        (send *ri* :wait-interpolation)
+        ))
     t))
 
 ;;
@@ -650,7 +702,7 @@
   )
 
 (defparameter *fridge-handle-cds* nil)
-(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t))
+(defun move-to-and-open-fridge-door (&key (door-type :circle) (ratio 1) (look-around nil) (head-pitch 14) (torso-lift 130) (move t) (open-fridge-func #'open-fridge-traj) (wait t) (use-base nil))
   (let (ret
         (idealcds
          (case door-type
@@ -754,6 +806,7 @@
              (setq ret (funcall open-fridge-func
                                 :rarm cds 1.7 ;;(/ pi 2)
                                 :rotation-axis t :radius 490
+                                :use-base use-base
                                 :wait-time 5.8 ;; t
                                 )))
             ((:slide1 :slide2)
@@ -817,7 +870,7 @@
         ))
   )
 
-(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t))
+(defun swipe-fridge-door (&key (door-type :circle) (ratio 1) (use-arm :rarm) (wait t) (controller-type :default-controller))
   (case door-type
     (:circle
      ;; free door handle
@@ -829,7 +882,8 @@
             (float-vector 130 -25.9215 15.5489 55.3988 -36.512 -44.1484 -28.2568 -7.75581 -50.5861 44.487 -45.2274 -70.2799 245.195 -26.7547 148.858 0.027956 -7.548)
             (float-vector 130 38.3106 20.1389 77.7708 -88.0224 -47.5755 -5.72958 -10.483 -12.7603 46.1883 -29.4706 -70.2965 245.815 -44.8729 150.788 0.003956 -13.794)
             )
-           (list 1200 600 1000 700))
+           (list 1200 600 1000 700)
+           controller-type)
      (send *ri* :stop-grasp :rarm)
      (send *ri* :wait-interpolation)
      )
@@ -893,6 +947,7 @@
                               (door-type :circle) (look-around nil) ;; :circle, :slide1, :slide2
                               (func-time 80)
                               (wait t)
+                              (use-base nil)
                               )
   (let ((diffcds (make-coords :pos (float-vector 10000 10000 10000)))
         cds
@@ -904,7 +959,7 @@
     ;; detect fridge and open door
     (dotimes (i 10 nil)
       ;; detect fridge and move to the fridge door
-      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait))
+      (setq ret (move-to-and-open-fridge-door :door-type door-type :ratio ratio :look-around look-around :head-pitch head-pitch :torso-lift torso-lift :move move :open-fridge-func open-fridge-func :wait wait :use-base use-base))
       (if ret (return))
       )
 
@@ -923,10 +978,12 @@
     (move-forward-larm :ratio ratio :wait wait)
 
     ;;detach fridge handle
-    (detach-fridge-handle :wait wait)
+    (unless use-base
+      (detach-fridge-handle :wait wait))
 
     ;;swipe fridge door by larm
-    (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
+    (unless use-base
+      (swipe-fridge-door :door-type door-type :ratio ratio :use-arm use-arm :wait wait))
 
     ;;grasp can posing
     (grasp-can-posing :door-type door-type :ratio ratio :use-arm use-arm :wait wait)
@@ -1459,11 +1516,11 @@
     (send client :wait-for-result :timeout timeout))
   )
 
-(defun hand-over (arm &key (wait-shock nil))
+(defun hand-over (arm &key (wait-shock nil) (tuckarm nil))
   (ros::spin-once)
   (let* ((av (send *ri* :state :potentio-vector))
-         (tuckarm (check-tuckarm-pose))
-         (isfreearm (eq arm tuckarm))
+         (tuckfreearm (if tuckarm tuckarm (check-tuckarm-pose)))
+         (isfreearm (eq arm tuckfreearm))
          ;; this is for :larm
          (avs (list #f(12 0 64 70 -122 50 -115 160 -4 74 -105 -90 70 -5 20 2 15)
                     #f(12 6 9 106 -77 35 -124 -128 -4 75 -104 -89 70 0 20 3 30)
@@ -1488,7 +1545,7 @@
 	(setq avs (subseq avs (- avs-length 2))
 	      tms (subseq tms (- avs-length 2))
 	      av (send *ri* :state :potentio-vector)))
-      (setq tuckarm arm))
+      (if (not tuckarm) (setq tuckfreearm arm)))
     ;;
     (send *ri* :angle-vector-sequence avs tms)
     (send *ri* :wait-interpolation)
@@ -1508,7 +1565,7 @@
     (send *ri* :wait-interpolation)
     ;;
     (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-    (pr2-tuckarm-pose tuckarm)
+    (pr2-tuckarm-pose tuckfreearm)
     ))
 
 (defun tray-detection (obj)

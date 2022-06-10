@@ -90,7 +90,7 @@
            (speak-jp (format nil "Please take ~a." *type*)))
           (t (speak-jp (format nil "~aをどうぞ。" *type*))))
        (speak-jp (format nil "~a を どうぞ" *type*)))
-     (hand-over use-arm :wait-shock t))
+     (hand-over use-arm :wait-shock t :tuckarm :rarm))
     )
   t
   )
@@ -130,6 +130,7 @@
                   (finish-type :pass-to-human) ;; :pass-to-human, :put-on-turtlebot, ...
                   ;;(use-arm :rarm)
                   (use-arm :larm)
+                  (use-base nil)
                   )
   (disable-behavior-server)
   (case app-manager
@@ -152,7 +153,7 @@
      ;; do nothing
      ))
 
-  (unless (open-fridge-door :use-arm use-arm)
+  (unless (open-fridge-door :use-arm use-arm :use-base use-base)
     (return-from demo))
 
   ;; move
@@ -177,7 +178,7 @@
        (return-from demo)))
     )
   (enable-behavior-server)
-  (if (eq app-manager :true) (ros::exit))
+  (if (eq app-manager :true) (ros::exit) t)
   )
 
 (defun wait-android-query (&optional (demo-type :map))
