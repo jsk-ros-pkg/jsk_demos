@@ -28,7 +28,8 @@ Return t if touch is detected
         (if touch
           (format t "Touch detected. Cancel moving.~%force ~A is ~A (threshold is ~A)~%"
                   direction force threshold)
-          (format t "Touch is not detected.~%"))
+          (format t "Touch is not detected.~%force ~A is ~A (threshold is ~A)~%"
+                  direction force threshold))
         touch)))
   )
 
