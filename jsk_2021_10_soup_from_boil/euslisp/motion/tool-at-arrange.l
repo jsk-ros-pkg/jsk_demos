@@ -867,24 +867,32 @@
   (grasp-pot-from-below-model-with-fail-detection)
 
   ;; 止められるまでお湯を注ぐ
-  (let ((pour-flag t))
-    (until (not pour-flag)
-           (arrange-curry);; from arrangement-at-arrange.l
-           (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
-           (if (send *ri* :simulation-modep)
-             (setq pour-flag nil)
-             (setq pour-flag (listen-speech "はい")))
-           ))
+  (let ((interactive nil))
+    (if interactive
+      (let ((pour-flag t))
+        (until (not pour-flag)
+               (arrange-curry);; from arrangement-at-arrange.l
+               (send *ri* :speak-jp "まだお湯が必要ですか？" :wait t)
+               (if (send *ri* :simulation-modep)
+                 (setq pour-flag nil)
+                 (setq pour-flag (listen-speech "はい")))
+               ))
+      (dotimes (i 2)
+        (arrange-curry)) ;; from arrangement-at-arrange.l
+        )
 
-  ;; 鍋とおたまを手から離す
-  (release-pot-from-below-model)
-  (put-ladle-at-arrange)
-  (reset-rarm)
-  (set-pose)
+    ;; 鍋とおたまを手から離す
+    (release-pot-from-below-model)
+    (put-ladle-at-arrange)
+    (reset-rarm)
+    (set-pose)
 
-  ;;完成！！
-  (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
-  (ok-wait)
+    ;;完成！！
+    (if interactive
+      (progn
+        (send *ri* :speak-jp "お湯を注ぐ工程を行いました．確認してokと合図をして下さい" :wait t)
+        (ok-wait))
+      (send *ri* :speak-jp "お湯を注ぐ工程を行いました．" :wait t)))
   )
 
 ;; スープを冷ます
