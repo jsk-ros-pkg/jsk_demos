@@ -7,11 +7,14 @@
 
 (defun main ()
   (let ((object (string-downcase (get-arg :object))))
+    ;; set default object: georgia
+    (if (null object) (setq object "georgia"))
     (cond
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)
-       (demo :type object))
-      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")))
+       (demo :type object :use-base nil))
+      (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")
+       nil))
 ))
 
 (run-exit (main))

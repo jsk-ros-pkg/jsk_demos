@@ -4,7 +4,7 @@ install_robot_rosinstall() {
   if [ "$TEST_ROBOT" = "pr2" ]; then
     ROSINSTALL_URL="https://raw.githubusercontent.com/jsk-ros-pkg/jsk_robot/master/jsk_pr2_robot/jsk_pr2_startup/jsk_pr2.rosinstall"
   elif [ "$TEST_ROBOT" = "fetch" ]; then
-    ROSINSTALL_URL="https://raw.githubusercontent.com/jsk-ros-pkg/jsk_robot/master/jsk_fetch_robot/jsk_fetch.rosinstall"
+    ROSINSTALL_URL="https://raw.githubusercontent.com/jsk-ros-pkg/jsk_robot/master/jsk_fetch_robot/jsk_fetch.rosinstall.$ROS_DISTRO"
   fi
 
   if [ "$ROSINSTALL_URL" != "" ]; then

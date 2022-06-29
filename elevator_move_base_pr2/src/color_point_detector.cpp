@@ -1,7 +1,12 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
+#else
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
+#endif
 #include <cv_bridge/cv_bridge.h>
 #include <image_geometry/pinhole_camera_model.h>
 #include <tf/transform_listener.h>
@@ -22,7 +27,11 @@ class FrameDrawer
 
   std::string current_frame_;
   double x,y,r;
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+  cv::Scalar target_color_;
+#else
   CvScalar target_color_;
+#endif
 
   std::vector<tf::StampedTransform> button_pose_;
 
@@ -40,7 +49,11 @@ public:
     private_nh_.param("red", r, 196);
     private_nh_.param("green", g, 196);
     private_nh_.param("blue", b, 64);
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+    target_color_ = cv::Scalar(b,g,r);
+#else
     target_color_ = CV_RGB(r,g,b);
+#endif
   }
 
   void pointCb(const geometry_msgs::PointStamped::ConstPtr& point_msg)
@@ -113,11 +126,19 @@ public:
     }
 
     // for debug image
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+    cv::circle(img, cv::Point2f(x, y), r, cv::Scalar(0,0,255), 3);
+#else
     cv::circle(img, cv::Point2f(x, y), r, CV_RGB(255,0,0), 3);
+#endif
     char text[32];
     sprintf(text, "brightness = %.3f", max_score);
     cv::putText (img, std::string(text), cv::Point(x-100, y+70+r),
+#if ROS_VERSION_MINIMUM(1, 15, 0)
+		 0, 0.7, cv::Scalar(0,0,255),
+#else
 		 0, 0.7, CV_RGB(255,0,0),
+#endif
 		 2, 8, false);
 
     std_msgs::Float32 score_msg;

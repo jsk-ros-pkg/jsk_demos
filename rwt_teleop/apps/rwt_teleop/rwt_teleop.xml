@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find rwt_teleop)/launch/pr2_screenpoint_teleop.launch">
+    <arg name="cloud_machine" value="c2" />
+  </include>
+</launch>
