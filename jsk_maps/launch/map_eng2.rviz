@@ -158,9 +158,9 @@ Visualization Manager:
         pin_label: true
       Queue Size: 100
       Value: true
-    - Class: rviz/Marker
+    - Class: rviz/MarkerArray
       Enabled: true
-      Marker Topic: /scene_marker
+      Marker Topic: /scene_marker_array
       Name: Scene
       Namespaces:
         eng2: true
