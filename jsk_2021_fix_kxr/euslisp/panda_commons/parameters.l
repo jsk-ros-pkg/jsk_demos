@@ -193,6 +193,27 @@
        :rpy #f(-2.962 -1.494 3.004)
        ))
 
+(setq *rleg-ankle-r-b-to-pre-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.695 -53.343 -1.488)
+       :rpy #f(1.496 -0.004 0.024)
+       ))
+(setq *rleg-ankle-r-b-to-inter-pose1*
+      (make-cascoords
+       :pos #f(-4.525 -77.122 23.349)
+       :rpy #f(1.46 0.212 0.035)
+       ))
+(setq *rleg-ankle-r-b-to-pre-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.695 -53.343 -1.488)
+       :rpy #f(1.496 -0.004 0.024)
+       ))
+(setq *rleg-ankle-r-b-to-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.615 -40.964 0.019)
+       :rpy #f(1.479 -0.018 0.025)
+       ))
+
 (setq *cable-frame* "cable-frame")
 
 

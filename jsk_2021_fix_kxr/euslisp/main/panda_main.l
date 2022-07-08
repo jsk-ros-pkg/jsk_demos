@@ -17,7 +17,9 @@
 
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rarm-elbow-p-servo.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-larm-elbow-p-servo.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-repair-rleg-ankle-r.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-set-rarm.l")
+(require "package://jsk_2021_fix_kxr/euslisp/main/panda-set-rleg.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-return-rarm.l")
 (require "package://jsk_2021_fix_kxr/euslisp/main/panda-release-kxr.l")
 

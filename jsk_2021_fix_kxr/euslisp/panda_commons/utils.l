@@ -722,8 +722,65 @@ memo to get parameters
 	    (send *ri* :wait-interpolation)
 	    (return-from rarm-insert-cable t))))   
     ))
-		 
-	    
+ 
+(defun rarm-grasp-rleg-ankle-r-from-back ()
+  (let ((base-to-marker-origin nil)
+	(base-to-pre-grasp-pose nil)
+	(base-to-grasp-pose nil)
+	(stamp nil)
+	(ret nil))
+    (ros::ros-info "start to grasp rleg-ankle-r from back")
+    (setq stamp (ros::time-now))
+    (setq marker-name "rpov-rleg_ankle_r_servo_b")
+    (when (send *tfl* :wait-for-transform "dual_arm_base" marker-name stamp 5)
+      (setq base-to-marker-origin (send *tfl* :lookup-transform "dual_arm_base" marker-name stamp))
+      (setq *base_to_rleg_ankle_r_servo_b* base-to-marker-origin))
+    (setq base-to-inter-pose1 (send (send base-to-marker-origin :copy-worldcoords) :transform *rleg-ankle-r-b-to-inter-pose1*))
+    (setq base-to-pre-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rleg-ankle-r-b-to-pre-grasp-pose*))
+    (setq base-to-grasp-pose (send (send base-to-marker-origin :copy-worldcoords) :transform *rleg-ankle-r-b-to-grasp-pose*))
+
+    ;;move larm under rarm-elbow-p-servo
+    (send *ri* :stop-grasp :rarm :width 0.042)
+    (unix:sleep 1)
+    
+    ;; (send *robot* :rarm :inverse-kinematics base-to-inter-pose1)
+    ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    ;; (send *ri* :wait-interpolation)
+
+    (send *robot* :rarm_joint1 :joint-angle 39.59)
+    (send *robot* :rarm_joint2 :joint-angle 18.15)
+    (send *robot* :rarm_joint3 :joint-angle -19.73)
+    (send *robot* :rarm_joint4 :joint-angle -66.7541)
+    (send *robot* :rarm_joint5 :joint-angle 29.039)
+    (send *robot* :rarm_joint6 :joint-angle 88.774)
+    (send *robot* :rarm_joint7 :joint-angle -23.2779)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+
+    (send *robot* :rarm_joint1 :joint-angle 40.5064)
+    (send *robot* :rarm_joint2 :joint-angle 27.7574)
+    (send *robot* :rarm_joint3 :joint-angle -14.85)
+    (send *robot* :rarm_joint4 :joint-angle -52.52)
+    (send *robot* :rarm_joint5 :joint-angle 15.84)
+    (send *robot* :rarm_joint6 :joint-angle 82.712)
+    (send *robot* :rarm_joint7 :joint-angle -11.47)
+    (send *robot* :rarm :move-end-pos #f(-25 0 0))
+    (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+    (send *ri* :wait-interpolation)
+    
+    (send *robot* :rarm_joint1 :joint-angle 40.5064)
+    (send *robot* :rarm_joint2 :joint-angle 27.7574)
+    (send *robot* :rarm_joint3 :joint-angle -14.85)
+    (send *robot* :rarm_joint4 :joint-angle -52.52)
+    (send *robot* :rarm_joint5 :joint-angle 15.84)
+    (send *robot* :rarm_joint6 :joint-angle 82.712)
+    (send *robot* :rarm_joint7 :joint-angle -11.47)
+    (send *ri* :angle-vector (send *robot* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+
+    (send *ri* :start-grasp :rarm)
+    (unix:sleep 1)
+    ))
 
 #|
 (setq wrench-init (send (one-shot-subscribe "/dual_panda/rarm_state_controller/franka_states" franka_msgs::FrankaState) :k_f_ext_hat_k)))

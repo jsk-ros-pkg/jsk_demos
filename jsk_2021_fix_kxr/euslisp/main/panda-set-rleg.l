@@ -4,12 +4,6 @@
   (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
   (send req :action "show-rarm-elbow-p")
   (setq res (ros::service-call "repair_reaction" req t))
-  (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
-  (send req :action "rarm-free")
-  (setq res (ros::service-call "repair_reaction" req t))
-  (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
-  (send req :action "larm-free")
-  (setq res (ros::service-call "repair_reaction" req t))
 
   (while t
     (setq found-body (search-body))
@@ -46,28 +40,37 @@
   (send *ri* :start-grasp :larm)
   (unix:sleep 2)
 
-  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(308.472 -259.081 1205.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
-  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(305.157 -14.307 1205.274) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
+  (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
+  (send req :action "rarm-free")
+  (setq res (ros::service-call "repair_reaction" req t))
+  (setq req (instance jsk_2021_fix_kxr::RepairInfoRequest :init))
+  (send req :action "larm-free")
+  (setq res (ros::service-call "repair_reaction" req t))
+
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(308.472 -259.081 1220.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(305.157 -14.307 1220.274) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
-  (send *ri* :stop-grasp :larm)
-  (unix:sleep 1)
-
-  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1220.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
-  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 169.619 1220.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -85.155 1220.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 159.619 1220.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
   (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
   (send *ri* :wait-interpolation)
 
-  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -75.155 1210.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
-  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 169.619 1214.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
-  (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -85.155 1213.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 159.619 1213.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+  (send *ri* :wait-interpolation)
+
+  (send *robot* :rarm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(300.472 -81.155 1213.164) :rpy (float-vector 1.57 1.526 0.0))) :translation-axis t :rotation-axis t)
+  (send *robot* :larm :inverse-kinematics (send (send *robot* :copy-worldcoords) :transform (make-coords :pos #f(297.605 163.619 1213.223) :rpy (float-vector -1.224 1.5 0.362))) :translation-axis t :rotation-axis t)
+  (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
   (send *ri* :wait-interpolation)
 
   (send *ri* :stop-grasp :rarm)
   (unix:sleep 1)
 
-  (send *robot* :rarm :move-end-pos #f(-100 0 0))
+  (send *robot* :rarm :move-end-pos #f(-150 0 0))
   (send *ri* :angle-vector (send *robot* :angle-vector) 2500)
   (send *ri* :wait-interpolation)
 
