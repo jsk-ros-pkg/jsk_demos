@@ -19,7 +19,17 @@
 #   ]
 standalone_tags:
   [
-    {id: 000, size: 0.014, name: test_000},
+  {id: 1, size: 0.0295, name: 'rpov-body_back'},
+  {id: 2, size: 0.0152, name: 'rpov-rarm_elbow_p_servo'},
+  {id: 3, size: 0.0152, name: 'rpov-rarm_shoulder_r_servo'},
+  {id: 4, size: 0.0152, name: 'rpov-rleg_ankle_r_servo'},
+  {id: 5, size: 0.0152, name: 'rpov-larm_elbow_p_servo'},
+  {id: 6, size: 0.0152, name: 'rpov-larm_shoulder_r_servo'},
+  {id: 7, size: 0.0152, name: 'rpov-lleg_ankle_r_servo'},
+  {id: 8, size: 0.0052, name: 'rpov-rarm_elbow_p_cable_r_f'},
+  {id: 9, size: 0.0052, name: 'rpov-rarm_elbow_p_cable_r_b'},
+  {id: 10, size: 0.0052, name: 'rpov-rarm_elbow_p_cable_l_f'},
+  {id: 11, size: 0.0052, name: 'rpov-rarm_elbow_p_cable_l_b'},
   ]
 # ## Tag bundle definitions
 # ### Remarks

@@ -1,0 +1,4 @@
+<launch>
+  <include file="$(find jsk_2021_fix_kxr)/launch/apriltag_doctor_panda_right.launch" />
+  <include file="$(find jsk_2021_fix_kxr)/launch/apriltag_doctor_panda_left.launch" />
+</launch>
