@@ -6,8 +6,8 @@
   <arg name="image_topic" default="image_raw" />
 
   <!-- Set parameters -->
-  <rosparam command="load" file="/home/dual_panda_vision/ros/panda_ws/src/jsk_demos/jsk_2021_fix_kxr/config/apriltag/settings.yaml" ns="$(arg node_namespace)" />
-  <rosparam command="load" file="/home/dual_panda_vision/ros/panda_ws/src/jsk_demos/jsk_2021_fix_kxr/config/apriltag/tags_for_left.yaml" ns="$(arg node_namespace)" />
+  <rosparam command="load" file="$(find jsk_2021_fix_kxr)/config/apriltag/settings.yaml" ns="$(arg node_namespace)" />
+  <rosparam command="load" file="$(find jsk_2021_fix_kxr)/config/apriltag/tags_for_left.yaml" ns="$(arg node_namespace)" />
   
   <node pkg="apriltag_ros" type="apriltag_ros_continuous_node" name="$(arg node_namespace)" clear_params="true" output="screen" launch-prefix="$(arg launch_prefix)" >
     <!-- Remap topics from those used in code to those on the ROS network -->
