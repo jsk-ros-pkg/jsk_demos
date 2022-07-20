@@ -3,7 +3,6 @@
 import rospy
 import math
 from std_msgs.msg import Float32
-from std_srvs.srv import Trigger, TriggerResponse
 import message_filters
 
 
@@ -14,7 +13,8 @@ class AltitudeCalculator(object):
         self.pub = rospy.Publisher('~output', Float32, queue_size=1)
 
         sub_pressure = message_filters.Subscriber('~input_pressure', Float32)
-        sub_temparature = message_filters.Subscriber('~input_temperature', Float32)
+        sub_temparature = message_filters.Subscriber(
+            '~input_temperature', Float32)
 
         # Pa
         self.p_b = rospy.get_param('~sea_level_pressure', 101325)
@@ -25,11 +25,11 @@ class AltitudeCalculator(object):
 
         slop = rospy.get_param('~slop', 0.1)
         self.ts = message_filters.ApproximateTimeSynchronizer(
-                [sub_pressure, sub_temparature],
-                10,
-                slop=slop,
-                allow_headerless=True
-                )
+            [sub_pressure, sub_temparature],
+            10,
+            slop=slop,
+            allow_headerless=True
+        )
         self.ts.registerCallback(self.callback)
 
         rospy.loginfo('initialized')
@@ -38,7 +38,8 @@ class AltitudeCalculator(object):
 
         p = msg_pressure.data
         T = msg_temp.data
-        altitude = ( math.pow(self.p_b / p, 1 / 5.257) - 1 ) * ( T + 273.15) / 0.0065
+        altitude = (math.pow(self.p_b / p, 1 / 5.257) - 1) * \
+            (T + 273.15) / 0.0065
         msg = Float32()
         msg.data = altitude
         self.pub.publish(msg)
