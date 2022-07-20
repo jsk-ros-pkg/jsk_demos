@@ -1,5 +1,5 @@
 <launch>
-    <arg name="device_spinal" default="/dev/ttyUSB0" />
+    <arg name="device" default="/dev/ttyUSB0" />
     <arg name="output_altitude_topic" default="/altitude" />
 
     <!-- spinal (Imu, barometer and so on) -->

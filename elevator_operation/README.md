@@ -4,16 +4,10 @@ This package provides elevator operation and recognition interface to robot.
 
 ## How to run
 
-Connect spinal to PC and
+Connect spinal or M5Stack_ROS ENVIII to PC and start `elevator_state_publisher.launch`
 
 ```bash
-roslaunch elevator_operation spinal_driver.launch
-```
-
-Start `elevator_state_publisher.launch`
-
-```bash
-roslaunch elevator_operation elevator_state_publisher.launch
+roslaunch elevator_operation elevator_state_publisher.launch device_type:=<spinal or enviii> device_name:=<port name> robot_type:=<robot_type, default is fetch>
 ```
 
 And run elevator_operation node
