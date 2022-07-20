@@ -19,13 +19,23 @@ roslaunch elevator_operation elevator_state_publisher.launch device_type:=<spina
 And run elevator_operation node
 
 ```bash
-roslaunch elevator_operation elevator_operation.launch
+roslaunch elevator_operation elevator_operation.launch input_topic_points:=<point cloud topic> robot_type:=<robot type> launch_switchbot_client:=<launch switchbot client if necessary> switchbot_token_yaml:=<path to switchbot token yaml>
 ```
 
 Then call action.
 
 ```bash
 rostopic pub -1 TODO
+```
+
+## How to run on Fetch1075
+
+```bash
+roslaunch elevator_operation elevator_state_publisher.launch device_type:=fetch1075_enviii robot_type:=fetch
+```
+
+```bash
+roslaunch elevator_operation elevator_operation.launch input_topic_points:=/head_camera/depth_registered/points robot_type:=fetch
 ```
 
 ## How to configure
