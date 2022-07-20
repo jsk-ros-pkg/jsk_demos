@@ -1,6 +1,7 @@
 <launch>
     <arg name="input_topic_points"/>
     <arg name="elevator_door_frame_id"/>
+    <arg name="output_topic_door_state" default="/elevator_door_detector/door_state"/>
     <arg name="door_position_offset" default="[0, 0, 0]"/>
     <arg name="door_rotation_offset" default="[0, 0, 0]"/>
     <arg name="door_dimension_x" default="1.0"/>
@@ -22,11 +23,11 @@
     <node pkg="jsk_pcl_ros" type="extract_indices" name="$(arg prefix)elevator_detection_door_detector_extract_indices">
         <remap from="~input" to="$(arg input_topic_points)" />
         <remap from="~indices" to="/$(arg prefix)elevator_detection_door_detector_attention_clipper/output/point_indices" />
-        <remap from="~output" to="/elevator_operation/elevator_door_points" />
+        <!-- <remap from="~output" to="" /> -->
     </node>
     <node pkg="elevator_operation" type="elevator_door_opening_checker.py" name="$(arg prefix)elevator_door_opening_checker">
-        <remap from="~input" to="/elevator_operation/elevator_door_points" />
-        <remap from="~output" to="/elevator_operation/elevator_door_points_num" />
-        <remap from="~door_state" to="/elevator_operation/elevator_door_state" />
+        <remap from="~input" to="/$(arg prefix)elevator_detection_door_detector_extract_indices/output" />
+        <!-- <remap from="~output" to="" /> -->
+        <remap from="~door_state" to="$(arg output_topic_door_state)" />
     </node>
 </launch>

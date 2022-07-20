@@ -27,3 +27,7 @@ Then call action.
 ```bash
 rostopic pub -1 TODO
 ```
+
+## How to configure
+
+To configure door frames, please edit [`doors_frame_publisher.launch`](./launch/doors_frame_publisher.launch).

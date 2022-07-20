@@ -14,6 +14,7 @@ class ElevatorStatePublisher(object):
 
     def __init__(self):
 
+        # Publishers and Subscribers
         self.pub_current_floor = rospy.Publisher('~current_floor', Int16, queue_size=1)
         self.pub_elevator_movement = rospy.Publisher('~elevator_movement', String, queue_size=1)
         self.pub_rest_elevator = rospy.Publisher('~rest_elevator', Bool, queue_size=1)
@@ -21,6 +22,7 @@ class ElevatorStatePublisher(object):
         self.pub_change_floor = rospy.Publisher('~change_floor', String, queue_size=1)
         self._start_subscriber()
 
+        # Parameters
         elevator_config = rospy.get_param('~elevator_config', [])
         initial_floor = rospy.get_param('~initial_floor', 7)
         threshold_altitude = rospy.get_param('~threshold_altitude', 2)

@@ -1,5 +1,5 @@
 <launch>
-    <!-- door frames -->
+    <!-- door frames definitions -->
     <node
         pkg="tf2_ros"
         type="static_transform_publisher"

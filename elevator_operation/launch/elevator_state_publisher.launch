@@ -4,11 +4,19 @@
     <arg name="device_name" default="/dev/ttyUSB0" />
     <arg name="robot_type" default="fetch" /> <!-- fetch -->
 
+    <arg name="output_topic_current_floor" default="/elevator_state_publisher/current_floor" />
+    <arg name="output_topic_elevator_movement" default="/elevator_state_publisher/elevator_movement" />
+    <arg name="output_topic_rest_elevator" default="/elevator_state_publisher/rest_elevator" />
+
     <!-- elevator operation server -->
     <node pkg="elevator_operation" type="elevator_state_publisher.py" name="elevator_state_publisher" output="log">
         <remap from="~input_altitude" to="/elevator_altitude" />
         <remap from="~input_accel" to="/elevator_accel_filtered" />
         <remap from="~change_floor" to="/change_floor_server/input" />
+
+        <remap from="~current_floor" to="$(arg output_topic_current_floor)" />
+        <remap from="~elevator_movement" to="$(arg output_topic_elevator_movement)" />
+        <remap from="~rest_elevator" to="$(arg output_topic_rest_elevator)" />
 
         <rosparam subst_value="true">
             initial_floor: $(arg initial_floor)
