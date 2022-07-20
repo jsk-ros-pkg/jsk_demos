@@ -2,8 +2,6 @@
 
 import rospy
 from std_msgs.msg import Float32
-import scipy
-from scipy import signal
 
 
 class LowpassFilterNode(object):
