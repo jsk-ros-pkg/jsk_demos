@@ -1,0 +1,8 @@
+- git:
+    local-name: sktometometo/elevator_operation
+    uri: https://github.com/sktometometo/elevator_operation
+    version: master
+- git:
+    local-name: sktometometo/aerial_robot
+    uri: https://github.com/sktometometo/aerial_robot.git
+    version: develop/spot

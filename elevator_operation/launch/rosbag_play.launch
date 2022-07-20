@@ -1,0 +1,14 @@
+<launch>
+    <arg name="ROSBAG_FILE" />
+
+    <rosparam>
+        use_sim_time: true
+    </rosparam>
+
+    <node
+        pkg="rosbag"
+        type="play"
+        name="elevator_operation_rosbag_play"
+        args="$(arg ROSBAG_FILE) --clock "
+        />
+</launch>

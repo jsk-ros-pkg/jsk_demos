@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>elevator_operation</name>
+  <version>0.0.0</version>
+  <description>The elevator_operation package</description>
+
+  <maintainer email="sktometometo@todo.todo">sktometometo</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>jsk_pcl_ros</exec_depend>
+  <exec_depend>move_base_msgs</exec_depend>
+  <exec_depend>rosserial_python</exec_depend>
+  <exec_depend>switchbot_ros</exec_depend>
+  <exec_depend>jsk_maps</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <export></export>
+</package>

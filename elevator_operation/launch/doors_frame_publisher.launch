@@ -1,0 +1,27 @@
+<launch>
+    <!-- door frames -->
+    <node
+        pkg="tf2_ros"
+        type="static_transform_publisher"
+        name="elevator_7f_frame_publisher"
+        args="2 -33 1 1.57 0 0 eng2/7f eng2/7f/elevator_door"
+        />
+    <node
+        pkg="tf2_ros"
+        type="static_transform_publisher"
+        name="elevator_3f_frame_publisher"
+        args="2 -33 1 1.57 0 0 eng2/3f eng2/3f/elevator_door"
+        />
+    <node
+        pkg="tf2_ros"
+        type="static_transform_publisher"
+        name="elevator_1f_frame_publisher"
+        args="2.3 -33 1 1.57 0 0 eng2/1f eng2/1f/elevator_door"
+        />
+    <node
+        pkg="tf2_ros"
+        type="static_transform_publisher"
+        name="static_73b2_frame_publisher"
+        args="0 -0.6 1 0 0 0 eng2/7f/73B2 eng2/7f/73B2/door"
+        />
+</launch>
