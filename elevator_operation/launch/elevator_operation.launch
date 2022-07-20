@@ -36,6 +36,10 @@
         </rosparam>
     </node>
 
+    <!-- doors frame publisher -->
+    <include
+        file="$(find elevator_operation)/launch/doors_frame_publisher.launch" />
+
     <!-- switchbot_ros -->
     <node
         pkg="switchbot_ros"
