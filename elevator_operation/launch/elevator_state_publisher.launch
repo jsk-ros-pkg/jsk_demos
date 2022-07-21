@@ -62,9 +62,9 @@
         <node
             pkg="topic_tools"
             type="transform"
-            name="barometer_to_altitude"
-            args="/fetch_imu_topic /elevator_accel std_msgs/Float32 'std_msgs.msg.Float32(data=m.linear_acceleration.z)' --import std_msgs"
-            if="$(eval arg('robot_type') == 'fetch'"
+            name="extract_z_acceleration"
+            args="/imu /elevator_accel std_msgs/Float32 'std_msgs.msg.Float32(data=m.linear_acceleration.z)' --import std_msgs"
+            if="$(eval arg('robot_type') == 'fetch')"
             /> <!-- for fetch -->
 
         <!-- LPF for acceleration -->

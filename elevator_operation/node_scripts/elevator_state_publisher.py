@@ -133,8 +133,17 @@ class ElevatorStatePublisher(object):
 
     def _start_subscriber(self):
 
-        self.state_altitude = None
-        self.state_acc = None
+        msg_altitude = rospy.wait_for_message(
+            '~input_altitude',
+            Float32
+            )
+        msg_acc = rospy.wait_for_message(
+            '~input_accel',
+            Float32
+            )
+
+        self.state_altitude = msg_altitude.data
+        self.state_acc = msg_acc.data
 
         self.subscriber_altitude = rospy.Subscriber(
             '~input_altitude',
