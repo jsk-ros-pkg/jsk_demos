@@ -6,7 +6,7 @@ Fix KXR whose connector was removal by dual_panda2.
 According to [here](https://www.google.com/url?sa=j&url=https%3A%2F%2Fgitlab.jsk.imi.i.u-tokyo.ac.jp%2Frcb4eus%2Frcb4eus%2F-%2Fwikis%2Fhome&uct=1649641403&usg=XDviwd1cl8Mh3gkoKqJNqcVi3k8.&source=chat), set up KXR and connect KXR to 133.x network through wifi. 
 
 
-After setting up KXR, connet to your pc through wifi
+After setting up KXR, connet to your pc
 ```
 cd ~/prog/rcb4eus/Arduino/M5Stack/M5Stack_rcb4_rosserial
 roslaunch rosserial_wifi.launch
