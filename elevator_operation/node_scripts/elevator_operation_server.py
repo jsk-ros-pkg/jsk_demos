@@ -35,7 +35,7 @@ class ElevatorOperationServer(object):
         #######################################################################
         elevator_config = rospy.get_param('~elevator_config', [])
         self.elevator_config = {entry['floor']: entry for entry in elevator_config}
-        rospy.logwarn('elevator config')
+        rospy.logwarn('elevator config: {}'.format(self.elevator_config))
 
         #######################################################################
         # Door Detection Input
@@ -56,7 +56,7 @@ class ElevatorOperationServer(object):
         self.client_global_inflater = dynamic_reconfigure.client.Client(global_costmap_inflation_plugin)
         self.client_local_inflater = dynamic_reconfigure.client.Client(local_costmap_inflation_plugin)
         self.switchbot_ros_client = SwitchBotROSClient()
-        self.switchbot_ros_client.action_client.wait_for_server()
+        self.switchbot_ros_client.action_client.wait_for_server(timeout=rospy.Duration(10))
         self.look_at_client = rospy.ServiceProxy('~look_at', LookAtTarget)
         self.move_base_client = actionlib.SimpleActionClient('/move_base', MoveBaseAction)
         rospy.logwarn('create ROS client')

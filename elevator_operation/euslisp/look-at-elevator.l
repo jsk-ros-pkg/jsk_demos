@@ -29,6 +29,7 @@
     )
   (setq *tfl* (instance ros::transform-listener :init))
   (ros::advertise-service "~look_at_target" elevator_operation::LookAtTarget #'handler-start-look-at-target)
+  (ros::ros-info "initialized")
   (ros::spin)
   )
 

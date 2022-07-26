@@ -19,8 +19,10 @@
         <remap from="~change_floor" to="/change_floor_server/input" />
         <rosparam subst_value="true">
             input_topic_points: $(arg input_topic_points)
-            global_costmap_inflation_plugin: '/move_base/global_costmap/inflation_layer'
-            local_costmap_inflation_plugin: '/move_base/local_costmap/inflation_layer'
+            global_costmap_inflation_plugin: '/move_base/global_costmap/inflater'
+            local_costmap_inflation_plugin: '/move_base/local_costmap/inflater'
+            #global_costmap_inflation_plugin: '/move_base/global_costmap/inflation_layer'
+            #local_costmap_inflation_plugin: '/move_base/local_costmap/inflation_layer'
         </rosparam>
         <rosparam
             ns="elevator_config"
