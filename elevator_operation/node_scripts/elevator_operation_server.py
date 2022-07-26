@@ -28,8 +28,7 @@ class ElevatorOperationServer(object):
         # ROSLaunch
         #######################################################################
         roslaunch.pmon._init_signal_handlers()
-        self.roslaunch_detection_parent = None
-        self.roslaunch_state_publisher_parent = None
+        self.roslaunch_parent = None
 
         #######################################################################
         # Elevator Config
@@ -147,49 +146,6 @@ class ElevatorOperationServer(object):
                 self.default_local_inflation_radius
                 )
 
-    def start_state_publisher(self,
-                              initial_floor,
-                              device_type,
-                              device_name,
-                              robot_type):
-
-        if self.roslaunch_state_publisher_parent is not None:
-            self.stop_state_publisher
-        uuid = roslaunch.rlutil.get_or_generate_uuid(None, True)
-        roslaunch_path = rospkg.RosPack().get_path('elevator_operation') + '/launch/elevator_state_publisher.launch'
-        cli_args = [roslaunch_path,
-                    'initial_floor:={}'.format(initial_floor),
-                    'device_type:={}'.format(device_type),
-                    'device_name:={}'.format(device_name),
-                    'robot_type:={}'.format(robot_type),
-                    ]
-        roslaunch_file = [(
-            roslaunch.rlutil.resolve_launch_arguments(cli_args)[0],
-            cli_args[1:]
-        )]
-        rospy.logwarn('roslaunch_file: {}'.format(roslaunch_file))
-        self.roslaunch_state_publisher_parent = roslaunch.parent.ROSLaunchParent(
-            uuid, roslaunch_file
-        )
-        self.roslaunch_state_publisher_parent.start()
-        try:
-            rospy.wait_for_message(
-                    '/elevator_state_publisher/current_floor',
-                    Int16,
-                    timeout=duration_timeout)
-            rospy.loginfo('elevator state publisher started')
-            return True
-        except (rospy.ROSException, rospy.ROSInterruptException) as e:
-            rospy.logerr('{}'.format(e))
-            self.stop_state_publisher()
-            return False
-
-    def stop_state_publisher(self):
-
-        if self.roslaunch_state_publisher_parent is not None:
-            self.roslaunch_state_publisher_parent.shutdown()
-            self.roslaunch_state_publisher_parent = None
-
     def start_door_detector(self,
                             input_topic_points,
                             elevator_door_frame_id,
@@ -200,7 +156,7 @@ class ElevatorOperationServer(object):
                             door_rotation_offset='[0,0,0]',
                             duration_timeout=10):
 
-        if self.roslaunch_detection_parent is not None:
+        if self.roslaunch_parent is not None:
             self.stop_door_detector()
         uuid = roslaunch.rlutil.get_or_generate_uuid(None, True)
         roslaunch_path = rospkg.RosPack().get_path('elevator_operation') + '/launch/elevator_door_detector.launch'
@@ -218,10 +174,10 @@ class ElevatorOperationServer(object):
             cli_args[1:]
         )]
         rospy.logwarn('roslaunch_file: {}'.format(roslaunch_file))
-        self.roslaunch_detection_parent = roslaunch.parent.ROSLaunchParent(
+        self.roslaunch_parent = roslaunch.parent.ROSLaunchParent(
             uuid, roslaunch_file
         )
-        self.roslaunch_detection_parent.start()
+        self.roslaunch_parent.start()
         try:
             rospy.wait_for_message(
                     '/elevator_door_opening_checker/door_state',
@@ -236,9 +192,9 @@ class ElevatorOperationServer(object):
 
     def stop_door_detector(self):
 
-        if self.roslaunch_detection_parent is not None:
-            self.roslaunch_detection_parent.shutdown()
-            self.roslaunch_detection_parent = None
+        if self.roslaunch_parent is not None:
+            self.roslaunch_parent.shutdown()
+            self.roslaunch_parent = None
 
     def _move_to(self, target_pose, wait=False):
 
