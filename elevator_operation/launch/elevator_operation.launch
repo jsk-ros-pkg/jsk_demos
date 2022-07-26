@@ -16,6 +16,7 @@
         <remap from="~state_elevator_movement" to="$(arg input_topic_elevator_movement)" />
         <remap from="~state_current_floor" to="$(arg input_topic_current_floor)" />
         <remap from="~look_at" to="/look_at_target_server/look_at_target" />
+        <remap from="~reset_movement" to="/elevator_state_publisher/reset_movement" />
         <remap from="~change_floor" to="/change_floor_server/input" />
         <rosparam subst_value="true">
             input_topic_points: $(arg input_topic_points)

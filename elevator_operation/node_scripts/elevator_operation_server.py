@@ -8,6 +8,7 @@ from switchbot_ros.switchbot_ros_client import SwitchBotROSClient
 
 import dynamic_reconfigure.client
 
+from std_srvs.srv import Trigger
 from std_msgs.msg import Int16
 from std_msgs.msg import String
 from elevator_operation.msg import DoorState
@@ -58,6 +59,7 @@ class ElevatorOperationServer(object):
         self.switchbot_ros_client = SwitchBotROSClient()
         self.switchbot_ros_client.action_client.wait_for_server(timeout=rospy.Duration(10))
         self.look_at_client = rospy.ServiceProxy('~look_at', LookAtTarget)
+        self.reset_movement = rospy.ServiceProxy('~reset_movement', Trigger)
         self.move_base_client = actionlib.SimpleActionClient('/move_base', MoveBaseAction)
         rospy.logwarn('create ROS client')
 
@@ -180,7 +182,7 @@ class ElevatorOperationServer(object):
         self.roslaunch_parent.start()
         try:
             rospy.wait_for_message(
-                    '/elevator_door_opening_checker/door_state',
+                    '/elevator_door_detector/door_state',
                     DoorState,
                     timeout=duration_timeout)
             rospy.loginfo('Door detector started')
@@ -219,13 +221,13 @@ class ElevatorOperationServer(object):
     def execute_cb(self, goal):
         rospy.loginfo('action started')
         result = MoveFloorWithElevatorResult()
-        if goal.target_floor_name not in [v['floor_name'] for k, v in self.elevator_config.items()]:
+        if goal.target_floor_name not in [v['floor_name'] if 'floor_name' in v else None for k, v in self.elevator_config.items()]:
             rospy.logerr('target_floor: {} not in elevator_config'.format(goal.target_floor_name))
             result.success = False
             self.action_server.set_aborted(result)
         else:
             target_floor = filter(
-                lambda v: v['floor_name'] == goal.target_floor_name,
+                lambda v: 'floor_name' in v and v['floor_name'] == goal.target_floor_name,
                 self.elevator_config.values()
             )[0]['floor']
             ret = self.move_floor_with_elevator(target_floor)
@@ -313,6 +315,9 @@ class ElevatorOperationServer(object):
             rate.sleep()
             if self.move_base_client.wait_for_result(timeout=rospy.Duration(1)):
                 break
+
+        # reset movement
+        self.reset_movement()
 
         # look to the door
         self.look_at_client(self.elevator_config[start_floor]['door_frame_id'])

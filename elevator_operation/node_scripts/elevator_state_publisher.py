@@ -8,6 +8,7 @@ from std_msgs.msg import String
 from std_msgs.msg import Bool
 from std_msgs.msg import Int16
 from std_msgs.msg import Float32
+from std_srvs.srv import Trigger, TriggerResponse
 
 
 class ElevatorStatePublisher(object):
@@ -41,6 +42,9 @@ class ElevatorStatePublisher(object):
         self.param_anchor_altitude = self.state_altitude
         self.param_anchor_time = rospy.Time.now()
         self.param_stable_accel = self.state_acc
+
+        # Service
+        self.srv_reset_movement = rospy.Service('~reset_movement', Trigger, self._handler)
 
     def spin(self):
 
@@ -168,6 +172,24 @@ class ElevatorStatePublisher(object):
     def _callback_imu(self, msg):
 
         self.state_acc = msg.data
+
+    def _handler(self, req):
+
+        self.state_elevator_movement = 'halt'
+        if self.state_elevator_movement != self.prestate_elevator_movement:
+            self.state_time_elevator_movement_changed = rospy.Time.now()
+
+        # change floor if state is changed to halt
+        if self.prestate_elevator_movement != 'halt' and \
+                self.state_elevator_movement == 'halt':
+            self.pub_change_floor.publish(String(data=self.elevator_config[self.state_current_floor]['map_name']))
+
+        # update anchor if state is changed to halt
+        if self.prestate_elevator_movement != 'halt' and \
+                self.state_elevator_movement == 'halt':
+            self._update_anchor_floor_and_altitude()
+
+        return TriggerResponse(success=True)
 
 
 if __name__ == '__main__':
