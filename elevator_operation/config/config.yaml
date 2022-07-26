@@ -1,7 +1,10 @@
+- floor: 8
+  altitude: 29.6
+  map_name: '/eng2/8f'
 - floor: 7
-  floor_name: 'eng2/7f'
-  altitude: 4
+  altitude: 25.8
   map_name: '/eng2/7f'
+  floor_name: 'eng2/7f'
   door_frame_id: '/eng2/7f/elevator_door'
   door_dimensions: [1.0, 0.5, 1.0]
   outside_pose:
@@ -14,10 +17,19 @@
     orientation: [-0.000, -0.000, 0.476, 0.879]
   buttons:
     down: '/eng2/7f/elevator_bot_down'
+- floor: 6
+  altitude: 22.0
+  map_name: '/eng2/6f'
+- floor: 5
+  altitude: 16.8
+  map_name: '/eng2/5f'
+- floor: 4
+  altitude: 13.1
+  map_name: '/eng2/4f'
 - floor: 3
-  floor_name: 'eng2/3f'
-  altitude: -15
+  altitude: 9.1
   map_name: '/eng2/3f'
+  floor_name: 'eng2/3f'
   door_frame_id: '/eng2/3f/elevator_door'
   door_dimensions: [1.0, 0.5, 1.0]
   outside_pose:
@@ -30,10 +42,13 @@
     orientation: [-0.000, -0.000, 0.476, 0.879]
   buttons:
     up: '/eng2/3f/elevator_bot_up'
+- floor: 2
+  altitude: 5.0
+  map_name: '/eng2/2f'
 - floor: 1
-  floor_name: 'eng2/1f'
-  altitude: -24
+  altitude: 0
   map_name: '/eng2/1f'
+  floor_name: 'eng2/1f'
   door_frame_id: '/eng2/1f/elevator_door'
   door_dimensions: [1.0, 0.5, 1.0]
   outside_pose:
@@ -46,3 +61,6 @@
     orientation: [-0.000, -0.000, 0.476, 0.879]
   buttons:
     up: '/eng2/1f/elevator_bot_up'
+- floor: -1
+  altitude: -4
+  map_name: '/eng2/1f'
