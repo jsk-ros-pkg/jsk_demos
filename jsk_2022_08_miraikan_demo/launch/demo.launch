@@ -1,0 +1,95 @@
+<launch>
+  <arg name="eyebrows_server_ip" default="localhost" />
+  <arg name="run_eyebrows_server" default="false" />
+  <arg name="use_robot" default="false" />
+  <arg name="pepper_ip" default="169.xxx.xx.xx" />
+  <arg name="memories_talk" default="true" />
+  <arg name="node_start_delay" default="5.0" />
+  
+  <!-- run docker-compose up -->
+  <group if="$(arg run_eyebrows_server)">
+    <node name="launch_server" pkg="miraikan_demo" type="launch_eyebrows_server.py"
+          output="screen" respawn="true">
+    </node>
+  </group>
+  
+  <!-- run motion_talk -->
+  <group if="$(arg use_robot)">
+    <node name="motion_talk" pkg="miraikan_demo" type="motion_talk_node.py"
+          output="screen" respawn="true">
+      <rosparam subst_value="true">
+        pepper_ip: $(arg pepper_ip)
+        memories_talk: $(arg memories_talk)
+      </rosparam>
+    </node>
+  </group>
+  <group unless="$(arg use_robot)">
+    <node name="motion_talk" pkg="miraikan_demo" type="fake_motion_talk_node.py"
+          output="screen" respawn="true">
+    </node>
+  </group>
+
+  <!-- topic -> eyebrows -->
+  <node name="eyebrows" pkg="miraikan_demo" type="eyebrows_node.py"
+        output="screen" respawn="true">
+    <rosparam subst_value="true">
+      server_ip: $(arg eyebrows_server_ip)
+    </rosparam>
+  </node>
+
+  <!-- main node -->
+  <node name="demo_mode" pkg="miraikan_demo" type="demo_node.py"
+        output="screen" respawn="true">
+    <rosparam subst_value="true">
+      memories_talk: $(arg memories_talk)
+    </rosparam>
+  </node>
+
+  <!-- demo service call -->
+  <group if="$(arg memories_talk)">
+    <node name="robot_behavior_server"
+	  pkg="roseus" type="roseus"
+	  args="$(find miraikan_demo)/euslisp/robot-behavior-server.l
+		&quot;(progn (main_memories))&quot;" output="screen" respawn="true" />
+  </group>
+  <group unless="$(arg memories_talk)">
+    <node name="robot_behavior_server"
+	  pkg="roseus" type="roseus"
+	  args="$(find miraikan_demo)/euslisp/robot-behavior-server.l
+		&quot;(progn (main_no_memories))&quot;" output="screen" respawn="true" />
+  </group>
+
+  <!-- for scratch -->
+  <arg name="port" default="9090" />
+  <arg name="address" default="0.0.0.0" />
+  <node name="rosbridge_websocket" pkg="rosbridge_server" type="rosbridge_websocket"
+        output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
+    <param name="authenticate" value="false" />
+    <param name="port" value="$(arg port)"/>
+    <param name="address" value="$(arg address)"/>
+    <param name="retry_startup_delay" value="5"/>
+    <param name="fragment_timeout" value="600"/>
+    <param name="delay_between_messages" value="0"/>
+    <param name="max_message_size" value="None"/>
+    <param name="unregister_timeout" value="10"/>
+    <param name="use_compression" value="false"/>
+
+    <param name="websocket_ping_interval" value="0" />
+    <param name="websocket_ping_timeout" value="30" />
+    <param name="websocket_external_port" value="None" />
+
+    <param name="topics_glob" value="[*]"/>
+    <param name="services_glob" value="[*]"/>
+    <param name="params_glob" value="[*]"/>
+
+    <param name="bson_only_mode" value="false"/>
+  </node>
+
+  <node name="rosapi" pkg="rosapi" type="rosapi_node"
+        output="screen" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' ">
+    <param name="topics_glob" value="[*]"/>
+    <param name="services_glob" value="[*]"/>
+    <param name="params_glob" value="[*]"/>
+  </node>
+
+</launch>
