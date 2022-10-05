@@ -1,40 +1,41 @@
 <launch>
-  <arg name="ROBOT" default="$(optenv ROBOT sim)" />
-
-  <param name="use_sim_time" value="true"/>
+  <arg name="ROBOT" default="sim"/>
   <include file="$(find pr2_machine)/$(arg ROBOT).machine"/>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <!-- inputs are tf, image_raw, camera_info -->
+  <node name="rosbag_play"
+        pkg="rosbag" type="play"
+        args="$(find elevator_move_base_pr2)/test/test-eng2-inside-panel.bag -r 0.1 --clock --loop"/>
+
+  <group ns="/narrow_stereo/left">
+    <node name="republish"
+          pkg="image_transport" type="republish"
+          args="compressed raw">
+      <remap from="in" to="image_raw"/>
+      <remap from="out" to="image_raw"/>
+    </node>
+    <node name="image_proc"
+          pkg="image_proc" type="image_proc"/>
+  </group>
+
   <include file="$(find elevator_move_base_pr2)/launch/elevator_move_base_modules.xml">
-    <arg name="ROBOT" value="$(arg ROBOT)" />
+    <arg name="scene" value="eng2" />
   </include>
 
-  <!-- inputs are tf, image_raw, camera_info, joint_states -->
-  <node pkg="rosbag" type="play" name="rosbag_play"
-        args="$(find elevator_move_base_pr2)/test/test-eng2-inside-panel.bag -l -r 0.1 --clock" />
-  <node name="republish" pkg="image_transport" type="republish"
-        args="compressed raw">
-    <remap from="in" to="narrow_stereo/left/image_raw"/>
-    <remap from="out" to="narrow_stereo/left/image_raw"/>
-  </node>
-  <node name="rectify" pkg="nodelet" type="nodelet"
-        args="standalone image_proc/rectify"
-        ns="narrow_stereo/left">
-    <remap from="image_mono" to="image_raw"/>
-  </node>
-
   <!-- test for panel pose detection -->
-  <test test-name="panel_pose_detection" pkg="roseus" type="roseus"
-        args="$(find elevator_move_base_pr2)/test/test-panel-pose-detection.l"/>
+  <test test-name="test_panel_pose_detection"
+        name="test_panel_pose_detection"
+        pkg="elevator_move_base_pr2" type="test-panel-pose-detection.l">
+    <rosparam>
+      error_threshold: 50
+    </rosparam>
+  </test>
 
   <!-- test for number recognition -->
-  <test test-name="number_recognition" pkg="roseus" type="roseus"
-        args="$(find elevator_move_base_pr2)/test/test-number-recognition.l"/>
-
-  <anode type="rviz" pkg="rviz" name="rviz" respawn="true"
-        args="-d $(find elevator_move_base_pr2)/test/test-modules-insidepanel.vcg"
-        launch-prefix="glc-capture --start --out=$(find elevator_move_base_pr2)/build/test-modules-insidepanel.glc" />
-
-  <!-- we assume test code is invoked in alphabet order of test-name -->
-  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test1" args="$(find elevator_move_base_pr2)/build/test-modules-insidepanel.glc --ctx 1 -o $(find elevator_move_base_pr2)/build/call-panel-pose.mp4" time-limit="300"/>
-  <atest type="glc_encode.sh" pkg="jsk_tools" test-name="z_encode_test2" args="$(find elevator_move_base_pr2)/build/test-modules-insidepanel.glc --ctx 2 -o $(find elevator_move_base_pr2)/build/inside-panel-number.mp4" time-limit="300"/>
+  <test test-name="test_number_recognition"
+        name="test_number_recognition"
+        pkg="elevator_move_base_pr2" type="test-number-recognition.l"/>
 
 </launch>
