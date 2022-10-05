@@ -32,19 +32,10 @@ target_link_libraries(color_point_detector ${catkin_LIBRARIES})
 if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
   add_rostest(test/test-color-point-detector.launch)
-  find_package(jsk_perception)
-  if(EXISTS ${jsk_perception_DIR}/launch/eusmodel_detection_elevator-panels-eng2.launch OR
-      EXISTS ${jsk_perception_SOURCE_PREFIX}/launch/eusmodel_detection_elevator-panels-eng2.launch)
-    add_rostest(test/test-panel-pose-detection.launch ROBOT:=sim)
-    add_rostest(test/test-button-light.launch ROBOT:=sim)
-  else()
-    message(WARNING "${jsk_perception_DIR}/launch/eusmodel_detection_elevator-panels-eng2.launch or")
-    message(WARNING "${jsk_perception_SOURCE_PREFIX}/launch/eusmodel_detection_elevator-panels-eng2.launch is not found")
-    message(WARNING "You need to compile jsk_perception to run test-button-light.launch and test-panel-pose-detection.launch")
-  endif()
-  # 2 tests below are skipped now since they aren't actually used for testing purpose.
-  # add_rostest(test/test-modules-callpanel.launch ROBOT:=sim)
-  # add_rostest(test/test-modules-insidepanel.launch ROBOT:=sim)
+  add_rostest(test/test-panel-pose-detection.launch ROBOT:=sim)
+  add_rostest(test/test-button-light.launch ROBOT:=sim)
+  add_rostest(test/test-modules-callpanel.launch ROBOT:=sim)
+  add_rostest(test/test-modules-insidepanel.launch ROBOT:=sim)
 endif()
 
 install(
