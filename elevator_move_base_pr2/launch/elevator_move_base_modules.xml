@@ -1,5 +1,6 @@
 <launch>
   <arg name="scene" default="eng2"/>
+  <arg name="launch_find_elevator_button" default="true" />
   <arg name="MANAGER" default="elevator_move_base_manager"/>
 
   <node name="$(arg MANAGER)"
@@ -31,7 +32,7 @@
       <arg name="MANAGER" value="/$(arg MANAGER)"/>
       <arg name="MACHINE" value="c2"/>
     </include>
-    <node name="find_elevator_button"
+    <node if="$(arg launch_find_elevator_button)" name="find_elevator_button"
           pkg="elevator_move_base_pr2" type="find-elevator-button.l"
           machine="c1" respawn="true" output="screen"/>
   </group>
