@@ -6,7 +6,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   jsk_demo_common
   jsk_perception
-  pddl_planner
   roseus_smach
   roseus)
 
@@ -22,7 +21,7 @@ generate_messages(
 )
 
 catkin_package(
-CATKIN_DEPENDS geometry_msgs message_runtime roseus jsk_demo_common jsk_perception pddl_planner pr2eus roseus_smach
+CATKIN_DEPENDS geometry_msgs message_runtime roseus jsk_demo_common jsk_perception roseus_smach
 )
 
 ###########

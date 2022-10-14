@@ -26,8 +26,6 @@
   <build_depend>jsk_demo_common</build_depend>
   <build_depend>jsk_perception</build_depend>
   <build_depend>task_compiler</build_depend>
-  <build_depend>pddl_planner</build_depend>
-  <build_depend>pddl_planner_viewer</build_depend>
   <build_depend>laser_filters_jsk_patch</build_depend>
   <build_depend>imagesift</build_depend>
 

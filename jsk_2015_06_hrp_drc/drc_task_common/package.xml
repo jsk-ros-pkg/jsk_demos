@@ -36,7 +36,6 @@
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>jsk_teleop_joy</build_depend>
   <build_depend>jsk_recognition_msgs</build_depend>
-  <build_depend>jsk_ik_server</build_depend>
   <build_depend>pr2eus</build_depend>
   <build_depend>pcl_msgs</build_depend>
   <build_depend>jsk_footstep_msgs</build_depend>
@@ -44,7 +43,6 @@
   <build_depend>jsk_footstep_controller</build_depend>
   <build_depend>drc_com_common</build_depend>
   <build_depend>jsk_perception</build_depend>
-  <build_depend>jsk_calibration</build_depend>
   <build_depend>resized_image_transport</build_depend>
   <build_depend>jsk_rqt_plugins</build_depend>
   <build_depend>jsk_rviz_plugins</build_depend>

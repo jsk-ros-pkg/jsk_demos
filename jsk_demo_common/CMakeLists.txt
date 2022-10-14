@@ -9,8 +9,6 @@ find_package(catkin REQUIRED COMPONENTS
   jsk_hark_msgs
   jsk_maps
   jsk_perception
-  pddl_planner
-  pr2eus
   pr2_gripper_sensor_msgs
   roseus
   roseus_smach
@@ -39,7 +37,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES jsk_demo_common
-  CATKIN_DEPENDS control_msgs jsk_hark_msgs jsk_maps jsk_perception pddl_planner pr2eus roseus roseus_smach message_runtime
+  CATKIN_DEPENDS control_msgs jsk_hark_msgs jsk_maps jsk_perception roseus roseus_smach message_runtime
 #  DEPENDS system_lib
 )
 
