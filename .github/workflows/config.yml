@@ -66,7 +66,7 @@ jobs:
           # ls -al /home/runner/work/_temp/_github_workflow/
 
       - name: Chcekout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3.0.2
 
       - name: Start X server
         run: |
