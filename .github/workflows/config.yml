@@ -37,7 +37,7 @@ jobs:
             BEFORE_SCRIPT: "TEST_ROBOT=fetch ./jsk_demos/.travis.before_script.sh"
           - ROS_DISTRO: noetic
             CONTAINER: jskrobotics/ros-ubuntu:20.04-pcl
-            continue-on-error: true
+            EXTRA_DEB : "python3-rospkg python3-rospkg-modules"  #  drc_task_common need rospkg, but not installed
 
     container: ${{ matrix.CONTAINER }}
     steps:
