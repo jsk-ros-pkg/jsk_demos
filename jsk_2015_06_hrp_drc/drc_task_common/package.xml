@@ -7,6 +7,7 @@
   <author email="murooka@jsk.t.u-tokyo.ac.jp">Masaki Murooka</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospkg</build_depend>
   <build_depend>move_base_msgs</build_depend>
   <build_depend>rosgraph_msgs</build_depend>
   <build_depend>roseus</build_depend>
@@ -82,7 +83,6 @@
   <run_depend>jsk_footstep_controller</run_depend>
   <run_depend>drc_com_common</run_depend>
   <run_depend>jsk_perception</run_depend>
-  <run_depend>jsk_calibration</run_depend>
   <run_depend>resized_image_transport</run_depend>
   <run_depend>python-fysom</run_depend>
   <run_depend>jsk_rqt_plugins</run_depend>
