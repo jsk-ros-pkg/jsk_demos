@@ -15,9 +15,9 @@ add_service_files(DIRECTORY srv FILES RvizMenuCall.srv RvizMenuSelect.srv EusCom
 
 # Generate msg file from DRCParametersConfig file
 set(tmp_pythonpath $ENV{PYTHONPATH})
-set(ENV{PYTHONPATH} ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}:$ENV{PYTHONPATH})
+set(ENV{PYTHONPATH} ${CATKIN_DEVEL_PREFIX}/${PYTHON_INSTALL_DIR}:$ENV{PYTHONPATH}:/usr/lib/python$ENV{ROS_PYTHON_VERSION}/dist-packages)
 execute_process(
-  COMMAND ${PROJECT_SOURCE_DIR}/scripts/gen_reconfigure_msg.py ${PROJECT_SOURCE_DIR}/msg/DRCParametersMessage.msg
+  COMMAND python$ENV{ROS_PYTHON_VERSION} ${PROJECT_SOURCE_DIR}/scripts/gen_reconfigure_msg.py ${PROJECT_SOURCE_DIR}/msg/DRCParametersMessage.msg
   OUTPUT_VARIABLE output_variable
   RESULT_VARIABLE result_variable
   ERROR_VARIABLE error_variable
