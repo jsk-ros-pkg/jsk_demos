@@ -1,0 +1,16 @@
+<launch>
+  <arg name="launch_map_server" default="true" />
+
+  <!-- unused args; add them to keep the same args as other launches -->
+  <arg name="MACHINE" default="localhost" />
+  <arg name="use_machine" default="false" />
+  <arg name="use_pictogram" default="false" />
+  <arg name="keepout" default="false" />
+
+  <!-- create empty map -->
+  <node if="$(arg launch_map_server)"
+        name="$(anon empty_map_server)" pkg="map_server" type="map_server"
+        args="$(find jsk_maps)/raw_maps/empty_map.yaml" >
+    <param name="frame_id" value="/map"/>
+  </node>
+</launch>
