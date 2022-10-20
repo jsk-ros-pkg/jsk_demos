@@ -158,7 +158,7 @@
 
   ;; move
 
-  (unless (grasp-can :use-arm use-arm)
+  (unless (grasp-can :use-arm use-arm :use-torso-reach t :use-torso-grasp nil)
     (return-from demo))
 
   ;; move
