@@ -132,7 +132,7 @@
                   (use-arm :larm)
                   (use-base nil)
                   )
-  (disable-behavior-server)
+  ; (disable-behavior-server)
   (case app-manager
     (:true
      ;; get type from parameter server
@@ -177,7 +177,7 @@
               :finish-type finish-type)
        (return-from demo)))
     )
-  (enable-behavior-server)
+  ; (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit) t)
   )
 
