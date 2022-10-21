@@ -66,7 +66,7 @@
 
 (defun goto-initial-position (&key (return-to-initial-position t)
                                    (use-arm :rarm)
-                                   (turnp t) (finish-type :pass-to-human))
+                                   (turnp t))
   (when turnp
     (send *ri* :go-pos-unsafe 0 0 -90)
     (send *ri* :wait-interpolation))
@@ -78,22 +78,17 @@
           (speak-jp (format nil "I will bring  ~a." *type*)))
          (t (speak-jp (format nil "~aを持って行きます。" *type*))))
       (speak-jp (format nil "~a を もって いきます" *type*)))
-    (send *ri* :move-to *opose*))
+    (send *ri* :move-to *opose*)))
 
-  (case finish-type
-    (:put-on-turtlebot
-     (put-can-on-turtlebot))
-    ((:pass-to-human t)
-     (if (and (boundp '*use-voicetext*) *use-voicetext*)
-         (cond
-          ((and (boundp '*use-english*) *use-english*)
-           (speak-jp (format nil "Please take ~a." *type*)))
-          (t (speak-jp (format nil "~aをどうぞ。" *type*))))
-       (speak-jp (format nil "~a を どうぞ" *type*)))
-     (hand-over use-arm :wait-shock t :tuckarm :rarm))
-    )
-  t
-  )
+(defun pass-to-human (&key (use-arm :rarm))
+  (if (and (boundp '*use-voicetext*) *use-voicetext*)
+      (cond
+       ((and (boundp '*use-english*) *use-english*)
+        (speak-jp (format nil "Please take ~a." *type*)))
+       (t (speak-jp (format nil "~aをどうぞ。" *type*))))
+    (speak-jp (format nil "~a を どうぞ" *type*)))
+  (hand-over use-arm :wait-shock t :tuckarm :rarm)
+  t)
 
 (defun enable-behavior-server ()
   (if (ros::wait-for-service "/interactive_behavior_enable" 1)
@@ -168,15 +163,18 @@
 
   (case demo-type
     (:map
-     (goto-initial-position :finish-type finish-type :use-arm use-arm)
-     )
+     (unless (goto-initial-position :use-arm use-arm)
+       (return-from demo)))
     (t
      (unless (goto-initial-position
               :return-to-initial-position nil :turnp t
-              :use-arm use-arm
-              :finish-type finish-type)
-       (return-from demo)))
-    )
+              :use-arm use-arm)
+       (return-from demo))))
+
+  (case finish-type
+    (:pass-to-human (pass-to-human :use-arm use-arm))
+    (:put-on-turtlebot (put-can-on-turtlebot)))
+
   ; (enable-behavior-server)
   (if (eq app-manager :true) (ros::exit) t)
   )
