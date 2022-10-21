@@ -33,6 +33,7 @@
 
 (def-state-func move-to-fridge-func (userdata)
   (let ((res (goto-front-of-fridge)))
+    (ros::spin-once)
     (if res
       (set-alist 'description "冷蔵庫の前に移動したよ" userdata)
       (set-alist 'description "冷蔵庫へ行けなかったよ" userdata))
@@ -44,6 +45,7 @@
   (let* ((use-arm (cdr (assoc 'use-arm userdata)))
          (use-base (cdr (assoc 'use-base userdata)))
          (res (open-fridge-door :use-arm use-arm :use-base use-base)))
+    (ros::spin-once)
     (if res
       (set-alist 'description "冷蔵庫の扉を開けたよ" userdata)
       (set-alist 'description "冷蔵庫の扉を開けられなかったよ" userdata))
@@ -55,6 +57,7 @@
   (let* ((can-type (cdr (assoc 'can-type userdata)))
          (use-arm (cdr (assoc 'use-arm userdata)))
          (res (grasp-can :use-arm use-arm)))
+    (ros::spin-once)
     (if res
       (set-alist 'description (format nil "~Aを取り出せたよ" can-type) userdata)
       (set-alist 'description (format nil "~Aを取り出せなかったよ" can-type) userdata))
@@ -65,6 +68,7 @@
 (def-state-func close-fridge-func (userdata)
   (let* ((use-arm (cdr (assoc 'use-arm userdata)))
          (res (close-fridge :use-arm use-arm)))
+    (ros::spin-once)
     (if res
       (set-alist 'description "冷蔵庫の扉を閉めたよ" userdata)
       (set-alist 'description "冷蔵庫の扉を閉められなかったよ" userdata))
@@ -74,12 +78,25 @@
 
 (def-state-func move-to-initial-position-func (userdata)
   (let* ((can-type (cdr (assoc 'can-type userdata)))
-         (finish-type (cdr (assoc 'finish-type userdata)))
          (use-arm (cdr (assoc 'use-arm userdata)))
-         (res (goto-initial-position :finish-type finish-type :use-arm use-arm)))
+         (res (goto-initial-position :use-arm use-arm)))
+    (ros::spin-once)
     (if res
       (set-alist 'description (format nil "~Aを持っていったよ" can-type) userdata)
       (set-alist 'description (format nil "~Aを持っていけなかったよ" can-type) userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
+
+
+(def-state-func hand-over-can-func (userdata)
+  (let* ((can-type (cdr (assoc 'can-type userdata)))
+         (use-arm (cdr (assoc 'use-arm userdata)))
+         (res (pass-to-human :use-arm use-arm)))
+    ;; we dont need this here for better photo 
+    ;; (ros::spin-once)
+    (if res
+      (set-alist 'description (format nil "~Aを渡したよ" can-type) userdata)
+      (set-alist 'description (format nil "~Aを渡せなかったよ" can-type) userdata))
     (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
     res))
 
@@ -102,8 +119,10 @@
             (:grasp-can !-> :finish-failure)
             (:close-fridge -> :move-to-initial-position)
             (:close-fridge !-> :finish-failure)
-            (:move-to-initial-position -> :finish)
+            (:move-to-initial-position -> :hand-over-can)
             (:move-to-initial-position !-> :finish-failure)
+            (:hand-over-can -> :finish)
+            (:hand-over-can !-> :finish-failure)
             (:finish -> t)
             (:finish-failure -> nil))
           '((:init 'init-func)
@@ -112,6 +131,7 @@
             (:grasp-can 'grasp-can-func)
             (:close-fridge 'close-fridge-func)
             (:move-to-initial-position 'move-to-initial-position-func)
+            (:hand-over-can 'hand-over-can-func)
             (:finish 'finish-func)
             (:finish-failure 'finish-failure-func))
           '(:init)
@@ -119,7 +139,6 @@
 
 
 (defun fridge-demo-smach-main (&key (can-type "georgia")
-                                    (finish-type :pass-to-human)
                                     (use-arm :larm)
                                     (use-base nil))
   (when (not (boundp '*sm*))
@@ -129,7 +148,6 @@
             *sm* `((description . ,(format nil "冷蔵庫に~Aを取りに行ったよ" can-type))
                    (image . "")
                    (can-type . ,can-type)
-                   (finish-type . ,finish-type)
                    (use-arm . ,use-arm)
                    (use-base . ,use-base))
             :hz 2.0)))

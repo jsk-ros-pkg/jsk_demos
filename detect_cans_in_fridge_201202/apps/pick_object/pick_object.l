@@ -15,7 +15,6 @@
       ((find object (list "wonda" "georgia" "boss" "iemon") :test #'string=)
        (send *ri* :clear-costmap)
        (fridge-demo-smach-main :can-type object
-                               :finish-type :pass-to-human
                                :use-arm :larm
                                :use-base nil))
       (t (speak-jp "ごめんなさい。いまちょっと手が離せないです。")
