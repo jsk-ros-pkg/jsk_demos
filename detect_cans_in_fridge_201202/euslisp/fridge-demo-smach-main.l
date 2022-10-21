@@ -84,26 +84,36 @@
     res))
 
 
+(def-state-func finish-func (userdata) t)
+
+
+(def-state-func finish-failure-func (userdata) t)
+
+
 (defun fridge-demo-state-machine ()
   (setq *sm*
         (make-state-machine
           '((:init -> :move-to-fridge)
             (:move-to-fridge -> :open-fridge)
-            (:move-to-fridge !-> nil)
+            (:move-to-fridge !-> :finish-failure)
             (:open-fridge -> :grasp-can)
-            (:open-fridge !-> nil)
+            (:open-fridge !-> :finish-failure)
             (:grasp-can -> :close-fridge)
-            (:grasp-can !-> nil)
+            (:grasp-can !-> :finish-failure)
             (:close-fridge -> :move-to-initial-position)
-            (:close-fridge !-> nil)
-            (:move-to-initial-position -> t)
-            (:move-to-initial-position !-> nil))
+            (:close-fridge !-> :finish-failure)
+            (:move-to-initial-position -> :finish)
+            (:move-to-initial-position !-> :finish-failure)
+            (:finish -> t)
+            (:finish-failure -> nil))
           '((:init 'init-func)
             (:move-to-fridge 'move-to-fridge-func)
             (:open-fridge 'open-fridge-func)
             (:grasp-can 'grasp-can-func)
             (:close-fridge 'close-fridge-func)
-            (:move-to-initial-position 'move-to-initial-position-func))
+            (:move-to-initial-position 'move-to-initial-position-func)
+            (:finish 'finish-func)
+            (:finish-failure 'finish-failure-func))
           '(:init)
           '(t nil))))
 
