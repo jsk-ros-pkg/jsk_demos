@@ -17,8 +17,6 @@
   <build_depend>jsk_hark_msgs</build_depend>
   <build_depend>jsk_maps</build_depend>
   <build_depend>jsk_perception</build_depend>
-  <build_depend>pddl_planner</build_depend>
-  <build_depend>pr2eus</build_depend>
   <build_depend>roseus</build_depend>
   <build_depend>roseus_smach</build_depend>
   <build_depend>message_generation</build_depend>
