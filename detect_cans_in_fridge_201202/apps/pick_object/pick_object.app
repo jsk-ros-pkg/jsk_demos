@@ -73,6 +73,10 @@ plugins:
         - /kinect_head/rgb/throttled/image_rect_color/compressed
         - /kinect_head/depth_registered/throttled/image_rect/compressedDepth
         - /audio
+        - /server_name/smach/container_init
+        - /server_name/smach/container_status
+        - /server_name/smach/container_structure
+        - /smach_image_publisher/image/compressed
   - name: result_recorder_plugin
     type: app_recorder/result_recorder_plugin
     plugin_args:
