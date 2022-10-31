@@ -14,6 +14,8 @@
 ;;(load "package://pr2eus_armnavigation/pr2eus-arm-navigation.l")
 ;;(load "package://pr2eus_moveit/euslisp/pr2eus-moveit.l")
 
+(require :eng2-scene "package://jsk_maps/src/eng2-scene.l")
+(setq *scene* (make-eng2-7f-scene))
 
 (if *logging*
     (progn
