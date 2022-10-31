@@ -26,6 +26,39 @@
       (require :pr2-action "package://jsk_demo_common/euslisp/pr2-action.l")))
 
 
+(defun store-params ()
+  (defparameter *global-inflation-radius*
+    (ros::get-param "/move_base_node/global_costmap/inflation_layer/inflation_radius"))
+  (defparameter *local-inflation-radius*
+    (ros::get-param "/move_base_node/local_costmap/inflation_layer/inflation_radius"))
+  t)
+
+
+(defun restore-params ()
+  (if (boundp '*global-inflation-radius*)
+    (ros::set-dynamic-reconfigure-param
+      "/move_base_node/global_costmap/inflation_layer" "inflation_radius"
+      :double *global-inflation-radius*))
+  (if (boundp '*local-inflation-radius*)
+    (ros::set-dynamic-reconfigure-param
+      "/move_base_node/local_costmap/inflation_layer" "inflation_radius"
+      :double *local-inflation-radius*))
+  t)
+
+
+(defun inflation-loose (&key (local-costmap-inflation-radius 0.35)
+                             (global-costmap-inflation-radius 0.7))
+  ;; Increase the global inflation to generate a path
+  ;; that is less sensitive to differences between the map shape and the actual object placement.
+  (ros::set-dynamic-reconfigure-param
+    "/move_base_node/global_costmap/inflation_layer" "inflation_radius" :double global-costmap-inflation-radius)
+  ;; Decrease the local inflation to generate a path
+  ;; that allows the robot to pass close to the object.
+  (ros::set-dynamic-reconfigure-param
+    "/move_base_node/local_costmap/inflation_layer" "inflation_radius" :double local-costmap-inflation-radius)
+  t)
+
+
 (defun init-for-perception ()
   (unless (boundp '*scene*) (setq *scene* (make-eng2-scene)))
   (unless (boundp '*tfb*)
