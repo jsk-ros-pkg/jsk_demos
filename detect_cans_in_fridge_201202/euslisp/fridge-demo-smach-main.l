@@ -24,6 +24,9 @@
     (ros::subscribe "/edgetpu_object_detector/output/image/compressed"
                     sensor_msgs::CompressedImage #'image-cb)
     (initialize-demo can-type)
+    (store-params)
+    (inflation-loose :local-costmap-inflation-radius 0.1
+                     :global-costmap-inflation-radius 0.1)
     ;; wait for subscribing the image topic
     (ros::spin-once)
     (set-alist 'description (format nil "冷蔵庫に~Aを取りにいくよ" can-type) userdata)
@@ -101,10 +104,14 @@
     res))
 
 
-(def-state-func finish-func (userdata) t)
+(def-state-func finish-func (userdata)
+  (restore-params)
+  t)
 
 
-(def-state-func finish-failure-func (userdata) t)
+(def-state-func finish-failure-func (userdata)
+  (restore-params)
+  t)
 
 
 (defun fridge-demo-state-machine ()
