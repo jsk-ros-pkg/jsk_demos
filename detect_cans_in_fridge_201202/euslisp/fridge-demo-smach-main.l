@@ -120,7 +120,7 @@
             (:close-fridge -> :move-to-initial-position)
             (:close-fridge !-> :finish-failure)
             (:move-to-initial-position -> :hand-over-can)
-            (:move-to-initial-position !-> :finish-failure)
+            (:move-to-initial-position !-> :hand-over-can)
             (:hand-over-can -> :finish)
             (:hand-over-can !-> :finish-failure)
             (:finish -> t)
