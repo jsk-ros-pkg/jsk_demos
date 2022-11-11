@@ -1,198 +1,164 @@
-#!/usr/bin/env irteusgl
+#!/usr/bin/env roseus
 
-(defvar *logging* nil)
-
-(require "main.l")
 (require :state-machine "package://roseus_smach/src/state-machine.l")
 (require :state-machine-ros "package://roseus_smach/src/state-machine-ros.l")
-(require :state-mcahine-utils "package://roseus_smach/src/state-machine-utils.l")
+(require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
+(require :state-machine-utils "package://roseus_smach/src/state-machine-utils.l")
+(require :base64 "lib/llib/base64.l")
 
-(defclass fridge-demo-machine
- :super propertied-object
- )
+(require :main "package://detect_cans_in_fridge_201202/euslisp/main.l")
 
-(defmethod fridge-demo-machine
-  (:init ()
-         t)
 
-  ;; goto-front-of-fridge
-  (:goto-front-of-fridge
-   (&key (wait t))
-   (warning-message 2 ";; goto-front-of-fridge ~%")
-   t)
-  ;; Internal function of goto-front-of-fridge
-  (:base-go-to-fridge
-   (&key (wait t))
-   (warning-message 2 ";; base-go-to-fridge ~%")
-   (base-go-to-fridge :wait wait)
-   t)
-  (:base-go-to-fridge-init-pose
-   (&key (wait t))
-   (warning-message 2 ";; base-go-to-fridge-init-pose ~%")
-   (base-go-to-fridge-init-pose :wait wait)
-   t)
+(defmacro def-state-func (name args &rest body)
+  `(defun ,name ,args
+     (set-alist 'description "" ,(car args))
+     (set-alist 'image "" ,(car args))
+     ,@body))
 
-  ;;open-fridge-door
-  (:open-fridge-door
-   (&key (wait t))
-   (warning-message 2 ";; open-fridge-door ~%")
-   t)
-  ;; Internal function of open-fridge-door
-  (:open-fridge-door-initial-pose
-   (&key (wait t))
-   (warning-message 2 ";; open-fridge-door-initial-pose ~%")
-   (open-fridge-door-initial-pose :door-type :circle :wait wait)
-   t)
-  (:move-to-and-open-fridge-door
-   (&key (wait t))
-   (warning-message 2 ";; move-to-and-open-fridge-door ~%")
-   (move-to-and-open-fridge-door :door-type :circle :move t
-                                 :open-fridge-func #'open-fridge-traj :wait wait)
-   t)
-  (:move-forward-larm
-   (&key (wait t))
-   (warning-message 2 ";; move-forward-larm ~%")
-   (move-forward-larm :wait wait)
-   t)
-  (:detach-fridge-handle
-   (&key (wait t))
-   (warning-message 2 ";; detach-fridge-handle ~%")
-   (detach-fridge-handle :wait wait)
-   t)
-  (:swipe-fridge-door
-   (&key (wait t))
-   (warning-message 2 ";; swipe-fridge-door ~%")
-   (swipe-fridge-door :door-type :circle :use-arm *use-arm* :wait wait)
-   t)
+(defun image-cb (msg) (setq *image* msg))
 
-  ;; grasp-can
-  (:grasp-can
-   (&key (wait t))
-   (warning-message 2 ";; grasp-can ~%")
-   t)
-  ;; Internal function of grasp-can
-  (:move-to-can-spot
-   (&key (wait t))
-   (warning-message 2 ";; move-to-can-spot ~%")
-   (move-to-can-spot :use-arm *use-arm*)
-   t)
-  (:grasp-can-init
-   (&key (wait t))
-   (warning-message 2 ";; grasp-can-init ~%")
-   (grasp-can)
-   t)
-  (:grasp-can-motion
-   (&key (wait t))
-   (warning-message 2 ";; grasp-can-motion ~%")
-   (grasp-can-motion :use-arm *use-arm*)
-   t)
-  (:go-back-from-fridge
-   (&key (wait t))
-   (warning-message 2 ";; go-back-from-fridge ~%")
-   ;; (go-back-from-fridge) ;; not defined
-   t)
 
-  ;; close-fridge
-  (:close-fridge
-   (&key (wait t))
-   (warning-message 2 ";; close door ~%")
-   t)
-  ;; Internal function of close-fridge
-  (:close-fridge-motion
-   (&key (wait t))
-   (warning-message 2 ";; close-fridge-motion ~%")
-   ;; (close-fridge-motion) ;; not defined
-   t)
-  (:tuckarm
-   (&key (wait t))
-   (warning-message 2 ";; tuckarm ~%")
-   (pr2-tuckarm-pose *use-arm* :outside)
-   t)
-  )
+(def-state-func init-func (userdata)
+  (let ((can-type (cdr (assoc 'can-type userdata))))
+    (setq *image* nil)
+    (ros::subscribe "/edgetpu_object_detector/output/image/compressed"
+                    sensor_msgs::CompressedImage #'image-cb)
+    (initialize-demo can-type)
+    (store-params)
+    (inflation-loose :local-costmap-inflation-radius 0.1
+                     :global-costmap-inflation-radius 0.1)
+    ;; wait for subscribing the image topic
+    (ros::spin-once)
+    (set-alist 'description (format nil "冷蔵庫に~Aを取りにいくよ" can-type) userdata)
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    t))
 
-(defun make-goto-front-of-fridge ()
-  (setq *goto-fridge-sm*
-        (make-state-machine
-         '((:base-go-to-fridge -> :base-go-to-fridge-init-pose)
-           (:base-go-to-fridge-init-pose -> t))
-         '((:base-go-to-fridge #'(lambda (&rest args) (send *fridge-demo* :base-go-to-fridge :wait *wait*)))
-           (:base-go-to-fridge-init-pose #'(lambda (&rest args) (send *fridge-demo* :base-go-to-fridge-init-pose :wait *wait*))))
-         '(:base-go-to-fridge)
-         '(t))))
 
-(defun make-open-fridge-door-state-machine ()
-  (setq *open-fridge-sm*
-        (make-state-machine
-         '((:open-fridge-door-initial-pose -> :move-to-and-open-fridge-door) ;; should do 10 times
-           (:move-to-and-open-fridge-door -> :move-forward-larm)
-           (:move-forward-larm -> :detach-fridge-handle)
-           (:detach-fridge-handle -> :swipe-fridge-door)
-           (:swipe-fridge-door -> t))
-         '((:open-fridge-door-initial-pose #'(lambda (&rest args) (send *fridge-demo* :open-fridge-door-initial-pose :wait *wait*)))
-           (:move-to-and-open-fridge-door #'(lambda (&rest args) (send *fridge-demo* :move-to-and-open-fridge-door :wait *wait*)))
-           (:move-forward-larm #'(lambda (&rest args) (send *fridge-demo* :move-forward-larm)))
-           (:detach-fridge-handle #'(lambda (&rest args) (send *fridge-demo* :detach-fridge-handle :wait *wait*)))
-           (:swipe-fridge-door #'(lambda (&rest args) (send *fridge-demo* :swipe-fridge-door :wait *wait*))))
-         '(:open-fridge-door-initial-pose)
-         '(t))))
+(def-state-func move-to-fridge-func (userdata)
+  (let ((res (goto-front-of-fridge)))
+    (ros::spin-once)
+    (if res
+      (set-alist 'description "冷蔵庫の前に移動したよ" userdata)
+      (set-alist 'description "冷蔵庫へ行けなかったよ" userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
 
-(defun make-grasp-can-state-machine ()
-  (setq *grasp-can-sm*
-        (make-state-machine
-         '((:move-to-can-spot -> :grasp-can-init)
-           (:grasp-can-init -> :grasp-can-motion) ;; should do 10 times
-           (:grasp-can-motion -> :go-back-from-fridge) ;; go back func is not defined yet.
-           (:go-back-from-fridge -> t))
-         '((:move-to-can-spot #'(lambda (&rest args) (send *fridge-demo* :move-to-can-spot :wait *wait*)))
-           (:grasp-can-init #'(lambda (&rest args) (send *fridge-demo* :grasp-can-init :wait *wait*)))
-           (:grasp-can-motion #'(lambda (&rest args) (send *fridge-demo* :grasp-can-motion :wait *wait*)))
-           (:go-back-from-fridge #'(lambda (&rest args) (send *fridge-demo* :go-back-from-fridge :wait *wait*))))
-         '(:move-to-can-spot)
-         '(t))))
 
-(defun make-close-fridge-state-machine ()
-  (setq *close-fridge-sm*
-        (make-state-machine
-         '((:close-fridge-motion -> :tuckarm) ;; close-fridge-motion func is not defined yet.
-           (:tuckarm -> t))
-         '((:close-fridge-motion #'(lambda (&rest args) (send *fridge-demo* :grasp-can-init :wait *wait*)))
-           (:tuckarm #'(lambda (&rest args) (send *fridge-demo* :tuckarm :wait *wait*))))
-         '(:close-fridge-motion)
-         '(t))))
+(def-state-func open-fridge-func (userdata)
+  (let* ((use-arm (cdr (assoc 'use-arm userdata)))
+         (use-base (cdr (assoc 'use-base userdata)))
+         (res (open-fridge-door :use-arm use-arm :use-base use-base)))
+    (ros::spin-once)
+    (if res
+      (set-alist 'description "冷蔵庫の扉を開けたよ" userdata)
+      (set-alist 'description "冷蔵庫の扉を開けられなかったよ" userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
 
-(defun make-fridge-demo-state-machine ()
+
+(def-state-func grasp-can-func (userdata)
+  (let* ((can-type (cdr (assoc 'can-type userdata)))
+         (use-arm (cdr (assoc 'use-arm userdata)))
+         (res (grasp-can :use-arm use-arm)))
+    (ros::spin-once)
+    (if res
+      (set-alist 'description (format nil "~Aを取り出せたよ" can-type) userdata)
+      (set-alist 'description (format nil "~Aを取り出せなかったよ" can-type) userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
+
+
+(def-state-func close-fridge-func (userdata)
+  (let* ((use-arm (cdr (assoc 'use-arm userdata)))
+         (res (close-fridge :use-arm use-arm)))
+    (ros::spin-once)
+    (if res
+      (set-alist 'description "冷蔵庫の扉を閉めたよ" userdata)
+      (set-alist 'description "冷蔵庫の扉を閉められなかったよ" userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
+
+
+(def-state-func move-to-initial-position-func (userdata)
+  (let* ((can-type (cdr (assoc 'can-type userdata)))
+         (use-arm (cdr (assoc 'use-arm userdata)))
+         (res (goto-initial-position :use-arm use-arm)))
+    (ros::spin-once)
+    (if res
+      (set-alist 'description (format nil "~Aを持っていったよ" can-type) userdata)
+      (set-alist 'description (format nil "~Aを持っていけなかったよ" can-type) userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
+
+
+(def-state-func hand-over-can-func (userdata)
+  (let* ((can-type (cdr (assoc 'can-type userdata)))
+         (use-arm (cdr (assoc 'use-arm userdata)))
+         (res (pass-to-human :use-arm use-arm)))
+    ;; we dont need this here for better photo 
+    ;; (ros::spin-once)
+    (if res
+      (set-alist 'description (format nil "~Aを渡したよ" can-type) userdata)
+      (set-alist 'description (format nil "~Aを渡せなかったよ" can-type) userdata))
+    (if *image* (set-alist 'image (remove #\newline (base64encode (send *image* :serialize))) userdata))
+    res))
+
+
+(def-state-func finish-func (userdata)
+  (restore-params)
+  t)
+
+
+(def-state-func finish-failure-func (userdata)
+  (restore-params)
+  t)
+
+
+(defun fridge-demo-state-machine ()
   (setq *sm*
         (make-state-machine
-         '((:goto-front-of-fridge -> :open-fridge-door)
-           (:open-fridge-door ->  :grasp-can)
-           (:grasp-can -> :close-fridge)
-           (:close-fridge -> :success))
-         '((:goto-front-of-fridge *goto-fridge-sm*)
-           (:open-fridge-door *open-fridge-sm*)
-           (:grasp-can *grasp-can-sm*)
-           (:close-fridge *close-fridge-sm*))
-         '(:goto-front-of-fridge)
-         '(:success))))
+          '((:init -> :move-to-fridge)
+            (:move-to-fridge -> :open-fridge)
+            (:move-to-fridge !-> :finish-failure)
+            (:open-fridge -> :grasp-can)
+            (:open-fridge !-> :finish-failure)
+            (:grasp-can -> :close-fridge)
+            (:grasp-can !-> :finish-failure)
+            (:close-fridge -> :move-to-initial-position)
+            (:close-fridge !-> :finish-failure)
+            (:move-to-initial-position -> :hand-over-can)
+            (:move-to-initial-position !-> :hand-over-can)
+            (:hand-over-can -> :finish)
+            (:hand-over-can !-> :finish-failure)
+            (:finish -> t)
+            (:finish-failure -> nil))
+          '((:init 'init-func)
+            (:move-to-fridge 'move-to-fridge-func)
+            (:open-fridge 'open-fridge-func)
+            (:grasp-can 'grasp-can-func)
+            (:close-fridge 'close-fridge-func)
+            (:move-to-initial-position 'move-to-initial-position-func)
+            (:hand-over-can 'hand-over-can-func)
+            (:finish 'finish-func)
+            (:finish-failure 'finish-failure-func))
+          '(:init)
+          '(t nil))))
 
-(defun init ()
-  (ros::roseus "sample_parallel_state_machine")
-  (setq *use-arm* :larm)
-  (setq *fridge-demo* (instance fridge-demo-machine :init))
-  (make-goto-front-of-fridge)
-  (make-open-fridge-door-state-machine)
-  (make-grasp-can-state-machine)
-  (make-close-fridge-state-machine)
-  (make-fridge-demo-state-machine)
-  (ros::ros-info "created state machine ~A" *sm*))
 
-(warning-message 3 ";; (init)~%")
+(defun fridge-demo-smach-main (&key (can-type "georgia")
+                                    (use-arm :larm)
+                                    (use-base nil))
+  (when (not (boundp '*sm*))
+    (fridge-demo-state-machine))
+  (let ((result-state
+          (exec-state-machine
+            *sm* `((description . ,(format nil "冷蔵庫に~Aを取りに行ったよ" can-type))
+                   (image . "")
+                   (can-type . ,can-type)
+                   (use-arm . ,use-arm)
+                   (use-base . ,use-base))
+            :hz 2.0)))
+    (send result-state :name)))
 
-(defun demo (&optional (wait t))
-  (setq *wait* wait)
-  (when (or (not (boundp '*sm*)) (not (boundp '*fridge-demo*)))
-    (init))
-  (exec-smach-with-spin *sm*))
 
-(warning-message 3 ";; (demo)~%")
-
-(provide :fridge-demo-machine)
+(provide :fridge-demo-smach-main)
