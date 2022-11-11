@@ -5,7 +5,7 @@
     ```
     $ mkdir -p miraikan_ws/src
     $ cd miraikan_ws/src
-    $ git clone git@github.com:MiyabiTane/Deco_with_robot.git
+    $ git clone https://github.com/jsk-ros-pkg/jsk_demos.git
     $ cd ../
     $ catkin build miraikan_demo
     $ source ~/miraikan_ws/devel/setup.bash
@@ -23,7 +23,7 @@
         ```
         $ source ~/miraikan_ws/devel/setup.bash
         $ roscd miraikan_demo
-        $ cd ../web_nodejs
+        $ cd eyebrows_server
         $ docker-compose run --rm app /bin/bash
         # npx express-generator
         # npm install
@@ -132,17 +132,14 @@
     ```
     詳細は[ペッパーとの接続・動作確認](#ペッパーとの接続・動作確認)参照
 
-3. ターミナルに`$ifconfig`と打ち込んだ時の`wlp1s0:`下の`inet`以降の値`<EServer_IP>`を確認する。スマートフォンを2台用意し、それぞれで左眉毛(http://<EServer_IP>:3000/lbrow)、右眉毛(http://<EServer_IP>:3000/rbrow)の画面を表示する。<br>
-    ※ブラウザはGoogle Chrome推奨。ページが立ち上がったらアドレスバーを隠すよう、上にスワイプする。
-
-4. scratchの立ち上げ（スクラッチを用いずに[rosservice](#rosservice)をターミナルから直接呼び出すこともできる）
+3. scratchの立ち上げ（スクラッチを用いずに[rosservice](#rosservice)をターミナルから直接呼び出すこともできる）
     ```
     $ cd scratch/scratch-gui
     $ npm start
     ```
     ※[Scratchの環境構築](#Scratchの環境構築)が終わっている必要がある
 
-5. launchファイルの立ち上げ
+4. launchファイルの立ち上げ
     ```
     $ source ~/miraikan_ws/devel/setup.bash
     $ roslaunch miraikan_demo lecture-demo.launch pepper_ip:="<Pepper_IP>" run_eyebrows_server:=true memories_talk:=<true or false>
@@ -157,6 +154,11 @@
     pepper_ip: 実機のIPアドレス。use_robotがTrueの場合は指定が必要
     memories_talk: Trueの場合は思い出語りver, Falseの場合は発表形式verのデモが起動する。use_robotがFalseの場合には機能しない
     ```
+5. 眉毛デバイスの取り付け（眉毛表情サーバを立ち上げている場合）<br>
+
+    ターミナルに`$ifconfig`と打ち込んだ時の`wlp1s0:`下の`inet`以降の値`<EServer_IP>`を確認する。スマートフォンを2台用意し、それぞれで左眉毛(http://<EServer_IP>:3000/lbrow)、右眉毛(http://<EServer_IP>:3000/rbrow)の画面を表示する。<br>
+    ※ブラウザはGoogle Chrome推奨。ページが立ち上がったらアドレスバーを隠すよう、上にスワイプする。
+
 
 6. デモの実行
 

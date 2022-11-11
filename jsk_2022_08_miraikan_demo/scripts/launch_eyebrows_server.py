@@ -5,7 +5,7 @@ import subprocess
 import os
 
 try:
-    dir_path = roslib.packages.get_pkg_dir('miraikan_demo') + "/../web_nodejs"
+    dir_path = roslib.packages.get_pkg_dir('miraikan_demo') + "/eyebrows_server"
     os.chdir(dir_path)
     subprocess.call(["docker-compose", "up"])
 except:

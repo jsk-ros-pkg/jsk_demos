@@ -1,0 +1,55 @@
+doctype html
+html(lang='en')
+  head
+    title test
+    // script(src="https://cdn.jsdelivr.net/npm/gl-matrix@3/gl-matrix.js")
+    script(type="text/javascript", src="/javascripts/gl-matrix.js")
+    script.
+      var mode = 0;
+      var new_mode = 0;
+      var maxRotation = #{degree} * Math.PI / 180;
+      var new_maxRotation = maxRotation;
+      var posted_date = "";
+      var reflect_ms = 100000000;
+      var delay_ms = 0;
+      function makeHttpObject() {
+        try {return new XMLHttpRequest();}
+        catch (error) {}
+        try {return new ActiveXObject("Msxml2.XMLHTTP");}
+        catch (error) {}
+        try {return new ActiveXObject("Microsoft.XMLHTTP");}
+        catch (error) {}
+
+        throw new Error("Could not create HTTP request object.");
+      }
+
+      function formattedDateTime(date) {
+        const y = date.getFullYear();
+        const m = ('0' + (date.getMonth() + 1)).slice(-2);
+        const d = ('0' + date.getDate()).slice(-2);
+        const ms = date.getHours() * 60 * 60 * 1000
+                 + date.getMinutes() * 60 * 1000
+                 + date.getSeconds() *1000
+                 + date.getMilliseconds();
+        return y + m + d + "," + String(ms);
+      }
+      function get_degree() {
+        var request = makeHttpObject();
+        request.open("GET", "/api/info", true);
+        request.send(null);
+        request.onreadystatechange = function() {
+          if (request.readyState == 4) {
+            // date = new Date();
+            // console.log("got text", request.responseText);
+            posted_date = request.responseText.split(',')[2];
+            posted_ms = request.responseText.split(',')[3];
+            reflect_ms = parseInt(posted_ms, 10) + delay_ms;
+            tmp_mode = request.responseText.split(',')[0];
+            new_maxRotation = request.responseText.split(',')[1] * Math.PI / 180;
+          };
+        };
+      }
+  body
+    <canvas id="webgl"></canvas>
+    script(type="text/javascript", src="/javascripts/rbrow.js")
+
