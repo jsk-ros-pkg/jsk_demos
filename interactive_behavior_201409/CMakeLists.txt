@@ -7,7 +7,6 @@ project(interactive_behavior_201409)
 find_package(catkin REQUIRED COMPONENTS
   face_detector
   people_msgs
-  pr2eus
   roseus
 )
 

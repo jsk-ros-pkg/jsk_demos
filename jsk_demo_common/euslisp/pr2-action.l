@@ -534,7 +534,7 @@
 ;; actions
 ;;
 (warn ";; define grasp-can-single")
-(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7))
+(defun grasp-can-single (obj &key (rotation 0) (use-arm :rarm) (grasp-depth 35)(func-time 7) (use-torso-reach t) (use-torso-grasp nil))
   (let (via1 via2 tar orig-av (mvt (* (/ (- func-time 4) 4.0) 1000)));; mvt is about 3000. we assume it takes 4 sec other than sending :angle-vector, and there are 4 :angle-vector in this funciton
     (send *ri* :stop-grasp use-arm :wait t)
     (send *tfb* :send-transform
@@ -571,7 +571,8 @@
     ;; move to via1
     (send *pr2* use-arm :inverse-kinematics
           (send via1 :transform (send *pr2* :worldcoords) :world)
-          :rotation-axis t)
+          :rotation-axis t
+          :use-torso use-torso-reach)
     (send *tfb* :send-transform
           (send (send *pr2* :worldcoords) :transformation (send *pr2* use-arm :end-coords))
           "/base_footprint" "/object_pose_end_coords")
@@ -599,7 +600,8 @@
     ;; move to via2 (grasping pose)
     (send *pr2* use-arm :inverse-kinematics
           (send via2 :transform (send *pr2* :worldcoords) :world)
-          :rotation-axis t)
+          :rotation-axis t
+          :use-torso use-torso-grasp)
     ;; check IK
     #|(cond
     ((send *plan-env* :get-ik-for-pose (send *plan-env* :get-robot-coords :rarm) :rarm)
@@ -623,7 +625,8 @@
     ;; move to via1
     (send *pr2* use-arm :inverse-kinematics
           (send via1 :transform (send *pr2* :worldcoords) :world)
-          :rotation-axis t)
+          :rotation-axis t
+          :use-torso use-torso-reach)
     ;; check IK
     (send *ri* :ros-wait 0.0 :spin-self t) ;; attention-check ...
     (cond
@@ -1020,7 +1023,7 @@
   )
 
 (defparameter *can-cds* nil)
-(defun grasp-can-motion (&key (use-arm :rarm) (rotation 20))
+(defun grasp-can-motion (&key (use-arm :rarm) (rotation 20) (use-torso-reach t) (use-torso-grasp nil))
   ;; detect cans which was indicated by ( type )
   ;;(when (not (setq cds (check-detection :type *type* :single t)))
   ;;(setq cds (check-detection :type *type* :tf-force t :timeout 30 :single t)))
@@ -1053,7 +1056,9 @@
       (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
       (send cds :transform (send *pr2* :worldcoords) :world)
       (setq *last-can-coords* cds)
-      (grasp-can-single cds :rotation rotation :use-arm use-arm)
+      (grasp-can-single cds :rotation rotation :use-arm use-arm
+                            :use-torso-reach use-torso-reach
+                            :use-torso-grasp use-torso-grasp)
       (setq isgrasp (< 10 (send *ri* :start-grasp use-arm :objects nil)))
       (if (send *ri* :simulation-modep) ;; in simulation mode, set isgrasp true
           (setq isgrasp t))
@@ -1083,7 +1088,8 @@
 (warn ";; define grasp-can")
 (defvar *use-arm-navigation* nil)
 (defun grasp-can (&key (move t) (pre-move t) (post-move t) (move-only nil)
-                       (rotation 20) (use-arm :rarm) (wait t))
+                       (rotation 20) (use-arm :rarm) (wait t)
+                       (use-torso-reach t) (use-torso-grasp nil))
   (if (eq use-arm :larm) (setq rotation (- rotation)))
   ;; move-to can spot for grasping
   (move-to-can-spot :use-arm use-arm :rotation rotation :move move :pre-move pre-move)
@@ -1094,7 +1100,9 @@
       ;; grasp can
       (unix:sleep 2)
       (dotimes (trial 10)
-        (setq isgrasp (grasp-can-motion :use-arm use-arm :rotation rotation))
+        (setq isgrasp (grasp-can-motion :use-arm use-arm :rotation rotation
+                                        :use-torso-reach use-torso-reach
+                                        :use-torso-grasp use-torso-grasp))
         (if isgrasp (return)))
       (if isgrasp
           (if move
