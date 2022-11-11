@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>miraikan_demo</name>
-  <version>0.0.0</version>
+  <name>jsk_2022_08_miraikan_demo</name>
+  <version>0.0.1</version>
   <description>miraikan demo using Pepper</description>
 
   <author email="kochigami@jsk.imi.i.u-tokyo.ac.jp">Kanae Kochigami</author>
