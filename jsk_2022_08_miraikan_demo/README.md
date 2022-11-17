@@ -166,17 +166,14 @@
     python change_volume.py --ip <Pepper_IP> --vol <volume>
     ```
 
-5. ターミナルに`$ifconfig`と打ち込んだ時の`wlp1s0:`下の`inet`以降の値`<EServer_IP>`を確認する。スマートフォンを2台用意し、それぞれで左眉毛(http://<EServer_IP>:3000/lbrow)、右眉毛(http://<EServer_IP>:3000/rbrow)の画面を表示する。<br>
-    ※ブラウザはGoogle Chrome推奨。ページが立ち上がったらアドレスバーを隠すよう、上にスワイプする。
-
-6. scratchの立ち上げ（スクラッチを用いずに[rosservice](#rosservice)をターミナルから直接呼び出すこともできる）
+5. scratchの立ち上げ（スクラッチを用いずに[rosservice](#rosservice)をターミナルから直接呼び出すこともできる）
     ```
     $ cd scratch/scratch-gui
     $ npm start
     ```
     ※[Scratchの環境構築](#Scratchの環境構築)が終わっている必要がある
 
-7. launchファイルの立ち上げ
+6. launchファイルの立ち上げ
     ```
     $ source ~/miraikan_ws/devel/setup.bash
     $ roslaunch jsk_2022_08_miraikan_demo lecture-demo.launch pepper_ip:="<Pepper_IP>" run_eyebrows_server:=true memories_talk:=<true or false>
@@ -191,13 +188,13 @@
     pepper_ip: 実機のIPアドレス。use_robotがTrueの場合は指定が必要
     memories_talk: Trueの場合は思い出語りver, Falseの場合は発表形式verのデモが起動する。use_robotがFalseの場合には機能しない
     ```
-8. 眉毛デバイスの取り付け（眉毛表情サーバを立ち上げている場合）<br>
+7. 眉毛デバイスの取り付け（眉毛表情サーバを立ち上げている場合）<br>
 
     ターミナルに`$ifconfig`と打ち込んだ時の`wlp1s0:`下の`inet`以降の値`<EServer_IP>`を確認する。スマートフォンを2台用意し、それぞれで左眉毛(http://<EServer_IP>:3000/lbrow)、右眉毛(http://<EServer_IP>:3000/rbrow)の画面を表示する。<br>
     ※ブラウザはGoogle Chrome推奨。ページが立ち上がったらアドレスバーを隠すよう、上にスワイプする。
 
 
-9. デモの実行
+8. デモの実行
 
    こちさんの発話に合わせてスクラッチのボックスをクリックし，ROSのサービスコールを呼び出すことで，ペッパーに発話させる。<br>
    [発表時に用いたスライド（思い出語り有ver，研究室内部のみアクセス可能）](https://drive.google.com/file/d/1G7Z8F2-A9S_qwATh27KCqMO9ENFahSXu/view?usp=sharing)<br>
