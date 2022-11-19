@@ -4,15 +4,21 @@
 
 台本に沿って、ロボットのペッパー（ニックネームはシナモン、ホップ）と人間のこちさんがこれまで取り組んできた博士論文の内容（ロボットによる人同士の交流づくり）を紹介する。
 
+<img width="600" src="./img_README/202208_miraikan_demo_event_scene_based_on_2022_0811_2nd_event_scene.png"><br>
+
 シナモンの時は、シナモンとこちさんが共有する思い出話を交えて対話する。
 
 ホップの時は、ホップが聞き役となり、こちさんと研究内容に特化した対話をする。
 
 どちらのペッパーも、眉毛で表情を表現する（シナモンの方が、表現の幅が広い）。
 
+<img width="600" src="./img_README/202208_miraikan_demo_difference_of_peppers_speech_based_on_2022_0811_1st_and_2nd_miraikan_demo_event_scene.png"><br>
+
 ペッパーの発話は、Scratchのボックスとして複数用意されている。
 
 こちさんの発話に合わせて遠隔操縦者がボックスをクリックすることで、ペッパーとこちさんの自然な対話を実現した。
+
+<img width="600" src="./img_README/202208_miraikan_demo_how_pepper_speaks_based_on_2022_0811_1st_miraikan_demo_event_scene.png"><br>
 
 ### 本ディレクトリの環境構築
 1. クローンとビルド
