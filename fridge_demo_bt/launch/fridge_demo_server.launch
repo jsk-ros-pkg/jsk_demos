@@ -3,7 +3,11 @@
   <arg name="can_name" default="georgia" />
 
   <node if="$(arg main)" pkg="fridge_demo_bt" type="fridge_demo" name="fridge_demo_main"
-        args="--arg can_name $(arg can_name)"  output="screen" />
+        output="screen">
+    <rosparam subst_value="true">
+      can_name: $(arg can_name)
+    </rosparam>
+  </node>
 
   <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
     <arg name="unregister_timeout" value="100000"/>

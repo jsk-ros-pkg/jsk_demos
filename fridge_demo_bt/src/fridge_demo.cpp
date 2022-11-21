@@ -3,6 +3,7 @@
 #define DEBUG  // rosbridgecpp logging
 #include <roseus_bt/eus_nodes.h>
 #include <roseus_bt/command_line_argument_mapping.h>
+#include <roseus_bt/rosparam_argument_mapping.h>
 #include <behaviortree_cpp_v3/loggers/bt_zmq_publisher.h>
 #include <behaviortree_cpp_v3/loggers/bt_cout_logger.h>
 #include <behaviortree_cpp_v3/loggers/bt_file_logger.h>
@@ -353,13 +354,14 @@ EusActionNode<fridge_demo_bt::OpenFridgeAction>(handle, name, conf) {}
 
 int main(int argc, char **argv)
 {
-  std::map<std::string, std::string> init_variables;
-  if (!roseus_bt::parse_command_line(argc, argv, "Run the fridge_demo task.", init_variables)) {
-    return 1;
-  }
-
   ros::init(argc, argv, "fridge_demo_engine");
   ros::NodeHandle nh;
+  ros::NodeHandle pnh("~");
+
+  std::map<std::string, std::string> init_variables;
+  // please comment in if you want to use command line argument
+  // if (!roseus_bt::parse_command_line(argc, argv, "Run the fridge_demo task.", init_variables)) return 1;
+  if (!roseus_bt::parse_rosparam(pnh, init_variables)) return 1;
 
   BehaviorTreeFactory factory;
 
