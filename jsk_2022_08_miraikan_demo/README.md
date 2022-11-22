@@ -20,6 +20,13 @@
 
 <img width="600" src="./img_README/202208_miraikan_demo_how_pepper_speaks_based_on_2022_0811_1st_miraikan_demo_event_scene.png"><br>
 
+### 共同作業者
+
+Miyabi Tanemoto @MiyabiTane（デモシステム統合，眉毛デバイスとの連携など）<br>
+Aiko Ichikura @a-ichikura（Pepperの発話内容・動きのデザインと実装など）<br>
+Guilherme Affonso @Affonso-Gui（ScracthとROSの連携システム開発など）<br>
+Kanae Kochigami @kochigami（Pepperデモ基盤システム開発、Scratchとデモの連携など）
+
 ### 本ディレクトリの環境構築
 1. クローンとビルド
     ```
