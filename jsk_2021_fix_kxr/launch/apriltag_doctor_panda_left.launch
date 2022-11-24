@@ -1,7 +1,7 @@
 <launch>
   <arg name="launch_prefix" default="" /> <!-- set to value="gdbserver localhost:10000" for remote debugging -->
-  <arg name="node_namespace" default="larm_vision_apriltag_ros_continuous_node" />
-  <arg name="camera_name" default="/larm_vision/camera/color" />
+  <arg name="node_namespace" default="larm_camera_apriltag_ros_continuous_node" />
+  <arg name="camera_name" default="/larm_camera/color" />
   <arg name="camera_frame" default="larm_camera_color_optical_frame" />
   <arg name="image_topic" default="image_raw" />
 

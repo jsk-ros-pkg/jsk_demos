@@ -5,7 +5,7 @@
 
 (ros::roseus "show-grasp-param-left")
 
-;; (ros::subscribe "/rarm_vision/camera/color/image_raw" image_view2::ImageMarker2 #'cb)
+;; (ros::subscribe "/rarm_camera/color/image_raw" image_view2::ImageMarker2 #'cb)
 
 
 ;; (defun cb (msg)

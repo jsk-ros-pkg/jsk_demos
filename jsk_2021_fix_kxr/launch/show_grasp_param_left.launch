@@ -1,8 +1,8 @@
 <launch>
   <node pkg="image_view2" type="image_view2" name="image_view2_for_draw_force_on_image" output="log">
-  <remap from="image" to="/larm_vision/camera/color/image_raw"/>
-    <remap from="image_marker" to="/larm_vision/camera/color/image_marker"/>
+  <remap from="image" to="/larm_camera/color/image_raw"/>
+    <remap from="image_marker" to="/larm_camera/color/image_marker"/>
     <param name="use_window" value="false"/>
    </node>
-  <node pkg="jsk_2021_fix_kxr" type="show_grasp_param_right.l" name="iv2" ns="/larm_vision/camera/color/rgb/"/>
+  <node pkg="jsk_2021_fix_kxr" type="show_grasp_param_right.l" name="iv2" ns="/larm_camera/color/rgb/"/>
 </launch>
