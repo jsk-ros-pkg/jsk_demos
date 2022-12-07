@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+
+import rospy
+from jsk_recognition_msgs.msg import BoundingBoxArray
+from std_msgs.msg import Float32MultiArray
+
+pub = rospy.Publisher('nearest_pos', Float32MultiArray, queue_size=1)
+
+def callback(msg):
+    boxes = msg.boxes
+
+    if (not boxes):
+        rospy.loginfo("no person")
+        return -1
+
+    length = len(boxes)
+    min_distance = 10000
+    min_ind = 0
+  
+    for i in range(length):
+        position = boxes[i].pose.position
+        distance = position.x*position.x +position.y*position.y
+        if (min_distance > distance):
+            min_distance = distance
+            min_ind = i
+
+    #min_position = boxes[min_ind].pose.position
+    #rospy.loginfo("%f, %f, %f", min_position.x, min_position.y, min_position.z)
+
+    coordinate = [boxes[min_ind].pose.position.x boxes[min_ind].pose.position.y boxes[min_ind].pose.position.z]
+
+    position_number = 100
+
+    if ((-0.6 <= coordinate[0]) and (coordinate[0] < -0.3)):
+        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
+            position_number = 1
+        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
+            position_number = 2
+    elif ((-0.9 <= coordinate[0]) and (coordinate[0] < -0.6)):
+        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
+            position_number = 3
+        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
+            position_number = 4
+    elif ((-1.2 <= coordinate[0]) and (coordinate[0] < -0.9)):
+        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
+            position_number = 5
+        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
+            position_number = 6
+
+    min_position = []
+    min_position.append(position_number)
+    min_position.append(boxes[min_ind].pose.position.x)
+    min_position.append(boxes[min_ind].pose.position.y)
+    min_position.append(boxes[min_ind].pose.position.z)
+    min_position.append(min_distance)
+
+    min_forPublish = Float32MultiArray(data=min_position)
+    pub.publish(min_forPublish)
+    
+def listener():
+    rospy.Subscriber("/rect_array_in_panorama_to_bounding_box_array/bbox_array", BoundingBoxArray, callback)
+    rospy.spin()
+
+if __name__ == '__main__':
+    rospy.init_node('distance', anonymous=True)
+    listener()
