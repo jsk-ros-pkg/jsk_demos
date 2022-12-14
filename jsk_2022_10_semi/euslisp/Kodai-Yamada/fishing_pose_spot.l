@@ -1,7 +1,7 @@
  (load "package://spoteus/spot-interface.l")
  (spot-init)
  (objects (list *spot*))
-
+;; testtest
 (send *spot* :reset-pose)
 (send *ri* :angle-vector (send *spot* :angle-vector) 5000)
 (send *ri* :wait-interpolation)
