@@ -24,9 +24,6 @@ def callback(msg):
             min_distance = distance
             min_ind = i
 
-    #min_position = boxes[min_ind].pose.position
-    #rospy.loginfo("%f, %f, %f", min_position.x, min_position.y, min_position.z)
-
     coordinate = [boxes[min_ind].pose.position.x boxes[min_ind].pose.position.y boxes[min_ind].pose.position.z]
 
     position_number = 100
