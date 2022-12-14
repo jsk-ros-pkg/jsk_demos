@@ -24,25 +24,17 @@ def callback(msg):
             min_distance = distance
             min_ind = i
 
-    coordinate = [boxes[min_ind].pose.position.x boxes[min_ind].pose.position.y boxes[min_ind].pose.position.z]
+    coordinate = [boxes[min_ind].pose.position.x, boxes[min_ind].pose.position.y, boxes[min_ind].pose.position.z]
 
     position_number = 100
 
-    if ((-0.6 <= coordinate[0]) and (coordinate[0] < -0.3)):
-        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
-            position_number = 1
-        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
-            position_number = 2
-    elif ((-0.9 <= coordinate[0]) and (coordinate[0] < -0.6)):
-        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
-            position_number = 3
-        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
-            position_number = 4
-    elif ((-1.2 <= coordinate[0]) and (coordinate[0] < -0.9)):
-        if ((0 <= coordinate[1]) and (coordinate[1] < 0.3)):
-            position_number = 5
-        elif ((-0.3 < coordinate[1]) and (coordinate[1] < 0)):
-            position_number = 6
+    if ((-0.6 <= coordinate[0]) and (coordinate[0] < 1.5)):
+       if ((0.3 < coordinate[1]) and (coordinate[1] < 0.6)):
+           position_number = 1 # left back
+       elif ((-0.6 < coordinate[1]) and (coordinate[1] < -0.3)):
+           position_number = 2 # right back
+            
+
 
     min_position = []
     min_position.append(position_number)
