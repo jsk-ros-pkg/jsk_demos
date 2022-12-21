@@ -1,0 +1,34 @@
+<launch>
+    <arg name="spot" default="true" />
+    <arg name="spot_coral" default="true" />
+    <arg name="detector" default="$(find coral_usb)/launch/semi_2022.launch" />
+    <!-- <arg name="detector" default="$(find coral_usb)/launch/edgetpu_object_detector.launch" /> -->
+    <arg name="score_thresh" value="0.4" />
+    <group unless="$(arg spot_coral)">
+        <group if="$(arg spot)">
+            <include file="$(arg detector)">
+                <arg name="IMAGE_TRANSPORT" value="compressed" />
+                <arg name="INPUT_IMAGE" value="/spot/camera/hand_color/image" />
+                <arg name="score_thresh" value="$(arg score_thresh)" />
+            </include>
+        </group>
+        <group unless="$(arg spot)">
+            <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" />
+            <include file="$(arg detector)">
+                <arg name="IMAGE_TRANSPORT" value="compressed" />
+                <arg name="INPUT_IMAGE" value="/usb_cam/image_raw" />
+                <arg name="score_thresh" value="$(arg score_thresh)" />
+            </include>
+        </group>
+        <node pkg="image_view" type="image_view" name="image_view">
+            <remap from="image" to="/edgetpu_object_detector/output/image" />
+        </node>
+    </group>
+    <group if="$(arg spot_coral)">
+        <node pkg="image_view" type="image_view" name="image_view">
+            <remap from="image" to="/edgetpu_object_detector/output/image/compressed" />
+        </node>
+    </group>
+    <!-- <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure">
+    </node> -->
+</launch>
