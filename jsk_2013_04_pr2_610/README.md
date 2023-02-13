@@ -54,7 +54,7 @@ mkdir ~/ros/jsk_demo_ws/src -p
 cd ~/ros/jsk_demo_ws
 catkin init
 wstool init src
-wstool merge https://raw.githubusercontent.com/jsk-ros-pkg/jsk_demos/master/jsk_2013_04_pr2_610/jsk_2013_04_pr2_610.rosinstall
+wstool merge -t src https://raw.githubusercontent.com/jsk-ros-pkg/jsk_demos/master/jsk_2013_04_pr2_610/jsk_2013_04_pr2_610.rosinstall
 wstool update -t src
 rosdep install --from-paths src --ignore-src -r -n -y
 catkin build jsk_2013_04_pr2_610
