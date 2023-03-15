@@ -1,0 +1,35 @@
+#!/usr/bin/env roseus
+
+;; load package
+(ros::load-ros-package "std_srvs")
+(ros::roseus "miraikan")
+
+(defun call_service (service_name wait_time)
+  (ros::wait-for-service service_name)
+  (call-empty-service service_name)
+  (ros::duration-sleep wait_time)
+  )
+
+(defun main ()
+  (ros::duration-sleep 5.0)
+  (call_service "episode_introduction" 18)
+  (call_service "episode_0_1" 10)
+  (call_service "episode_0_2" 15)
+  (call_service "episode_1_1" 15)
+  (call_service "episode_1_2" 15)
+  (call_service "episode_1_3" 15)
+  (call_service "episode_1_4" 15)
+  (call_service "episode_2" 25)
+  (call_service "episode_3_1" 10)
+  (call_service "episode_3_2" 10)
+  (call_service "episode_3_3" 15)
+  (call_service "episode_4_1" 15)
+  (call_service "episode_4_2" 10)
+  (call_service "episode_5_1" 15)
+  (call_service "episode_5_2" 15)
+  (call_service "episode_summary" 30)
+  (call_service "episode_6" 1)
+  )
+
+(main)
+(ros::exit)

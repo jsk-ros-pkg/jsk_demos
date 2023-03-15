@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>jsk_2022_08_miraikan_demo</name>
+  <version>0.0.1</version>
+  <description>miraikan demo using Pepper</description>
+
+  <author email="kochigami@jsk.imi.i.u-tokyo.ac.jp">Kanae Kochigami</author>
+  <author email="ichikura@jsk.imi.i.u-tokyo.ac.jp">Aiko Ichikura</author>
+  <author email="tanemoto@jsk.imi.i.u-tokyo.ac.jp">Miyabi Tanemoto</author>
+  <author email="affonso@jsk.imi.i.u-tokyo.ac.jp">Guilherme Affonso</author>
+  <maintainer email="k-okada@jsk.t.u-tokyo.ac.jp">Kei Okada</maintainer>
+
+  <license>BSD</license>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+  </export>
+</package>

@@ -1,0 +1,28 @@
+<launch>
+<arg name="launch_joy" default="false" />
+<arg name="eyebrows_server_ip" default="localhost" />
+<arg name="run_eyebrows_server" default="false" />
+<arg name="use_robot" default="true" />
+<arg name="pepper_ip" default="" />
+<arg name="memories_talk" default="true" />
+
+<node pkg="joy" type="joy_node" name="joy_node" respawn="true" >
+  <param name="dev" value="/dev/input/js0" />
+  <param name="deadzone" value="0.3" />
+  <param name="autorepeat_rate" value="20" />
+</node>
+
+<node name="lecture_demo"
+      pkg="roseus" type="roseus"
+      args="$(find miraikan_demo)/euslisp/lecture-demo.l &quot;(progn (unix:sleep 5) (main))&quot;" output="screen" respawn="true" />
+
+<!-- requires source ~/miraikan_ws/devel/setup.bash -->
+<include file="$(find miraikan_demo)/launch/demo.launch">
+  <arg name="eyebrows_server_ip" value="$(arg eyebrows_server_ip)"/>
+  <arg name="run_eyebrows_server" value="$(arg run_eyebrows_server)" />
+  <arg name="use_robot" value="$(arg use_robot)" />
+  <arg name="pepper_ip" value="$(arg pepper_ip)" />
+  <arg name="memories_talk" value="$(arg memories_talk)" />
+</include>
+
+</launch>

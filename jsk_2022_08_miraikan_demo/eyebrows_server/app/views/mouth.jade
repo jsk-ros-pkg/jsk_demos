@@ -1,0 +1,32 @@
+doctype html
+html(lang='en')
+  head
+    title test
+    script(src="https://cdn.jsdelivr.net/npm/gl-matrix@3/gl-matrix.js")
+    script. 
+      var maxRotation = #{degree} * Math.PI / 180;
+      function makeHttpObject() {
+        try {return new XMLHttpRequest();}
+        catch (error) {}
+        try {return new ActiveXObject("Msxml2.XMLHTTP");}
+        catch (error) {}
+        try {return new ActiveXObject("Microsoft.XMLHTTP");}
+        catch (error) {}
+
+        throw new Error("Could not create HTTP request object.");
+      }
+
+      function get_degree() {
+        var request = makeHttpObject();
+        request.open("GET", "/api/info", true);
+        request.send(null);
+        request.onreadystatechange = function() {
+          if (request.readyState == 4)
+            // console.log("new deg", request.responseText);
+            maxRotation = request.responseText * Math.PI / 180;
+        };
+      }
+  body
+    <canvas id="webgl"></canvas>
+    script(type="text/javascript", src="/javascripts/mouth.js")
+
