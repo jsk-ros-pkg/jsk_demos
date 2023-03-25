@@ -230,7 +230,7 @@ $(function() {
       messageType : 'geometry_msgs/PointStamped'
     });
     mousemove_pub.publish(point);
-    document.getElementById("debug-text-area1").innerText = topic_name + " : " + imageX.toFixed(1) +", "+ imageY.toFixed(1);
+    document.getElementById("mousemove-info").innerText = topic_name + " : " + imageX.toFixed(1) +", "+ imageY.toFixed(1);
   });
 
   ///// mouse click
@@ -247,7 +247,7 @@ $(function() {
       messageType : 'geometry_msgs/PointStamped'
     });
     screenpoint_pub.publish(point);
-    document.getElementById("debug-text-area2").innerText = topic_name + " : " + imageX.toFixed(1) +", "+ imageY.toFixed(1);
+    document.getElementById("screenpoint-info").innerText = topic_name + " : " + imageX.toFixed(1) +", "+ imageY.toFixed(1);
   });
 
   ///// 3D point
@@ -257,7 +257,7 @@ $(function() {
     messageType : 'geometry_msgs/PointStamped'
   });
   listener1.subscribe(message => {
-    document.getElementById("debug-text-area3").innerText =
+    document.getElementById("output-info").innerText =
       listener1.name + " = "+ message.point.x +", "+ message.point.y +", "+ message.point.z +"\n\n";
   });
 
@@ -285,7 +285,7 @@ $(function() {
 
   // save audio data
   const onAudioProcess = function (e) {
-    document.getElementById("debug-text-area6").innerText = "Your Mic is ON ("+ audio_pub.name +")";
+    document.getElementById("mic-info").innerText = "Your Mic is ON ("+ audio_pub.name +")";
     const input = e.inputBuffer.getChannelData(0);
     const dataview = Float32ArrayTo16BitPCM(input);
     const base64String = btoa(String.fromCharCode(...new Uint8Array(dataview.buffer)));
@@ -294,7 +294,7 @@ $(function() {
 
   // getusermedia
   const handleSuccess = function (stream) {
-    document.getElementById("debug-text-area6").innerText = "navigator.mediaDevices.getUserMedia() success";
+    document.getElementById("mic-info").innerText = "navigator.mediaDevices.getUserMedia() success";
     let audioContext = new AudioContext({
       latencyHint: 'interactive',
       sampleRate: 16000,
@@ -312,12 +312,12 @@ $(function() {
     navigator.mediaDevices.getUserMedia({ audio: true, video: false })
       .then(handleSuccess)
       .catch(function(err){
-        document.getElementById("debug-text-area6").innerText = "Cannot get Mic device";
+        document.getElementById("mic-info").innerText = "Cannot get Mic device";
         console.log('getUserMedia fail');
       });
   }else{
     console.log('navigator.mediaDevices not found');
-    document.getElementById("debug-text-area6").innerText = "navigator.mediaDevices not found";
+    document.getElementById("mic-info").innerText = "navigator.mediaDevices not found";
   }
 
   ///// gazebo reset
@@ -395,7 +395,7 @@ $(function() {
       current_image_info.width = message.width;
       current_image_info.height = message.height;
       current_image_info.frame_id = message.header.frame_id;
-      document.getElementById("debug-text-area3").innerText = current_image_info.topic + " (" + current_image_info.frame_id + "): "+ current_image_info.width +" x "+ current_image_info.height;
+      document.getElementById("outputpoint-info").innerText = current_image_info.topic + " (" + current_image_info.frame_id + "): "+ current_image_info.width +" x "+ current_image_info.height;
       // after receiving first image topic, set up correct aspect ratio mjpeg_canvas 
       if(!mjpeg_canvas){
     	const div_width = $("#canvas-area").width();
@@ -437,7 +437,7 @@ $(function() {
       messageType : 'audio_common_msgs/AudioData'
     });
     audio_sub.subscribe(message => {
-      document.getElementById("debug-text-area5").innerText = audio_sub.name + " = "+ message.data +"\n\n";
+      document.getElementById("audio-info").innerText = audio_sub.name + " = "+ message.data +"\n\n";
       base64 = message.data;
       B=(f,b=4)=>String.fromCodePoint.apply(this, Array(b).fill().map((v,i)=>(f>>i*8)&255))
       D=f=>B(f,2)
