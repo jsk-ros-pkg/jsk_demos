@@ -1,5 +1,6 @@
 <launch>
   <arg name="start_rviz" default="false" />
+  <arg name="snap_map_icp" default="false" />
   <arg name="wait_query" default="false" />
   <arg name="execute" default="false" />
   <arg name="DEMOTYPE" default="map" />
@@ -16,7 +17,8 @@
          if="$(arg start_rviz)" />
 
   <!-- ICP matching between map and base scan -->
-  <node pkg="snap_map_icp" type="snap_map_icp" name="tum_SnapMapICP"
+  <node if="$(arg snap_map_icp)"
+        pkg="snap_map_icp" type="snap_map_icp" name="tum_SnapMapICP"
         output="screen" machine="c2">
     <param name="age_threshold" value="2.0"/>
     <param name="icp_inlier_threshold" value="0.78" />
