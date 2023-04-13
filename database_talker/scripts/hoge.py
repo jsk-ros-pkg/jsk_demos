@@ -54,9 +54,9 @@ class MessageListener(object):
     self.query = rospy.ServiceProxy('/message_store/query_messages',
                                     MongoQueryMsg)
 
-    rospy.loginfo("wait for '/classification/clip_server'")
+    rospy.loginfo("wait for '/classification/inference_server'")
     self.classification_ac = actionlib.SimpleActionClient(
-        '/classification/clip_server', ClassificationTaskAction)
+        '/classification/inference_server', ClassificationTaskAction)
     self.classification_ac.wait_for_server()
 
     ## integration of dialogflow <-> google_chat_ros was performed by google_chat_ros/script/helper.py
