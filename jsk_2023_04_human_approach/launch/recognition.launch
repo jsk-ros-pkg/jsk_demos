@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<launch>
+  <arg name="INPUT_PANORAMA_IMAGE" default="/dual_fisheye_to_panorama/output" />
+  <arg name="INPUT_PANORAMA_INFO" default="/dual_fisheye_to_panorama/panorama_info" />
+  <arg name="INPUT_CLASS" default="/edgetpu_panorama_object_detector/output/class" />
+  <arg name="INPUT_RECTS" default="/edgetpu_panorama_object_detector/output/rects" />
+  <arg name="insta360" default="true" />
+  <arg name="coral" default="true" />
+
+  <node pkg="tf" type="static_transform_publisher" name="camera_tf_publisher" args="0 0 0 0 0 0 rear_rail insta360_link 500" />
+
+  <include if="$(arg insta360)" file="$(find jsk_perception)/sample/sample_insta360_air.launch">
+    <arg name="gui" value="false" />
+    <arg name="panorama_resolution_mode" value="low" />
+  </include>
+
+  <include if="$(arg coral)" file="$(find coral_usb)/launch/edgetpu_panorama_object_detector.launch">
+    <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output"/>
+  </include>
+
+  <node pkg="jsk_perception"
+        type="rect_array_in_panorama_to_bounding_box_array.py"
+        name="rect_array_in_panorama_to_bounding_box_array">
+    <remap from="~panorama_image" to="$(arg INPUT_PANORAMA_IMAGE)" />
+    <remap from="~panorama_info" to="$(arg INPUT_PANORAMA_INFO)" />
+    <remap from="~input_class" to="$(arg INPUT_CLASS)" />
+    <remap from="~input_rects" to="$(arg INPUT_RECTS)" />
+    <rosparam>
+        frame_fixed: "rear_rail"
+        image_transport: compressed
+        dimensions_labels:
+            person: [0.5, 0.5, 1.5]
+    </rosparam>
+  </node>
+
+  <!-- <include> -->
+
+  <!-- </include> -->
+  <!-- <node name="miyamichi" pkg="202304_human_approach" type="merge.py" /> -->
+</launch>
