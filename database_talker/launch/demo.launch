@@ -43,17 +43,20 @@
         <arg name="run_api" value="true"/>
         <arg name="CLASSIFICATION_INPUT_IMAGE" value="$(arg INPUT_IMAGE)"/>
     </include>
-    <include file="$(find ros_google_cloud_language)/launch/demo.launch">
-        <arg name="google_cloud_credentials"
+    <include file="$(find ros_google_cloud_language)/launch/analyze_text.launch">
+        <arg name="google_cloud_credentials_json"
             value="$(arg google_natural_launguage_credentials_json)"/>
     </include>
 
     <group if="$(arg use_cam)">
         <node pkg="usb_cam" type="usb_cam_node" name="usb_cam_node">
             <remap from="~image_raw" to="$(arg INPUT_IMAGE)"/>
+            <rosparam>
+                pixel_format: yuyv
+            </rosparam>
         </node>
     </group>
 
-    <node pkg="dabase_talker" type="hoge.py" name="hoge" output="screen">
+    <node pkg="database_talker" type="hoge.py" name="hoge" output="screen">
     </node>
 </launch>
