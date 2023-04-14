@@ -8,12 +8,16 @@
   <arg name="insta360" default="true" />
   <arg name="coral" default="true" />
 
-  <node pkg="tf" type="static_transform_publisher" name="camera_tf_publisher" args="0 0 0 0 0 0 rear_rail insta360_link 500" />
 
+  <!-- For panorama -->
   <include if="$(arg insta360)" file="$(find jsk_perception)/sample/sample_insta360_air.launch">
     <arg name="gui" value="false" />
     <arg name="panorama_resolution_mode" value="low" />
   </include>
+
+
+  <!-- For panorama detector -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_tf_publisher" args="0 0 0 0 0 0 rear_rail insta360_link 500" />
 
   <include if="$(arg coral)" file="$(find coral_usb)/launch/edgetpu_panorama_object_detector.launch">
     <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output"/>
@@ -34,8 +38,23 @@
     </rosparam>
   </node>
 
-  <!-- <include> -->
 
-  <!-- </include> -->
-  <!-- <node name="miyamichi" pkg="202304_human_approach" type="merge.py" /> -->
+  <!-- For detect handpose with hand_camera -->
+  <node pkg="nodelet" type="nodelet" name="miyamichi_demo_nodelet_manager" args="manager" />
+  <node pkg="nodelet" type="nodelet" name="nodelet"
+        args="load depth_image_proc/register miyamichi_demo_nodelet_manager">
+    <remap from="rgb/camera_info" to="/spot/camera/hand_color/camera_info"/>
+    <remap from="depth/camera_info" to="/spot/camera/hand_depth/camera_info"/>
+    <remap from="depth/image_rect" to="/spot/camera/hand_depth/image"/>
+    <remap from="depth_registered/image_rect" to="/spot/camera/hand_depth/depth_registered/image"/>
+  </node>
+
+  <include file="$(find jsk_perception)/launch/hand_pose_estimation_2d.launch">
+    <arg name="INPUT_CAMERA_INFO" value="/spot/camera/hand_depth/depth_registered/camera_info" />
+    <arg name="INPUT_IMAGE" value="/spot/camera/hand_color/image" />
+    <arg name="INPUT_DEPTH_IMAGE" value="/spot/camera/hand_depth/depth_registered/image" />
+    <arg name="with_depth" value="true" />
+    <arg name="gui" value="false" />
+  </include>
+
 </launch>
