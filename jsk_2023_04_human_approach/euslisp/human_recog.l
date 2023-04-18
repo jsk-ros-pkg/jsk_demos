@@ -50,6 +50,7 @@
 		(setq start-point (send bone-name :start_point))
 		(setq end-point (send bone-name :end_point))
 		(setq vector (v- end-point start-point))
+		(print vector)
 		)
 	      )
 	    )
