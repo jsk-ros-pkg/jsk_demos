@@ -8,16 +8,16 @@
   <arg name="insta360" default="true" />
   <arg name="coral" default="true" />
 
-  <node pkg="tf" type="static_transform_publisher" name="camera_tf_publisher" args="0 0 0 0 0 0 rear_rail insta360_link 500" />
 
+  <!-- For panorama -->
   <include if="$(arg insta360)" file="$(find jsk_perception)/sample/sample_insta360_air.launch">
     <arg name="gui" value="false" />
     <arg name="panorama_resolution_mode" value="low" />
   </include>
 
-  <include if="$(arg coral)" file="$(find coral_usb)/launch/edgetpu_panorama_object_detector.launch">
-    <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output"/>
-  </include>
+
+  <!-- For panorama detector -->
+  <node pkg="tf" type="static_transform_publisher" name="camera_tf_publisher" args="0 0 0 0 0 0 rear_rail insta360_link 500" />
 
   <node pkg="jsk_perception"
         type="rect_array_in_panorama_to_bounding_box_array.py"
@@ -34,8 +34,32 @@
     </rosparam>
   </node>
 
-  <!-- <include> -->
 
+  <!-- For detect human pose with hand_camera -->
+  <node pkg="nodelet" type="nodelet" name="miyamichi_demo_nodelet_manager" args="manager" />
+  <node pkg="nodelet" type="nodelet" name="nodelet"
+        args="load depth_image_proc/register miyamichi_demo_nodelet_manager">
+    <remap from="rgb/camera_info" to="/spot/camera/hand_color/camera_info"/>
+    <remap from="depth/camera_info" to="/spot/camera/hand_depth/camera_info"/>
+    <remap from="depth/image_rect" to="/spot/camera/hand_depth/image"/>
+    <remap from="depth_registered/image_rect" to="/spot/camera/hand_depth/depth_registered/image"/>
+  </node>
+
+
+  <!-- Detector -->
+  <!-- <include if="$(arg coral)" file="$(find coral_usb)/launch/edgetpu_panorama_object_detector.launch"> -->
+  <!--   <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output"/> -->
   <!-- </include> -->
-  <!-- <node name="miyamichi" pkg="202304_human_approach" type="merge.py" /> -->
+  <include if="$(arg coral)" file="$(find coral_usb)/launch/edgetpu_human_pose_estimator.launch">
+    <arg name="INPUT_IMAGE" value="/spot/camera/hand_color/image"/>
+  </include>
+  <node pkg="jsk_perception"
+	type="skeleton_with_depth.py"
+	name="skeleton_with_depth">
+    <remap from="~input/skeleton" to="/edgetpu_human_pose_estimator/output/skels" />
+    <remap from="~input/depth" to="/spot/camera/hand_depth/depth_registered/image" />
+    <remap from="~input/info" to="/spot/camera/hand_depth/camera_info" />
+    <!-- <remap from="~output/skeleton" to="" /> -->
+  </node>
+
 </launch>
