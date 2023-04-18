@@ -62,8 +62,6 @@
 	    (ros::ros-info "bones ~A" (send skeleton :bones))
 	  (send
 
-	   ;;もしbone_namesが１こでもあったら、あってるかどうかをみて、もしあっていたら、スタートをエンドから方向を取る
-	   ;;方向に進む
 	 ;; (if (>= (length (send (send msgs :skeletons) :bone_names)) 1)
 	 ;;   (ros::ros-info "~A" (car (send msgs :skeletons)))
 	 ;;   (ros::ros-info "~A" (last (send msgs :skeletons))) 
