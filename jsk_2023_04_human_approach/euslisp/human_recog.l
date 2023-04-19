@@ -29,10 +29,10 @@
 
 
 (defun recognition-skeleton (msgs)
-  (setq *physical-order* (list 'right shoulder->right elbow 'right elbow->right wrist 'left shoulder->left elbow 'left elbow->left wrist))
-  (setq *physical-reverse-order* (list 'right eldow->right shoulder 'right wrist->right elbow 'left elbow->left shoulder 'left wrist->left elbow))
+  (setq physical-order (list "right shoulder->right elbow" "right elbow->right wrist" "left shoulder->left elbow" "left elbow->left wrist"))
+  (setq physical-reverse-order (list "right eldow->right shoulder" "right wrist->right elbow" "left elbow->left shoulder" "left wrist->left elbow"))
   
-  (ros::ros-info "length ~A" (length (send msgs :skeletons)))
+  (ros::ros-info "skeletons ~A" (length (send msgs :skeletons)))
   
   (if (<= (length (send msgs :skeletons)) 0)
       (progn
@@ -41,27 +41,37 @@
     (progn
       (setq skeleton-list (send msgs :skeletons))
       (ros::ros-error "~A" skeleton-list)
+      
       (dolist (skeleton skeleton-list)
 	(if (send skeleton :bone_names)
-	  (setq bone-names-list (send skeleton :bone_names))
-	  (dolist (bone-name bone-names-list)
-	    (dolist (answer-bone-name *physical-order*)
-	      (if (string= bone-name answer-bone-name)
-		(setq start-point (send bone-name :start_point))
-		(setq end-point (send bone-name :end_point))
-		(setq vector (v- end-point start-point))
-		(print vector)
+	    (progn
+	      (setq bone-names-list (send skeleton :bone_names))
+	      (dolist (bone-name bone-names-list)
+		(print bone-name)
+		;;(print (send skelton :bones)
+		(dolist (target-bone-name physical-order)
+		  (if (string= bone-name target-bone-name)
+		      (progn
+			(setq bones (send skeleton :bones))
+			(ros::ros-info "~A" bone)
+			
+			(setq index (position bone-name bone-names-list :test 'equal))
+			(setq target-bone (elt bones index))
+			(setq start-point (send target-bone :start_point))
+			(setq end-point (send target-bone :end_point))
+			(print start-point)
+			(setq porpose-vector (v- (vector end-point) (vector start-point)))
+			(print porpose-vector)
+			)
+		    )
+		  )
 		)
 	      )
-	    )
 	  )
 	)
-      )
-    )
-  )
-	  (if (= (send skeleton :bone_names) (or "right shoulder->right elbow" )
-	    (ros::ros-info "bones ~A" (send skeleton :bones))
-	  (send
+      )))
+    
+		      
 
 	 ;; (if (>= (length (send (send msgs :skeletons) :bone_names)) 1)
 	 ;;   (ros::ros-info "~A" (car (send msgs :skeletons)))
@@ -73,9 +83,11 @@
 	;;)
     ;;)
 
-(defun vector (a b)
-  (send (send (send b :skeletons) :bones) :start_point)
+(defun vector (a)
+  (float-vector (send a :x) (send a :y) (send a :z))
+  )
 
+ 
 (defun compare-distance-of-rects (a b)
   (>= (norm (send (send a :pose) :position)) (norm (send (send a :pose) :position)))
   )
