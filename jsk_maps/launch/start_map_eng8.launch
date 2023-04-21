@@ -4,6 +4,8 @@
   <arg name="launch_map_server" default="true" />
   <arg name="use_machine" default="false" />
   <arg name="use_pictogram" default="false" />
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="move_base_node" default="move_base" />
 
   <machine name="localhost" address="localhost" if="$(arg use_machine)" />
 
@@ -22,6 +24,14 @@
   <node name="initialpose3d" pkg="jsk_maps" type="initialpose3d.py">
     <remap from="initialpose_in" to="initialpose3d" />
     <remap from="initialpose_out" to="initialpose" />
+  </node>
+
+  <!-- change floor server -->
+  <node name="change_floor_server" pkg="jsk_maps" type="change-floor-server.l">
+    <rosparam subst_value="true">
+      base_frame_id: $(arg base_frame_id)
+      move_base_node: $(arg move_base_node)
+    </rosparam>
   </node>
 
   <node name="publish_spot" pkg="roseus" type="roseus"
