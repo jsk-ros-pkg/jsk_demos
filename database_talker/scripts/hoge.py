@@ -50,6 +50,9 @@ from openai_ros.srv import Completion
 class MessageListener(object):
 
     def __init__(self):
+        self.robot_name = rospy.get_param('robot/name')
+        rospy.loginfo("using '{}' database".format(self.robot_name))
+
         rospy.loginfo("wait for '/google_chat_ros/send'")
         self.chat_ros_ac = actionlib.SimpleActionClient('/google_chat_ros/send', SendMessageAction)
         self.chat_ros_ac.wait_for_server()
@@ -58,7 +61,7 @@ class MessageListener(object):
         rospy.loginfo("wait for '/message_store/query_messages'")
         rospy.wait_for_service('/message_store/query_messages')
         self.query = rospy.ServiceProxy('/message_store/query_messages', MongoQueryMsg)
-        
+
         rospy.loginfo("wait for '/classification/inference_server'")
         self.classification_ac = actionlib.SimpleActionClient('/classification/inference_server' , ClassificationTaskAction)
         self.classification_ac.wait_for_server()
@@ -82,10 +85,8 @@ class MessageListener(object):
         self.analyze_text_ac = actionlib.SimpleActionClient('/analyze_text/text' , AnalyzeTextAction)
         self.analyze_text_ac.wait_for_server()
 
-        # rospy.loginfo("subscribe '/google_chat_ros/message_activity'")
-        # self.sub = rospy.Subscriber('/google_chat_ros/message_activity', MessageEvent, self.cb)
-        rospy.loginfo("subscribe '/dialogflow_client/text_action/result'")
-        self.sub = rospy.Subscriber('/dialogflow_client/text_action/result', DialogTextActionResult, self.cb)
+        rospy.loginfo("subscribe '/google_chat_ros/message_activity'")
+        self.sub = rospy.Subscriber('/google_chat_ros/message_activity', MessageEvent, self.cb)
 
         rospy.loginfo("all done, ready")
 
@@ -100,13 +101,13 @@ class MessageListener(object):
             timestamp = datetime.datetime.now(JST)
             results, chat_msgs = self.query_dialogflow(query, timestamp, threshold=0.25)
             retry = 0
-            while retry < -1 and len(results) == 0 and len(chat_msgs.metas) > 0:
+            while retry < 3 and len(results) == 0 and len(chat_msgs.metas) > 0:
                 meta = json.loads(chat_msgs.metas[-1].pairs[0].second)
                 results, chat_msgs = self.query_dialogflow(query, datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST))
                 retry = retry + 1
             # sort based on similarity with 'query'
             chat_msgs_sorted = sorted(results, key=lambda x: x['similarity'], reverse=True)
-            
+
             if len(chat_msgs_sorted) == 0:
                 rospy.logwarn("no chat message was found")
             else:
@@ -123,18 +124,21 @@ class MessageListener(object):
                 # timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
                 rospy.loginfo("Found message '{}'({}) at {}, corresponds to query '{}' with {:2f}%".format(text, action, timestamp.strftime('%Y-%m-%d %H:%M:%S'), query, similarity))
 
-            start_time = timestamp-datetime.timedelta(minutes=300)
+            # query images when chat was received (+- 30 min)
+            start_time = timestamp-datetime.timedelta(minutes=30)
             end_time = timestamp+datetime.timedelta(minutes=30)
             results = self.query_images_and_classify(query=query, start_time=start_time, end_time=end_time)
 
-            end_time = results[-1]['timestamp']
+            if len(results) > 0:
+                end_time = results[-1]['timestamp']
+
             # sort
             results = sorted(results, key=lambda x: x['similarities'], reverse=True)
             rospy.loginfo("Probabilities of all images {}".format(list(map(lambda x: (x['label'], x['similarities']), results))))
             best_result = results[0]
-            
             # if probability is too low, try again
             while len(results) > 0 and results[0]['similarities'] < 0.25:
+
                 start_time = end_time-datetime.timedelta(hours=24)
                 timestamp = datetime.datetime.now(JST)
                 results = self.query_images_and_classify(query=query, start_time=start_time, end_time=end_time, limit=300)
@@ -178,8 +182,8 @@ class MessageListener(object):
             # pubish as card
             filename = tempfile.mktemp(suffix=".jpg", dir=rospkg.get_ros_home())
             self.write_image_with_annotation(filename, best_result, prompt)
-            self.publish_google_chat_card(result.text, filename)
-            
+            return {'text': result.text, 'filename': filename}
+
         except Exception as e:
             raise ValueError("Query failed {} {}".format(e, traceback.format_exc()))
 
@@ -204,12 +208,12 @@ class MessageListener(object):
         meta_query= {'inserted_at': {"$lt": end_time}}
         meta_tuple = (StringPair(MongoQueryMsgRequest.JSON_QUERY, json.dumps(meta_query, default=json_util.default)),)
         chat_msgs = self.query(database = 'jsk_robot_lifelog',
-                               collection =  'fetch1075',
+                               collection = self.robot_name,
                                # type =  'google_chat_ros/MessageEvent',
                                type =  'dialogflow_task_executive/DialogTextActionResult',
                                single = False,
                                limit = limit,
-                               meta_query = StringPairList(meta_tuple), 
+                               meta_query = StringPairList(meta_tuple),
                                sort_query = StringPairList([StringPair('_meta.inserted_at', '-1')]))
 
         # show chats
@@ -236,27 +240,25 @@ class MessageListener(object):
                     results.append(result)
                 else:
                     rospy.logwarn("                    ... skipping (threshold: {:.2f})".format(threshold))
-                    
+
 
         return results, chat_msgs
 
 
     def query_images_and_classify(self, query, start_time, end_time, limit=30):
         rospy.logwarn("Query images from {} to {}".format(start_time, end_time))
-        # meta_query= {'input_topic': '/spot/camera/hand_color/image/compressed/throttled',
-        #              'inserted_at': {"$gt": start_time, "$lt": end_time}}
-        meta_query= {'input_topic': '/head_camera/rgb/image_rect_color/compressed/throttled',
-                     'inserted_at': {"$gt": start_time, "$lt": end_time}}
+        meta_query= {#'input_topic': '/spot/camera/hand_color/image/compressed/throttled',
+                      'inserted_at': {"$gt": start_time, "$lt": end_time}}
         meta_tuple = (StringPair(MongoQueryMsgRequest.JSON_QUERY, json.dumps(meta_query, default=json_util.default)),)
         msgs = self.query(database = 'jsk_robot_lifelog',
-                          collection =  'fetch1075',
+                          collection =  self.robot_name,
                           type =  'sensor_msgs/CompressedImage',
                           single = False,
                           limit = limit,
                           meta_query = StringPairList(meta_tuple),
                           sort_query = StringPairList([StringPair('_meta.inserted_at', '-1')]))
 
-        rospy.loginfo("Found {} images".format(len(msgs.messages)))            
+        rospy.loginfo("Found {} images".format(len(msgs.messages)))
         if len(msgs.messages) == 0:
             rospy.logwarn("no images was found")
 
@@ -284,12 +286,12 @@ class MessageListener(object):
         return results
 
 
-    def publish_google_chat_card(self, text, filename=None):
+    def publish_google_chat_card(self, text, space, filename=None):
         goal = SendMessageGoal()
         goal.text = text
         if filename:
             goal.cards = [Card(sections=[Section(widgets=[WidgetMarkup(image=Image(localpath=filename))])])]
-        goal.space = 'spaces/AAAAoTwLBL0'
+        goal.space = space
         rospy.logwarn("send {} to {}".format(goal.text, goal.space))
         self.chat_ros_ac.send_goal_and_wait(goal, execute_timeout=rospy.Duration(0.10))
 
@@ -305,7 +307,6 @@ class MessageListener(object):
             return text
 
     def translate(self, text, dest):
-        return Translated(text=text, dest=dest, src="en", origin="unknown", pronunciation="unknown")
         global translator
         loop = 3
         while loop > 0:
@@ -318,11 +319,13 @@ class MessageListener(object):
                 translator = Translator()
                 loop = loop - 1
                 return Translated(text=text, dest=dest)
-        
-        
+
+
     def cb(self, msg):
-        if msg._type == 'google_chat_ros.msg/MessageEvent':
-            text = message.message.argument_text.lstrip() or message.message.text.lstrip()
+        space = 'spaces/AAAAoTwLBL0' ## default space JskRobotBot
+        if msg._type == 'google_chat_ros/MessageEvent':
+            text = msg.message.argument_text.lstrip() or msg.message.text.lstrip()
+            space = msg.space.name
             rospy.logwarn("Received chat message '{}'".format(text))
 
             # ask dialogflow for intent
@@ -342,20 +345,19 @@ class MessageListener(object):
             rospy.logwarn("received dialogflow action '{}'".format(result.response.action))
             print(result.response)
             if result.response.action == 'input.unknown':
-                self.publish_google_chat_card("🤖")
+                self.publish_google_chat_card("🤖", space)
             elif result.response.action == 'make_reply':
                 translated = self.translate(result.response.query, dest="en")
-                self.make_reply(translated.text, translated.src)
+                ret = self.make_reply(translated.text, translated.src)
+                self.publish_google_chat_card(ret['text'], space, ret['filename'])
             else:
-                self.publish_google_chat_card(result.response.response)
-                
+                self.publish_google_chat_card(result.response.response, space)
+
         except Exception as e:
             rospy.logerr("Callback failed {} {}".format(e, traceback.format_exc()))
-            self.publish_google_chat_card("💀 {}".format(e))
+            self.publish_google_chat_card("💀 {}".format(e), space)
 
 if __name__ == '__main__':
     rospy.init_node('test', anonymous=True)
     ml = MessageListener()
-    #ml.cb2(0)
-    #ml.cb2('chair')
     rospy.spin()
