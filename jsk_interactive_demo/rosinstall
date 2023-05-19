@@ -1,0 +1,16 @@
+- git:
+    local-name: jsk-ros-pkg/jsk_3rdparty
+    uri: https://github.com/k-okada/jsk_3rdparty.git
+    version: add_more_functions
+- git:
+    local-name: jsk-ros-pkg/jsk_recognition
+    uri: https://github.com/mqcmd196/jsk_recognition.git
+    version: PR/large-scale-vil
+- git:
+    local-name: strands-project/mongodb_store
+    uri: https://github.com/k-okada/mongodb_store.git
+    version: patch-1
+- git:
+    local-name: openai_ros
+    uri: https://github.com/davesarmoury/openai_ros
+    version: master
