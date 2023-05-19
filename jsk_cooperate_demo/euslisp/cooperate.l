@@ -4,9 +4,23 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (require :human-robot "models/human-robot.l")
 
+(load "package://jsk_fetch_startup/euslisp/navigation-utils.l")
+
 (ros::roseus "cooperate")
 (fetch-init)
 ;; (pr2-init)
+
+(defun set-73b2-scene ()
+  (load "models/room73b2-scene.l")
+  (load "package://jsk_maps/src/eng2-scene.l")
+  (room73b2)
+  (setq *base-spot* "/eng2/7f/room73B2-base")
+  (setq *scene* (make-eng2-7f-scene))
+  (send *ri* :objects (send *room73b2* :objects))
+  (send (send *ri* :robot)
+        :newcoords (car (get-spot-coords "eng2/7f/room73b2-center")))
+  )
+
 
 (defun check-load ()
   (let* ((torque-vector (send *ri* :state :torque-vector)))
@@ -18,7 +32,7 @@
 (defun lift ()
   t)
 
-(defun call-another-robot (&optional (medium "voice"))
+(defun call-another-robot (robot-name &optional (medium "voice"))
   (if (string= medium "voice") (send *ri* :speak-jp "助けてください"))
   (if (string= medium "packet"))
   t)
@@ -27,13 +41,24 @@
   (send *ri* :speak-jp "助けてください" :wait t)
   t)
 
+(defun check-another-robot-come (&optional (medium "voice"))
+  (if (string= medium "voice")
+      (if (substringp "はい" (voice-recognition 10)))
+      ))
+
+(defun voice-recognition (&optional (timeout 10))
+  (one-shot-subscribe "speech_to_text"
+                      speech_recognition_msgs::SpeechRecognitionCandidate
+                      :timeout timeout))
+
+
 (defun main ()
   (let ((a 0))
     (while (or (not (eq (lift) :success)) (> a 5))
       (if (eq (check-load) :heavy)
           (progn
             (setq a (1+ a))
-            (call-another-robot))))
+            (call-another-robot "fetch"))))
     ))
 
 
