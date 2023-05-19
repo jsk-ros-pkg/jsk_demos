@@ -12,6 +12,7 @@ import difflib
 import json
 import random
 import rospkg
+import rostopic
 import tempfile
 import time
 import traceback
@@ -346,7 +347,11 @@ class MessageListener(object):
                         "... skipping (threshold: {:.2f})".format(threshold))
         return results, chat_msgs
 
-    def query_images_and_classify(self, query, start_time, end_time, limit=30):
+    def query_images_and_classify(
+            self, query, start_time, end_time, limit=30,
+            topic_in='/head_camera/rgb/image_rect_color/compressed/throttled',
+            database='jsk_robot_lifelog',
+            collection='fetch1075'):
         rospy.logwarn(
             "Query images from {} to {}".format(start_time, end_time))
         # meta_query= {'input_topic': '/spot/camera/hand_color/image/compressed/throttled',
@@ -363,7 +368,8 @@ class MessageListener(object):
         msgs = self.query(
             database='jsk_robot_lifelog',
             collection='fetch1075',
-            type='sensor_msgs/CompressedImage',
+            type=rostopic.get_topic_type(topic_in),
+            # type='sensor_msgs/CompressedImage',
             single=False,
             limit=limit,
             meta_query=StringPairList(meta_tuple),
