@@ -1,8 +1,0 @@
-#!/bin/bash
-
-source ~/.bashrc
-
-rossetrobot c1
-rossetip
-
-rosrun rviz rviz -d $(rospack find detect_cans_in_fridge_201202)/config/surfacetablet.rviz
