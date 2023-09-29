@@ -36,7 +36,7 @@ def pose_cb(pose_msg):
     try:
         transed_pose = listener.transformPose("BODY", pose_msg)
     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
-        print "tf error: %s" % e
+        print("tf error: %s" % e)
         return
     trans.header = transed_pose.header
     trans.child_frame_id = "handle"

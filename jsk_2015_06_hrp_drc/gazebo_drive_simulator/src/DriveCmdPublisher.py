@@ -16,8 +16,8 @@ class drive_command_publisher:
         elif self.argc == 4:
             self.time_flag = True
         else:
-            print "The Number of Command-Line Arguments Is Unsuitable"
-            print "Usage: ./DriveCmdPublisher.py TYPE DATA (TIME)"
+            print("The Number of Command-Line Arguments Is Unsuitable")
+            print("Usage: ./DriveCmdPublisher.py TYPE DATA (TIME)")
             sys.exit(1)
 
         # argv[1] is the type of topic 
@@ -36,14 +36,14 @@ class drive_command_publisher:
                 rospy.init_node("drive_steering_publisher", anonymous=True)
                 self.pub = rospy.Publisher("/drc_vehicle_xp900/hand_wheel/cmd", Float64, queue_size=10)
         else:
-            print "TYPE(1st Argument) Means \"a\"(Accelerator Pedal), \"b\"(Brake Pedal), \"d\"(Direction Gear) or \"h\" (Steering Wheel)"
+            print("TYPE(1st Argument) Means \"a\"(Accelerator Pedal), \"b\"(Brake Pedal), \"d\"(Direction Gear) or \"h\" (Steering Wheel)")
             sys.exit(1)
 
         # argv[2] is the data the topic has
         try:
             self.data = float(self.argv[2])
         except:
-            print "DATA(2nd Argument) Should Be Float Type"
+            print("DATA(2nd Argument) Should Be Float Type")
             sys.exit(1)
 
         # argv[3] is the time
@@ -51,7 +51,7 @@ class drive_command_publisher:
             try:
                 self.pub_time = float(self.argv[3])
             except:
-                print "TIME(3rd Argument) Should Be Float Type"
+                print("TIME(3rd Argument) Should Be Float Type")
                 sys.exit(1)
 
         self.r = rospy.Rate(30) # 30hz
@@ -86,7 +86,7 @@ class drive_command_publisher:
                     pub_msg = 0.0
                     self.pub_finish.publish(pub_msg)
                 else:
-                    print "Publish %s For %f Seconds & Publish b For 1.5 Seconds" % (self.argv[1], self.pub_time)
+                    print("Publish %s For %f Seconds & Publish b For 1.5 Seconds" % (self.argv[1], self.pub_time))
                     sys.exit(0)
             else:
                 pub_msg = Float64()
@@ -106,7 +106,7 @@ class drive_command_publisher:
             pub_msg = Float64()
             pub_msg = 0.0
             self.pub.publish(pub_msg)
-        print "Obstacle Detection Activated!!"
+        print("Obstacle Detection Activated!!")
         sys.exit(0)
 
 if __name__ == '__main__':

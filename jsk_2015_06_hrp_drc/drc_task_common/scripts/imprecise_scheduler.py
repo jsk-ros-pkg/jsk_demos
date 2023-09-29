@@ -80,7 +80,7 @@ elif args.type == "valve_walk":
     initial_speed_factor = 5
     steps = args.distance / 0.2
     distance_factor = error_func(steps)
-    print >> sys.stderr, "distance_factor:", distance_factor
+    print("distance_factor:", distance_factor, file=sys.stderr)
     p0_table = QualityTable("q_{p0}", "package://drc_task_common/profile_data/recognition/valve_detection.csv", args.p0 * distance_factor)
     m0_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_valve_ik_stand2_average_mono.csv", args.m0 * distance_factor)
     m0_all_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_valve_ik_stand2_average.csv", args.m0 * distance_factor)
@@ -101,7 +101,7 @@ elif args.type == "valve_walk2":
     args.m0 = 0.1
     args.p1 = 1.0
     args.m1 = 1.0
-    print >> sys.stderr, "distance_factor:", distance_factor
+    print("distance_factor:", distance_factor, file=sys.stderr)
     p0_table = QualityTable("q_{p0}", "package://drc_task_common/profile_data/recognition/valve_detection.csv", args.p0 * distance_factor)
     p1_table = QualityTable("q_{p1}", "package://drc_task_common/profile_data/recognition/valve_detection.csv", 1.0)
     m0_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_valve_ik_stand2_average_mono.csv", args.m0 * distance_factor)
@@ -129,7 +129,7 @@ elif args.type == "door_walk2":
     args.m0 = 0.2
     args.p1 = 1.0
     args.m1 = 0.5
-    print >> sys.stderr, "distance_factor:", distance_factor
+    print("distance_factor:", distance_factor, file=sys.stderr)
     p0_table = QualityTable("q_{p0}", "package://drc_task_common/profile_data/recognition/door_detection.csv", args.p0 * distance_factor)
     p1_table = QualityTable("q_{p1}", "package://drc_task_common/profile_data/recognition/door_detection.csv", 1.0)
     m0_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_door_ik_stand2_average_mono.csv", args.m0 * distance_factor)
@@ -153,7 +153,7 @@ elif args.type == "door_walk":
     initial_speed_factor = 5
     steps = args.distance / 0.2
     distance_factor = error_func(steps)
-    print >> sys.stderr, "distance_factor:", distance_factor
+    print("distance_factor:", distance_factor, file=sys.stderr)
     p0_table = QualityTable("q_{p0}", "package://drc_task_common/profile_data/recognition/door_detection.csv", args.p0 * distance_factor)
     m0_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_door_ik_stand2_average_mono.csv", args.m0 * distance_factor)
     m0_all_table = QualityTable("q_{m0}", "package://drc_task_common/profile_data/motion/jaxon_door_ik_stand2_average.csv", args.m0 * distance_factor)
@@ -262,7 +262,7 @@ while not container.is_converged(deadline_time):
         break
     container.draw(ax)
     if args.save_img:
-        print 'image_{0:0>3}.png'.format(counter)
+        print('image_{0:0>3}.png'.format(counter))
         plt.savefig('image_{0:0>3}.png'.format(counter))
     counter = counter + 1
     if args.incremental:

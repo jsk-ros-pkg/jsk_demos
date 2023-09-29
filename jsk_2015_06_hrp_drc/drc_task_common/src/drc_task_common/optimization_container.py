@@ -166,31 +166,31 @@ class OptimizationContainer():
         # print "choose", min_table.name
         return True
     def printOverview2Column(self):
-        print "time,q"
+        print("time,q")
     def printOverview2(self, deadline):
-        print "{0},{1}".format(self.current_time(), self.current_q())
+        print("{0},{1}".format(self.current_time(), self.current_q()))
     def printOverview(self, deadline):
-        print "initial condition:"
-        print "  all time:", self.initial_time()
-        print "  all q:", self.initial_q()
+        print("initial condition:")
+        print("  all time:", self.initial_time())
+        print("  all q:", self.initial_q())
         for t, s in zip(self.tables, self.initial_times):
-            print "  " + t.name
-            print "    time:", s
-            print "    q:", t.time2q(s)
+            print("  " + t.name)
+            print("    time:", s)
+            print("    q:", t.time2q(s))
             for p in t.other_params():
-                print "    {0}: {1}".format(p, t.lookup_value("time",s, p))
-        print "deadline time:", deadline
-        print "minimum time:", sum([t.min_time() for t in self.tables])
-        print "final result:"
-        print "  all time:", self.current_time()
-        print "  all q:", self.current_q()
-        print "  rel q", self.current_q() / self.max_q()
+                print("    {0}: {1}".format(p, t.lookup_value("time",s, p)))
+        print("deadline time:", deadline)
+        print("minimum time:", sum([t.min_time() for t in self.tables]))
+        print("final result:")
+        print("  all time:", self.current_time())
+        print("  all q:", self.current_q())
+        print("  rel q", self.current_q() / self.max_q())
         for t, s in zip(self.tables, self.current_times):
-            print "  " + t.name
-            print "    time:", s
-            print "    q:", t.time2q(s)
+            print("  " + t.name)
+            print("    time:", s)
+            print("    q:", t.time2q(s))
             for p in t.other_params():
-                print "    {0}: {1}".format(p, t.lookup_value("time",s, p))
+                print("    {0}: {1}".format(p, t.lookup_value("time",s, p)))
     def draw(self, ax):
         if self.no_gui and not self.save_img:
             return

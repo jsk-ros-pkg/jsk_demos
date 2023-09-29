@@ -56,7 +56,7 @@ def joy_cb(msg):
             factor_flag_b = True
             if factor < 0.6:
                 factor*=1.2
-        print "factor: %f" % factor
+        print("factor: %f" % factor)
     else:
         factor_flag_b = False
 
@@ -65,7 +65,7 @@ def joy_cb(msg):
             factor_flag_s = True
             if factor > 0.01:
                 factor/=1.2
-        print "factor: %f" % factor
+        print("factor: %f" % factor)
     else:
         factor_flag_s = False
     if msg.buttons[8]:

@@ -19,7 +19,7 @@ class MagnetometerToDirection:
             try:
                 self.offset_ang = float(self.argv[1]) * pi / 180
             except:
-                print "DATA(1st Argument) Should Be Float, So Default (0.0) Is Used."
+                print("DATA(1st Argument) Should Be Float, So Default (0.0) Is Used.")
                 self.offset_ang = 0.0
         else:
             self.offset_ang = 0.0
