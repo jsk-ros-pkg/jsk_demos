@@ -21,31 +21,31 @@ class Talk(object):
         #pepper_proxy
         try:
             self.tts = ALProxy("ALTextToSpeech",self.PEPPER_IP,self.PORT)
-        except Exception, e:
+        except Exception as e:
             print("Error:")
             print(str(e))
 
         try:
             self.ans = ALProxy("ALAnimatedSpeech",self.PEPPER_IP,self.PORT)
-        except Exception, e:
+        except Exception as e:
             print("Error:")
             print(str(e))
             
         try:
             self.pos = ALProxy("ALRobotPosture", self.PEPPER_IP, self.PORT)
-        except Exception, e:
+        except Exception as e:
             print("Error:")
             print(str(e))
 
         try:
             self.mo = ALProxy("ALMotion",self.PEPPER_IP,self.PORT)
-        except Exception, e:
+        except Exception as e:
             print("Error:")
             print(str(e))
 
         try:
             self.led = ALProxy("ALLeds",self.PEPPER_IP,self.PORT)
-        except Exception, e:
+        except Exception as e:
             print("Error:")
             print(str(e))
 

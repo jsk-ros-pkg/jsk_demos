@@ -65,7 +65,7 @@ def process_msg ():
 
     try:
         cv_image = imgmsg_to_cv(msg, "mono8")
-    except CvBridgeError, e:
+    except CvBridgeError as e:
         print(e)
 
     reslist = []

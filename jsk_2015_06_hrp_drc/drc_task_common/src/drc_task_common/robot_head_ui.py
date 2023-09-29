@@ -36,7 +36,7 @@ class RobotHeadWidget(QtGui.QWidget):
     self.lock = Lock()
     try:
       robot_model = URDF.from_xml_string(rospy.get_param("/robot_description"))
-    except Exception, e:
+    except Exception as e:
       self.showError("Failed to load /robot_description: " + e.message)
       return
     # Parse urdf
@@ -47,7 +47,7 @@ class RobotHeadWidget(QtGui.QWidget):
       self.yaw_lower = rad2deg(yaw_joint.limit.lower)
       self.pitch_upper = rad2deg(pitch_joint.limit.upper)
       self.pitch_lower = rad2deg(pitch_joint.limit.lower)
-    except Exception, e:
+    except Exception as e:
       self.showError("Failed to load correct min/max joint angles: " + e.message)
       return
     vsplitter = QtGui.QSplitter(QtCore.Qt.Vertical)

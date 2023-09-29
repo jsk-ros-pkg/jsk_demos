@@ -25,7 +25,7 @@ if __name__ == "__main__":
         try:
             listener.waitForTransform('left_camera_optical_frame', pose_stamped.header.frame_id,  now, rospy.Duration(1))
             transed_pose = listener.transformPose('left_camera_optical_frame', pose_stamped)
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf.Exception), e:
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf.Exception) as e:
             print("tf error: %s" % e)
             r.sleep()
             continue
