@@ -1,0 +1,16 @@
+<launch>
+  <arg name="main" default="true" />
+
+  <node if="$(arg main)" pkg="kitchen_demo_bt" type="kitchen_demo" name="kitchen_demo_main"
+        output="screen">
+  </node>
+
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+    <arg name="unregister_timeout" value="100000"/>
+  </include>
+
+  <node pkg="roseus" type="roseus" name="kitchen_demo_action_server"
+        args="$(find kitchen_demo_bt)/euslisp/kitchen-demo-action-server.l"
+        output="screen"/>
+
+</launch>

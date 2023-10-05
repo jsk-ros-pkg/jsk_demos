@@ -1,0 +1,48 @@
+- git:
+    local-name: behaviortree_cpp
+    uri: https://github.com/Affonso-Gui/BehaviorTree.CPP.git
+    version: state_aware_bt
+- git:
+    local-name: behaviortree_ros
+    uri: https://github.com/BehaviorTree/BehaviorTree.ROS.git
+    version: master
+- git:
+    local-name: euslime
+    uri: https://github.com/Affonso-Gui/euslime.git
+    version: eus10
+- git:
+    local-name: euslisp/Euslisp
+    uri: https://github.com/Affonso-Gui/EusLisp.git
+    version: eus10
+- git:
+    local-name: euslisp/jskeus
+    uri: https://github.com/euslisp/jskeus.git
+    version: master
+- git:
+    local-name: groot
+    uri: https://github.com/Affonso-Gui/Groot.git
+    version: roseus_bt_state_aware
+- git:
+    local-name: jsk-ros-pkg/geneus
+    uri: https://github.com/jsk-ros-pkg/geneus.git
+    version: master
+- git:
+    local-name: jsk-ros-pkg/jsk_demos
+    uri: https://github.com/jsk-ros-pkg/jsk_demos.git
+    version: kitchen-demo-bt
+- git:
+    local-name: jsk-ros-pkg/jsk_pr2eus
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus.git
+    version: master
+- git:
+    local-name: jsk-ros-pkg/jsk_robot
+    uri: https://github.com/knorth55/jsk_robot.git
+    version: develop/fetch-go-to-kitchen-simulation
+- git:
+    local-name: jsk-ros-pkg/jsk_roseus
+    uri: https://github.com/Affonso-Gui/jsk_roseus.git
+    version: eus10_state_aware
+- git:
+    local-name: roseus_resume
+    uri: https://github.com/Affonso-Gui/roseus_resume.git
+    version: eus10
