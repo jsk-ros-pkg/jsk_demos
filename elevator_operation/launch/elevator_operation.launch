@@ -1,0 +1,58 @@
+<launch>
+    <arg name="input_topic_points" default="/head_camera/depth_registered/points" />
+
+    <arg name="launch_switchbot_client" default="false" />
+    <arg name="switchbot_token_yaml" default="/var/lib/robot/credentials/switchbot_token.yaml" />
+
+    <arg name="robot_type" default="fetch" />
+
+    <arg name="input_topic_current_floor" default="/elevator_state_publisher/current_floor" />
+    <arg name="input_topic_elevator_movement" default="/elevator_state_publisher/elevator_movement" />
+    <arg name="input_topic_door_state" default="/elevator_door_detector/door_state" />
+
+    <!-- elevator operation server -->
+    <node pkg="elevator_operation" type="elevator_operation_server.py" name="elevator_operation_server" output="screen">
+        <remap from="~state_door_state" to="$(arg input_topic_door_state)" />
+        <remap from="~state_elevator_movement" to="$(arg input_topic_elevator_movement)" />
+        <remap from="~state_current_floor" to="$(arg input_topic_current_floor)" />
+        <remap from="~look_at" to="/look_at_target_server/look_at_target" />
+        <remap from="~reset_movement" to="/elevator_state_publisher/reset_movement" />
+        <remap from="~change_floor" to="/change_floor_server/input" />
+        <rosparam subst_value="true">
+            input_topic_points: $(arg input_topic_points)
+            global_costmap_inflation_plugin: '/move_base/global_costmap/inflater'
+            local_costmap_inflation_plugin: '/move_base/local_costmap/inflater'
+            #global_costmap_inflation_plugin: '/move_base/global_costmap/inflation_layer'
+            #local_costmap_inflation_plugin: '/move_base/local_costmap/inflation_layer'
+        </rosparam>
+        <rosparam
+            ns="elevator_config"
+            command="load"
+            file="$(find elevator_operation)/config/config.yaml"
+            />
+    </node>
+
+    <!-- look at target server -->
+    <node pkg="elevator_operation" type="look-at-elevator.l" name="look_at_target_server" output="screen">
+        <rosparam subst_value="true">
+            robot_type: $(arg robot_type)
+        </rosparam>
+    </node>
+
+    <!-- doors frame publisher -->
+    <include
+        file="$(find elevator_operation)/launch/doors_frame_publisher.launch" />
+
+    <!-- switchbot_ros -->
+    <node
+        pkg="switchbot_ros"
+        type="switchbot_ros_server.py"
+        name="switchbot_ros"
+        output="screen"
+        if="$(arg launch_switchbot_client)">
+        <rosparam
+            command="load"
+            file="$(arg switchbot_token_yaml)"
+            />
+    </node>
+</launch>

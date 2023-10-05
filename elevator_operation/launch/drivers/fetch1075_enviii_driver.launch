@@ -1,0 +1,10 @@
+<launch>
+    <arg name="output_altitude_topic" default="/altitude" />
+
+    <!-- calculate altitude from air pressure -->
+    <node pkg="elevator_operation" type="altitude_calculator.py" name="altitude_calculator" output="screen">
+        <remap from="~input_pressure" to="/enviii/pressure" />
+        <remap from="~input_temperature" to="/enviii/temperature" />
+        <remap from="~output" to="$(arg output_altitude_topic)" />
+    </node>
+</launch>
