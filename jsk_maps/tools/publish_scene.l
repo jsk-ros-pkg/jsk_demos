@@ -40,7 +40,7 @@
 
 (defun publish-scene (&key (alpha 1.0) (lifetime 0))
   (let* ((stamp (ros::time-now))
-         (header (instance std_msgs::header :init :stamp stamp :frame_id "/world"))
+         (header (instance std_msgs::header :init :stamp stamp :frame_id "world"))
          current-map-coords scene msg)
 
     (unless (ros::get-topic-publisher *pub-scene-marker-topic*)
