@@ -110,7 +110,10 @@ map_id: ~a"
         <param name=\"frame_id\" value=\"~a\"/>
       </node>~%"
             cntr (get-yaml-filename map :unresolve t :keepout t)
-            (send map :name) (send map :name))
+            (send map :name)
+            ;; When first charactor of map frame_id is slash in noetic,
+            ;; Something wrong occured on map and map tf adjustment
+            (string-left-trim "/" (send map :name)))
           (incf cntr))
           (format fd "    </group>~%")))
 
@@ -125,7 +128,10 @@ map_id: ~a"
         <param name=\"frame_id\" value=\"~a\"/>
       </node>~%"
               cntr (get-yaml-filename map :unresolve t :keepout nil)
-              (send map :name) (send map :name))
+              (send map :name)
+              ;; When first charactor of map frame_id is slash in noetic,
+              ;; Something wrong occured on map and map tf adjustment
+              (string-left-trim "/" (send map :name)))
             (incf cntr))
           (format fd "    </group>~%"))
         (dolist (map floors)
@@ -135,7 +141,10 @@ map_id: ~a"
       <param name=\"frame_id\" value=\"~a\"/>
     </node>~%"
             cntr (get-yaml-filename map :unresolve t)
-            (send map :name) (send map :name))
+            (send map :name)
+            ;; When first charactor of map frame_id is slash in noetic,
+            ;; Something wrong occured on map and map tf adjustment
+            (string-left-trim "/" (send map :name)))
           (incf cntr)))
 
       ;; multi map server
