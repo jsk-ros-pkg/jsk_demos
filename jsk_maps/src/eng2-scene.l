@@ -246,6 +246,10 @@
    	 `(:rot ,(rpy-matrix 2.296 0 0)
             :pos ,(float-vector 1558 7230 0)
 			:name "/eng2/7f/room73B2-kitchen-door-front")
+	 `(:rot ,(rpy-matrix 2.4 0 0)
+                        :pos ,(float-vector 4120 7200 51.6065)
+			:name "/eng2/7f/room73B2-spot-plugging-place")
+
 
      ;; `(:rot #2f((0.995724 0.092033 -0.007992) (-0.091974 0.995734 0.007399) (0.008639 -0.006632 0.999941))
      ;; 	    :pos ,(float-vector 5199.19 7318.84 51.3556)
