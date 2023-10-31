@@ -1,0 +1,60 @@
+<launch>
+
+    <node
+        pkg="jsk_spot_patrol_and_greeting"
+        type="demo.l"
+        name="jsk_spot_patrol_and_greeting_demo"
+        required="true"
+        output="screen"
+        >
+        <remap from="~greeting" to="/greeting_action_server/greeting" />
+        <rosparam subst_value="true">
+            patrol_list:
+                - eng2_JSKEntrance
+                - eng2_73A2
+                - eng2_7FElevator
+                - eng2_73B1
+            home_id: eng2_73B2
+            dock_id: 520
+            receiver_address: "spot@jsk.imi.i.u-tokyo.ac.jp"
+            video_directory: "/tmp/"
+            video_audio_topic_name: /audio
+            video_image_topic_name: /dual_fisheye_to_panorama/output/quater
+            video_frame_rate: 2
+        </rosparam>
+    </node>
+
+    <!-- person tracker -->
+    <node
+        pkg="spot_person_lead_behaviors"
+        type="person_tracker.py"
+        name="patrol_and_greeting_demo_person_tracker"
+        output="screen">
+        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
+        <!-- remap from="~visible" to="" / -->
+
+        <rosparam subst_value="true">
+            frame_id_robot: 'body'
+            label_person: 0
+            dist_visible: 2.0
+            timeout_observation: 5.0
+        </rosparam>
+    </node>
+
+    <!-- greeting action server -->
+    <node
+        pkg="jsk_spot_patrol_and_greeting"
+        type="greeting_action_server.py"
+        name="greeting_action_server"
+        output="screen"
+        >
+        <remap from="~people_pose_array" to="/patrol_and_greeting_demo_person_tracker/people_pose_array" />
+
+        <rosparam subst_value="true">
+            receiver_address: spot@jsk.imi.i.u-tokyo.ac.jp
+            capture_image_topic: /dual_fisheye_to_panorama/output/quater
+            parents_path: /spot_patrol_and_greeting/images
+        </rosparam>
+    </node>
+
+</launch>
