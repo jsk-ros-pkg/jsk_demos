@@ -150,6 +150,7 @@ class MessageListener(object):
             msg = deserialise_message(msg)
             meta = json.loads(meta.pairs[0].second)
             activities.append((msg, meta))
+        rospy.logwarn("  Found {} messages".format(len(activities)))
         return activities
 
     def query_activities_days(self, days=7):
@@ -181,9 +182,11 @@ class MessageListener(object):
         for activities in activities:
             rospy.loginfo("Found {} activities".format(len(activities)))
             activities_raw = []
+            input_topics = []
             for msg, meta in activities:
                 state = None
                 timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
+                input_topics.append(meta['input_topic'])
                 # rospy.logwarn("{} {}".format(timestamp, meta['input_topic']))
                 if meta['stored_type'] == 'aibo_driver/StringStatus':
                     if msg.status in ['', 'none']:
@@ -210,7 +213,10 @@ class MessageListener(object):
                 # create activities_raw
                 for s in state:
                     activities_raw.append((timestamp, s))
-            diary_activities_raw.append(activities_raw)
+            if len(activities_raw) > 0:
+                rospy.loginfo("  {} {}".format(activities_raw[0][0], activities_raw[-1][0]))
+                rospy.loginfo("  {}".format({key: input_topics.count(key) for key in set(input_topics)}))
+                diary_activities_raw.append(activities_raw)
         ##
         return diary_activities_raw ##  (timestamp, event)
 
@@ -244,9 +250,10 @@ class MessageListener(object):
         for msg, meta in activities[0]:
             if meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
                 timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
-                answer = msg.result.result.result[0].answer
-                if answer not in image_activities.keys():
-                    image_activities.update({answer : timestamp})
+                if len(msg.result.result.result) > 0:
+                    answer = msg.result.result.result[0].answer
+                    if answer not in image_activities.keys():
+                        image_activities.update({answer : timestamp})
         #
         print(image_activities)
         prompt = "From the list below, please select the most memorable event by number.\n\n"
@@ -275,6 +282,7 @@ class MessageListener(object):
     def make_activity(self, activities = None):
         if not activities:
              activities = self.query_activities_days()
+
         diary_activities_raw = self.make_aibo_activities_raw(activities)  ##  (timestamp, event)
 
         # check today
