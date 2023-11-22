@@ -243,7 +243,7 @@ class MessageListener(object):
             rospy.loginfo("Found {} mongo data".format(len(mongo_data)))
             mongo_data_type = list(set([meta['stored_type'] for _, meta in mongo_data]))
             if len(mongo_data_type) > 1 and 'jsk_recognition_msgs/VQATaskActionResult' in mongo_data_type:
-                rospy.loginfo("Found {} image data".format(len(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' in x['stored_type'], [meta for _, meta in mongo_data]))))
+                rospy.loginfo("Found {} image data".format(len(list(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' in x['stored_type'], [meta for _, meta in mongo_data])))))
                 image_activities = {}
                 for msg, meta in mongo_data:
                     if meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
