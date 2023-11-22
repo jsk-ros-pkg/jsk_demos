@@ -4,6 +4,8 @@
 import rospy
 import logging
 
+import argparse
+
 import actionlib
 from bson import json_util
 # import copy
@@ -17,7 +19,7 @@ import pickle
 import re
 import rospkg
 # import shutil
-# import sys
+import sys
 # import yaml
 import tempfile
 # import time
@@ -58,6 +60,13 @@ class MessageListener(object):
         self.robot_name = rospy.get_param('robot/name')
         rospy.loginfo("using '{}' database".format(self.robot_name))
 
+        if self.robot_name == 'aibo':
+            self.query_types = ['aibo_driver/StringStatus',
+                                'aibo_driver/ObjectStatusArray',
+                                'jsk_recognition_msgs/VQATaskActionResult']
+        else:
+            self.query_types = ['jsk_recognition_msgs/VQATaskActionResult']
+
         rospy.loginfo("wait for '/google_chat_ros/send'")
         self.chat_ros_ac = actionlib.SimpleActionClient('/google_chat_ros/send', SendMessageAction)
         self.chat_ros_ac.wait_for_server()
@@ -94,8 +103,8 @@ class MessageListener(object):
 
         rospy.loginfo("all done, ready")
 
-
     def query_multiple_types(self, types, meta_tuple):
+        "Query mongo messages, returns list of MongoQueryMsgResponse"
         msgs = MongoQueryMsgResponse()
         for _type in types:
             msg = self.query(database = 'jsk_robot_lifelog',
@@ -109,41 +118,12 @@ class MessageListener(object):
             msgs.metas.extend(msg.metas)
         return msgs
 
-    def query_activities2(self, start_time, end_time):
+    def query_mongo_data(self, types, start_time, end_time):
+        "Query activities for aibo robot, returns list of tuple (msg, meta)"
         rospy.logwarn("Query activities from {} until {}".format(start_time, end_time))
         meta_query= {'inserted_at': {"$lt": end_time, "$gt": start_time}}
         meta_tuple = (StringPair(MongoQueryMsgRequest.JSON_QUERY, json.dumps(meta_query, default=json_util.default)),)
-        mongo_msgs = self.query_multiple_types(['aibo_driver/StringStatus', 'aibo_driver/ObjectStatusArray'],
-                                               meta_tuple)
-
-        activities_raw = []
-        for msg, meta in zip(mongo_msgs.messages, mongo_msgs.metas):
-            msg = deserialise_message(msg)
-            meta = json.loads(meta.pairs[0].second)
-            timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
-            #rospy.logdebug("{} {} {}".format(timestamp, meta['input_topic'], msg.status))
-            if meta['stored_type'] == 'aibo_driver/StringStatus':
-                if msg.status in ['', 'none']:
-                    continue
-                if 'body_touched' in meta['input_topic']:
-                    activities_raw.append(msg.status+'_touched')
-                elif 'hungry' in meta['input_topic']:
-                    activities_raw.append('energy_'+msg.status)
-                elif 'posture' in meta['input_topic']:
-                    activities_raw.append('posture_'+msg.status)
-                elif 'sleepy' in meta['input_topic']:
-                    activities_raw.append(msg.status)
-            elif meta['stored_type'] == 'aibo_driver/ObjectStatusArray':
-                pass
-        return activities_raw
-        
-    def query_activities(self, start_time, end_time):
-        rospy.logwarn("Query activities from {} until {}".format(start_time, end_time))
-        meta_query= {'inserted_at': {"$lt": end_time, "$gt": start_time}}
-        meta_tuple = (StringPair(MongoQueryMsgRequest.JSON_QUERY, json.dumps(meta_query, default=json_util.default)),)
-        mongo_msgs = self.query_multiple_types(['aibo_driver/StringStatus', 'aibo_driver/ObjectStatusArray',
-                                                'jsk_recognition_msgs/VQATaskActionResult'],
-                                               meta_tuple)
+        mongo_msgs = self.query_multiple_types(types, meta_tuple)
 
         activities = []
         for msg, meta in zip(mongo_msgs.messages, mongo_msgs.metas):
@@ -153,7 +133,10 @@ class MessageListener(object):
         rospy.logwarn("  Found {} messages".format(len(activities)))
         return activities
 
-    def query_activities_days(self, days=7):
+    def query_mongo_data_days(self, types=None, days=7):
+        "Query activities for a week, returns list of list of tuple (msg, meta), if activity is empty of that day, returns empty list"
+        if types == None:
+            types = self.query_types
         # if we found cache file
         if (os.path.exists(self.pickle_file) and
             (datetime.datetime.today() - datetime.datetime.fromtimestamp(os.path.getmtime(self.pickle_file))).seconds < 1 * 60 * 60):  # seconds -> hours
@@ -165,11 +148,11 @@ class MessageListener(object):
         today = datetime.date.today()
         startdate = datetime.datetime(today.year, today.month, today.day, tzinfo=JST)
         for days_before in range(days):
-            activities_raw = self.query_activities(startdate-datetime.timedelta(hours=days_before*24),
+            activities_raw = self.query_mongo_data(types,
+                                                   startdate-datetime.timedelta(hours=days_before*24),
                                                    startdate-datetime.timedelta(hours=(days_before-1)*24))
-            if len(activities_raw):
-                activities.append(activities_raw)
-        
+            activities.append(activities_raw)
+
         # dump msgs
         with open(self.pickle_file, 'wb') as f:
             pickle.dump(activities, f)
@@ -177,13 +160,18 @@ class MessageListener(object):
 
         return activities
 
-    def make_aibo_activities_raw(self, activities):
+    def make_aibo_activities_raw(self, mongo_data_days = None):
+        "Create aibo activities for several days, returns list of list of tuple(temestamp, event)"
+        # list of list of tuples (msg, meta) [[(msg, meta), (msg, meta),...],[#for 2nd day], [#for 3rd day]]
+        if not mongo_data_days:
+            mongo_data_days = self.query_mongo_data_days()
         diary_activities_raw = [] ##  (timestamp, event)
-        for activities in activities:
-            rospy.loginfo("Found {} activities".format(len(activities)))
+        for mongo_data in mongo_data_days:
+            rospy.loginfo("Found {} mongo data".format(len(mongo_data)))
+            rospy.loginfo("   types  : {}".format(list(set([x[1]['stored_type'] for x in mongo_data]))))
             activities_raw = []
             input_topics = []
-            for msg, meta in activities:
+            for msg, meta in mongo_data:
                 state = None
                 timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
                 input_topics.append(meta['input_topic'])
@@ -213,10 +201,12 @@ class MessageListener(object):
                 # create activities_raw
                 for s in state:
                     activities_raw.append((timestamp, s))
+
+            diary_activities_raw.append(activities_raw)
+
             if len(activities_raw) > 0:
-                rospy.loginfo("  {} {}".format(activities_raw[0][0], activities_raw[-1][0]))
-                rospy.loginfo("  {}".format({key: input_topics.count(key) for key in set(input_topics)}))
-                diary_activities_raw.append(activities_raw)
+                rospy.loginfo("   period : {} {}".format(activities_raw[-1][0], activities_raw[0][0]))
+                rospy.loginfo("   topics : {}".format({key: input_topics.count(key) for key in set(input_topics)}))
         ##
         return diary_activities_raw ##  (timestamp, event)
 
@@ -245,21 +235,28 @@ class MessageListener(object):
                 prompt += "{} : +{}\n".format(event,
                                               int(freq_0[event]/ratio) - (freq_1[event] if event in freq_1 else 0))
 
-    def make_image_activities_raw(self, activities):
-        image_activities = {}
-        for msg, meta in activities[0]:
-            if meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
-                timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
-                if len(msg.result.result.result) > 0:
-                    answer = msg.result.result.result[0].answer
-                    if answer not in image_activities.keys():
-                        image_activities.update({answer : timestamp})
+    def make_image_activities(self, mongo_data_days = None):
+        if not mongo_data_days:
+            mongo_data_days = self.query_mongo_data_days()
+
+        for mongo_data in mongo_data_days:
+            rospy.loginfo("Found {} mongo data".format(len(mongo_data)))
+            mongo_data_type = list(set([meta['stored_type'] for _, meta in mongo_data]))
+            if len(mongo_data_type) > 1 and 'jsk_recognition_msgs/VQATaskActionResult' in mongo_data_type:
+                rospy.loginfo("Found {} image data".format(len(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' in x['stored_type'], [meta for _, meta in mongo_data]))))
+                image_activities = {}
+                for msg, meta in mongo_data:
+                    if meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
+                        timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
+                        if len(msg.result.result.result) > 0:
+                            answer = msg.result.result.result[0].answer
+                            if answer not in image_activities.keys():
+                                image_activities.update({answer : timestamp})
+                break
         #
-        print(image_activities)
-        prompt = "From the list below, please select the most memorable event by number.\n\n"
+        prompt = "From the list below, please select the most memorable and illuminating events by number.\n\n"
         n = 0
         for answer, timestamp in image_activities.items():
-            print("----------------------" + answer)
             prompt += "{}: {} ({})\n".format(n, answer, timestamp)
             n += 1
 
@@ -279,23 +276,28 @@ class MessageListener(object):
                 self.write_image_with_annotation(filename, results[0], answer)
                 return {'text': answer, 'filename': filename}
 
-    def make_activity(self, activities = None):
-        if not activities:
-             activities = self.query_activities_days()
+    def make_activity(self, mongo_data_days = None):
+        "Returns activity prompts"
+        if not mongo_data_days:
+            mongo_data_days = self.query_mongo_data_days()
 
-        diary_activities_raw = self.make_aibo_activities_raw(activities)  ##  (timestamp, event)
+        # create diary activities_raw
+        # list of (timestamp, event)  [[(temestamp, event), (temestamp, event) ...],[#for 2nd day],[#for 3rd day]...]
+        diary_activities_raw = self.make_aibo_activities_raw(mongo_data_days)
 
-        # check today
+        # just show information
         diary_activities_freq = []
         for activities_raw in diary_activities_raw:
             activities_raw_state = [x[1] for x in activities_raw]
             activities_freq = {key: activities_raw_state.count(key) for key in set(activities_raw_state)}
+            rospy.logwarn("Found {} activity data".format(len(activities_raw)))
             if len(activities_raw) > 0:
-                # rospy.loginfo("activities raw  : {}".format(activities_raw))
-                rospy.loginfo("activities freq : {} ({})".format(activities_freq, len(activities_freq)))
+                rospy.logwarn("   period : {} {}".format(activities_raw[-1][0], activities_raw[0][0]))
+                rospy.logwarn("     freq : {} ({})".format(activities_freq, len(activities_freq)))
             diary_activities_freq.append(activities_freq)
 
-        # activities_events[event_name] = {'duration', datetime.timedelta}
+        # create activities event data
+        # activities_events[event_name] = {'duration', datetime.timedelta, 'count': int}
         diary_activities_events = []
         for activities_raw in diary_activities_raw:
             activities_events = {}
@@ -314,32 +316,44 @@ class MessageListener(object):
                         activities_events[event]['duration'] += activities_events[event]['tmp_duration']
                         activities_events[event]['tmp_duration'] = datetime.timedelta()
                     activities_events[event]['last_seen'] = timestamp
+                    activities_events[event]['count'] += 1
                 else:
-                    activities_events.update({event : {'last_seen' : timestamp, 'tmp_duration' : datetime.timedelta(), 'duration' : datetime.timedelta()}})
-                #print("{} {:24} {} {}".format(timestamp, event, activities_events[event]['duration'], activities_events[event]['tmp_duration']))
+                    activities_events.update({event : {'last_seen' : timestamp, 'tmp_duration' : datetime.timedelta(), 'duration' : datetime.timedelta(), 'count': 0}})
+                # print("{} {:24} {} {}".format(timestamp, event, activities_events[event]['duration'], activities_events[event]['tmp_duration']))
             diary_activities_events.append(activities_events)
 
         for activities_events in diary_activities_events:
             print("--")
             for event, duration in sorted(activities_events.items(), key=lambda x: x[1]['duration'], reverse=True):
-                print("{:24} : {:4.2f} min".format(event, duration['duration'].seconds/60))
-            
+                print("{:24} : {:4.2f} min ({} times)".format(event, duration['duration'].seconds/60, duration['count']))
+
+        # flatten list
+        activities_events = [x for events in diary_activities_events for x in events.keys()]  # get all activities with duplicates
+
+        # percentages of activities happend
         prompt = ""
-        prompt += "\n<actions you always do> 'action : duration'\n"
-        activities_events = diary_activities_events[0]  # get todays activities
-        for event, duration in sorted(activities_events.items(), key=lambda x: x[1]['duration'], reverse=True):
-            if duration['duration'].seconds > 0:
-                prompt += "{} : {} min\n".format(event, int(duration['duration'].seconds/60))
+        prompt += "\n<actions you always do> 'action : time'\n"
+
+        # sort activities event by it's occurence [list] -> sorted({key: count})
+        activities_events_freq = sorted({key: activities_events.count(key) for key in set(activities_events)}.items(), key=lambda x:x[1], reverse=True)
+        for event, count in activities_events_freq:
+            if count/float(len(diary_activities_events)) > 0.5:
+                prompt += "{} : {:.2f}\n".format(event, count/float(len(diary_activities_events)))
 
         # estimate frequence in 24h
-        prompt += "\n<actions performed more compared to yesterday> 'action : increased time time than yesterday'\n"
+        prompt += "\n<actions performed more compared to yesterday> 'action : increase from the number of time done yesterday'\n"
+
         more_yesterday_action = False
-        for event in diary_activities_events[0].keys():
-            if event in diary_activities_events[1]:
-                duration = diary_activities_events[0][event]['duration'] - diary_activities_events[1][event]['duration']
-                if duration.days > 0 and duration.seconds > 0:
-                    prompt += "{} : {} min\n".format(event, int(duration.seconds/60))
-                    more_yesterday_action = True
+        diary_activities_events_no_empty = list(filter(None, diary_activities_events))
+        if len(diary_activities_events_no_empty) >= 2:
+            l0 = diary_activities_events_no_empty[0]
+            l1 = diary_activities_events_no_empty[1]
+            for event in set(activities_events):
+                if event in l0 and event in l1:
+                    increase = l0[event]['count'] - l1[event]['count']
+                    if increase > 0:
+                        prompt += "{} : +{}\n".format(event, increase)
+                        more_yesterday_action = True
         if not more_yesterday_action:
             prompt += "none\n"
 
@@ -361,24 +375,28 @@ class MessageListener(object):
 
         rospy.logdebug(prompt)
         return prompt
-    
+
     def make_diary(self, language="Japanese"):
-        activities = self.query_activities_days()
-        #
+        "make dirary"
+        # get mongo data for 7 days
+        mongo_data_days = self.query_mongo_data_days()
+
+        # get most impressive image and text
         topic_of_day = None
-        filname = False
-        image_activity = self.make_image_activities_raw(activities)
+        _filename = False
+        image_activity = self.make_image_activities(mongo_data_days)
         if image_activity:
             topic_of_day = image_activity['text']
             filename = image_activity['filename']
-        # 
+
+        # create prompt
         prompt = "You are a baby robot. You were taken care of by people around you."
         if topic_of_day:
             prompt = "Today, you are impressed by " + topic_of_day + "."
         prompt += "The following data is a record of today's actions regarding what we always do, what we did more than yesterday, and what happened after a long time. Please write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n"
 
-        prompt +=  self.make_activity(activities)
-        
+        prompt +=  self.make_activity(mongo_data_days)
+
         response = self.openai_completion(prompt)
         rospy.loginfo("prompt = {}".format(prompt))
         rospy.loginfo("response = {}".format(response))
@@ -523,17 +541,18 @@ class MessageListener(object):
 
     def write_image_with_annotation(self, filename, best_result, prompt):
         image = bridge.compressed_imgmsg_to_cv2(best_result['image'])
+        _, width, _ = image.shape
+        scale = width/640.0
         if 'label' in best_result and 'similarities' in best_result:
             cv2.putText(image, "{} ({:.2f}) {}".format(best_result['label'], best_result['similarities'], best_result['timestamp'].strftime('%Y-%m-%d %H:%M:%S')),
-                        (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 8, 1)
+                        (10,int(20*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (255,255,255), 8, 1)
             cv2.putText(image, "{} ({:.2f}) {}".format(best_result['label'], best_result['similarities'], best_result['timestamp'].strftime('%Y-%m-%d %H:%M:%S')),
-                        (10,20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 2, 1)
-        h, w, c = image.shape
-        string_width = int(w/10)
+                        (10,int(20*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (0,0,0), 2, 1)
+        string_width = 70
         for i in range(0, len(prompt), string_width):  # https://stackoverflow.com/questions/13673060/split-string-into-strings-by-length
             text = prompt[i:i+string_width]
-            cv2.putText(image, text, (10,43+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255,255,255), 4, 1)
-            cv2.putText(image, text, (10,43+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,0), 1, 1)
+            cv2.putText(image, text, (10,int(43*scale)+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (255,255,255), 4, 1)
+            cv2.putText(image, text, (10,int(43*scale)+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (0,0,0), 1, 1)
         cv2.imwrite(filename, image)
         rospy.logwarn("save images to {}".format(filename))
 
@@ -716,11 +735,17 @@ class MessageListener(object):
             self.publish_google_chat_card("💀 {}".format(e), space)
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--test', action='store_true')
+    args = parser.parse_args()
+
     rospy.init_node('test', anonymous=True)
 
     logger = logging.getLogger('rosout')
     logger.setLevel(rospy.impl.rosout._rospy_to_logging_levels[rospy.DEBUG])
-    
+
     ml = MessageListener()
-    ml.make_activity()
+    if args.test:
+        ml.make_diary()
+        sys.exit(0)
     rospy.spin()
