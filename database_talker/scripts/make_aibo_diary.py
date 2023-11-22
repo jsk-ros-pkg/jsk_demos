@@ -250,11 +250,11 @@ class MessageListener(object):
                         timestamp = datetime.datetime.fromtimestamp(meta['timestamp']//1000000000, JST)
                         if len(msg.result.result.result) > 0:
                             answer = msg.result.result.result[0].answer
-                            if answer not in image_activities.keys():
+                            if len(answer.split()) > 3 and answer not in image_activities.keys():
                                 image_activities.update({answer : timestamp})
                 break
         #
-        prompt = "From the list below, please select the most memorable and illuminating events by number.\n\n"
+        prompt = "From the list below, please select the most memorable and illuminating event by number.\n\n"
         n = 0
         for answer, timestamp in image_activities.items():
             prompt += "{}: {} ({})\n".format(n, answer, timestamp)
@@ -266,6 +266,9 @@ class MessageListener(object):
         n = re.search(r'(\d+)', response)
         if n:
             answer, timestamp = list(image_activities.items())[max(int(n.group(1)),len(image_activities)-1)]
+            rospy.loginfo("topic of the day")
+            rospy.loginfo("    answer : {}".format(answer))
+            rospy.loginfo(" timestamp : {}".format(timestamp))
             results = self.query_images_and_classify(query = answer,
                                                      start_time = timestamp - datetime.timedelta(minutes=5),
                                                      end_time = timestamp + datetime.timedelta(minutes=5),
