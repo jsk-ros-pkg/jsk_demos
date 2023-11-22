@@ -265,7 +265,8 @@ class MessageListener(object):
         rospy.loginfo("response = {}".format(response))
         n = re.search(r'(\d+)', response)
         if n:
-            answer, timestamp = list(image_activities.items())[max(int(n.group(1)),len(image_activities)-1)]
+            no = min(int(n.group(1)), len(image_activities)-1)
+            answer, timestamp = list(image_activities.items())[no]
             rospy.loginfo("topic of the day")
             rospy.loginfo("    answer : {}".format(answer))
             rospy.loginfo(" timestamp : {}".format(timestamp))
@@ -371,7 +372,7 @@ class MessageListener(object):
                 else:
                     break
             if n >= 2:
-                prompt += "{} : {} days\n".format(event, n)
+                prompt += "{} : {}\n".format(event, n)
                 long_time_action = True
         if not long_time_action:
             prompt += "none\n"
@@ -404,8 +405,8 @@ class MessageListener(object):
         rospy.loginfo("prompt = {}".format(prompt))
         rospy.loginfo("response = {}".format(response))
 
-        #prompt = "Please rewrite the following diary in {language}. Write as childlike as you can. Write a maximum 120 {language} charactors.\n\n".format(language = language) + response
-        prompt = "Please rewrite the following diary as childlike as you can. Write a maximum 120 {} charactors.\n\n".format(language) + response
+        prompt = "Please rewrite the following diary in {language}. Write as childlike as you can. Write a maximum 120 {language} charactors.\n\n".format(language = language) + response
+        # prompt = "Please rewrite the following diary as childlike as you can. Write a maximum 120 {} charactors.\n\n".format(language) + response
         response = self.openai_completion(prompt)
         rospy.loginfo("prompt = {}".format(prompt))
         rospy.loginfo("response = {}".format(response))
@@ -530,6 +531,11 @@ class MessageListener(object):
         while loop < 5 and result is None:
             try:
                 result = self.completion(prompt=prompt,temperature=temperature)
+                if result.text == '':
+                    rospy.logwarn(result)
+                    rospy.logwarn("result text is too short, retry completion")
+                    rospy.sleep(2)
+                    resut = None
             except rospy.ServiceException as e:
                 rospy.logerr("Service call failed: %s"%e)
                 rospy.sleep(2)
