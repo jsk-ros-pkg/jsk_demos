@@ -54,7 +54,7 @@ from openai_ros.srv import Completion, CompletionResponse
 
 class MessageListener(object):
 
-    def __init__(self):
+    def __init__(self, wait_for_chat_server=True):
         #self.pickle_file = tempfile.NamedTemporaryFile(suffix='.pickle')
         self.pickle_file = "/tmp/activities.pickle"
         self.robot_name = rospy.get_param('robot/name')
@@ -69,7 +69,8 @@ class MessageListener(object):
 
         rospy.loginfo("wait for '/google_chat_ros/send'")
         self.chat_ros_ac = actionlib.SimpleActionClient('/google_chat_ros/send', SendMessageAction)
-        self.chat_ros_ac.wait_for_server()
+        if wait_for_chat_server:
+            self.chat_ros_ac.wait_for_server()
 
         rospy.loginfo("wait for '/message_store/query_messages'")
         rospy.wait_for_service('/message_store/query_messages')
@@ -242,8 +243,12 @@ class MessageListener(object):
         for mongo_data in mongo_data_days:
             rospy.loginfo("Found {} mongo data".format(len(mongo_data)))
             mongo_data_type = list(set([meta['stored_type'] for _, meta in mongo_data]))
+            if (len(mongo_data)) > 0:
+                from_date = datetime.datetime.fromtimestamp(mongo_data[-1][1]['timestamp']//1000000000, JST)
+                to_date = datetime.datetime.fromtimestamp(mongo_data[0][1]['timestamp']//1000000000, JST)
+                rospy.logwarn("   period : {} {}".format(from_date, to_date))
             if len(mongo_data_type) > 1 and 'jsk_recognition_msgs/VQATaskActionResult' in mongo_data_type:
-                rospy.loginfo("Found {} image data".format(len(list(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' in x['stored_type'], [meta for _, meta in mongo_data])))))
+                rospy.loginfo("          : {} image data".format(len(list(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' in x['stored_type'], [meta for _, meta in mongo_data])))))
                 image_activities = {}
                 for msg, meta in mongo_data:
                     if meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
@@ -252,7 +257,11 @@ class MessageListener(object):
                             answer = msg.result.result.result[0].answer
                             if len(answer.split()) > 3 and answer not in image_activities.keys():
                                 image_activities.update({answer : timestamp})
-                break
+                if (len(image_activities)) > 0:
+                    break
+                else:
+                    rospy.logwarn("   no valid image description is found...")
+
         #
         prompt = "From the list below, please select the most memorable and illuminating event by number.\n\n"
         n = 0
@@ -753,8 +762,9 @@ if __name__ == '__main__':
     logger = logging.getLogger('rosout')
     logger.setLevel(rospy.impl.rosout._rospy_to_logging_levels[rospy.DEBUG])
 
-    ml = MessageListener()
+    ml = MessageListener(wait_for_chat_server=not args.test)
     if args.test:
-        ml.make_diary()
+        ret = ml.make_diary()
+        rospy.loginfo("image is saved at {}".format(ret['filename']))
         sys.exit(0)
     rospy.spin()
