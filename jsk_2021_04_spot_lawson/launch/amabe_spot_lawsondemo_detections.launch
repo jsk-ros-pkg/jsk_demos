@@ -1,0 +1,5 @@
+<launch>
+  <include file = "$(find coral_usb)/launch/edgetpu_panorama_human_pose_estimator.launch">
+    <arg name="INPUT_IMAGE" value="/dual_fisheye_to_panorama/output/quater"/>
+  </include>
+</launch>
