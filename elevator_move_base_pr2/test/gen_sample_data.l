@@ -2,7 +2,8 @@
 
 (ros::roseus "elevator_move_base")
 
-(load "package://elevator_move_base_pr2/src/elevator-move-base-main.l")
+(load "package://elevator_move_base_pr2/src/state-machine-main.l")
+(load "package://elevator_move_base_pr2/src/utils.l")
 
 ;;
 ;; State Machine for test : push buttons
@@ -11,7 +12,7 @@
 ;; elevator_move_base action server
 (defun elevator-smach-initial (userdata) ;; goal -> args
   (update-robot-position)
-  (let ((cur-floor (check-current-floor)))
+  (let ((cur-floor (check-current-floor *scene* *tfl*)))
     (set-alist 'home-coords (send *ri* :state :worldcoords "/map") userdata)
     (set-alist 'outside-panel-name "/elevator_call_panel" userdata)
     (set-alist 'button-name "down" userdata)
@@ -37,7 +38,7 @@
     (send (send sm :node :go-elevator) :remap-list '((:goal . front-coords)))
     (send (send sm :node :go-home) :remap-list '((:goal . home-coords)))
     (send sm :arg-keys 'home-coords 'front-coords
-	  'outside-panel-name 'button-name  :goal :cancel)
+          'outside-panel-name 'button-name  :goal)
     (send sm :goal-state (list :success :fail))
     (send sm :start-state :initial)
     (send sm :add-transition :initial :speak-task t)
@@ -53,6 +54,7 @@
 ;;
 
 (initialize-env)
+(ros::advertise "view_target" geometry_msgs::PointStamped 1)
 
 (setq sm (elevator-smach) userdata '(nil))
 (ros::ros-info "initialized gen_sample_data.l")

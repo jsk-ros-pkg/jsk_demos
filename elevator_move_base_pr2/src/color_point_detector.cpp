@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #if ROS_VERSION_MINIMUM(1, 15, 0)
@@ -12,7 +16,6 @@
 #include <tf/transform_listener.h>
 #include <geometry_msgs/Point.h>
 #include <std_msgs/Float32.h>
-#include <algorithm>
 
 class FrameDrawer
 {
@@ -26,12 +29,13 @@ class FrameDrawer
   image_geometry::PinholeCameraModel cam_model_;
 
   std::string current_frame_;
-  double x,y,r;
+  double x_, y_, r_;
 #if ROS_VERSION_MINIMUM(1, 15, 0)
   cv::Scalar target_color_;
 #else
   CvScalar target_color_;
 #endif
+  std::vector<double> decay_bgr_;
 
   std::vector<tf::StampedTransform> button_pose_;
 
@@ -54,14 +58,22 @@ public:
 #else
     target_color_ = CV_RGB(r,g,b);
 #endif
+
+    double decay_r, decay_g, decay_b;
+    private_nh_.param("decay_r", decay_r, 0.1);
+    private_nh_.param("decay_g", decay_g, 0.1);
+    private_nh_.param("decay_b", decay_b, 0.1);
+    decay_bgr_.push_back(decay_b);
+    decay_bgr_.push_back(decay_g);
+    decay_bgr_.push_back(decay_r);
   }
 
   void pointCb(const geometry_msgs::PointStamped::ConstPtr& point_msg)
   {
     current_frame_ = point_msg->header.frame_id;
-    x = point_msg->point.x;
-    y = point_msg->point.y;
-    r = point_msg->point.z; // radius on image coordinate
+    x_ = point_msg->point.x;
+    y_ = point_msg->point.y;
+    r_ = point_msg->point.z; // radius on image coordinate
   }
 
   void imageCb(const sensor_msgs::ImageConstPtr& image_msg,
@@ -72,53 +84,58 @@ public:
 
     //std::cout << ".";
     // drop 9 of 10 frames
-    //if(info_msg->header.seq % 10 != 0) return;
-    if(image_msg->header.frame_id != current_frame_) return;
+    //if(info_msg->header.seq % 10 != 0) {return;}
+    if(image_msg->header.frame_id != current_frame_) {return;}
 
-    try {
+    try
+    {
       // May want to view raw bayer data
       // NB: This is hacky, but should be OK since we have only one image CB.
       if (image_msg->encoding.find("bayer") != std::string::npos)
-	boost::const_pointer_cast<sensor_msgs::Image>(image_msg)->encoding = "mono8";
+      {
+        boost::const_pointer_cast<sensor_msgs::Image>(image_msg)->encoding = "mono8";
+      }
 
       //image = bridge_.imgMsgToCv(image_msg, "bgr8");
       cv_ptr = cv_bridge::toCvCopy(image_msg, "bgr8");
       image = cv_ptr->image;
     }
-    catch (cv_bridge::Exception& ex) {
+    catch (cv_bridge::Exception& ex)
+    {
       ROS_ERROR("[draw_frames] Failed to convert image");
       return;
     }
 
     // output debug image
-    //sensor_msgs::CvBridge debug_bridge;
-    //debug_bridge.fromImage (*image_msg, "bgr8");
-    //IplImage* src_imgipl = debug_bridge.toIpl();
-    //cv::Mat img(src_imgipl);
-    cv::Mat img = image;
-    
+    cv::Mat debug_img = image.clone();
+
     // calcurate the score
     double max_score = -1e9;
     int ix[] = {0,1,0,-1,0}, iy[] = {0,0,1,0,-1};
-    for(int ind=0; ind<5; ind++) {
+    for(int ind=0; ind<5; ind++)
+    {
       std::vector<cv::Vec3b> colbuf;
-      for(int i = 0; i < 121; i++){
-	double px = i/11, py = i%11;
-	cv::Point2d uv(x + (5-px)*r/5 + r*ix[ind], y + (5-py)*r/5 + r*iy[ind]);
-	if(0<=uv.x && uv.x < image.size().width-1 && 0<=uv.y && uv.y < image.size().height-1){
-         colbuf.push_back(image.at<cv::Vec3b>((int)uv.y, (int)uv.x));
-	}
+      for(int i = 0; i < 121; i++)
+      {
+        double px = i/11, py = i%11;
+        cv::Point2d uv(x_ + (5-px)*r_/5 + r_*ix[ind], y_ + (5-py)*r_/5 + r_*iy[ind]);
+        if(0<=uv.x && uv.x < image.size().width && 0<=uv.y && uv.y < image.size().height)
+        {
+          colbuf.push_back(image.at<cv::Vec3b>(static_cast<int>(uv.y), static_cast<int>(uv.x)));
+        }
       }
 
       // check yellow point
       std::vector<double> vscore;
       for(std::vector<cv::Vec3b>::iterator it=colbuf.begin();it!=colbuf.end();it++)
-	{
-	  double lscore = 0.0;
-	  for(int i=0;i<3;i++)
-           lscore += exp(-abs(target_color_.val[i] - (*it)[i])/10.0);
-	  vscore.push_back(lscore);
-	}
+      {
+        double lscore = 0.0;
+        for(int i=0;i<3;i++)
+        {
+          lscore += exp(-abs(target_color_.val[i] - (*it)[i]) * decay_bgr_[i]);
+        }
+        vscore.push_back(lscore);
+      }
 
       std::sort(vscore.begin(), vscore.end());
       double score = vscore[vscore.size()*3/4];
@@ -126,32 +143,35 @@ public:
     }
 
     // for debug image
+    cv::circle(debug_img, cv::Point(static_cast<int>(x_), static_cast<int>(y_)),
 #if ROS_VERSION_MINIMUM(1, 15, 0)
-    cv::circle(img, cv::Point2f(x, y), r, cv::Scalar(0,0,255), 3);
+               static_cast<int>(r_), cv::Scalar(0,0,255),
 #else
-    cv::circle(img, cv::Point2f(x, y), r, CV_RGB(255,0,0), 3);
+               static_cast<int>(r_), CV_RGB(255,0,0),
 #endif
+               3);
     char text[32];
-    sprintf(text, "brightness = %.3f", max_score);
-    cv::putText (img, std::string(text), cv::Point(x-100, y+70+r),
+    snprintf(text, sizeof(text), "brightness = %.3f", max_score);
+    cv::putText(debug_img, std::string(text),
+                cv::Point(static_cast<int>(x_ - 100), static_cast<int>(y_ + 70 + r_)),
+
 #if ROS_VERSION_MINIMUM(1, 15, 0)
-		 0, 0.7, cv::Scalar(0,0,255),
+                0, 0.7, cv::Scalar(0,0,255),
 #else
-		 0, 0.7, CV_RGB(255,0,0),
+                0, 0.7, CV_RGB(255,0,0),
 #endif
-		 2, 8, false);
+                2, 8, false);
 
     std_msgs::Float32 score_msg;
-    score_msg.data = max_score;
+    score_msg.data = static_cast<float>(max_score);
     result_pub_.publish(score_msg);
 
     // publish debug image
-    //cv_bridge::CvImage out_msg;
-    //out_msg.header   = image_msg->header;
-    //out_msg.encoding = "bgr8";
-    //out_msg.image    = img;
-    //debug_pub_.publish(out_msg.toImageMsg());
-    debug_pub_.publish(cv_ptr->toImageMsg());
+    cv_bridge::CvImage out_msg;
+    out_msg.header = image_msg->header;
+    out_msg.encoding = "bgr8";
+    out_msg.image = debug_img;
+    debug_pub_.publish(out_msg.toImageMsg());
   }
 
 };
