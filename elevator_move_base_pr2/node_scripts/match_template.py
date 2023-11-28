@@ -3,7 +3,11 @@
 # Author:  <furushchev@jsk.imi.i.u-tokyo.ac.jp>
 
 from collections import namedtuple
-from urlparse import urlparse
+
+try:
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import urlparse
 
 import cv2
 import cv_bridge
