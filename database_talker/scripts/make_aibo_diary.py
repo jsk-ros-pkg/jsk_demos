@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import rospy
@@ -53,26 +53,31 @@ from mongodb_store_msgs.srv import MongoQueryMsg, MongoQueryMsgRequest, MongoQue
 
 from openai_ros.srv import Completion, CompletionResponse
 
-def is_ascii(string):
-    try:
-        string.encode('ascii')
-        return True
-    except UnicodeEncodeError:
-        return False
+# https://stackoverflow.com/questions/196345/how-to-check-if-a-string-in-python-is-in-ascii
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
+# https://www.newscatcherapi.com/blog/ultimate-guide-to-text-similarity-with-python
+def jaccard_similarity(x,y):
+  """ returns the jaccard similarity between two lists """
+  intersection_cardinality = len(set.intersection(*[set(x), set(y)]))
+  union_cardinality = len(set.union(*[set(x), set(y)]))
+  return intersection_cardinality/float(union_cardinality)
 
 class MessageListener(object):
 
     def __init__(self, wait_for_chat_server=True):
         #self.pickle_file = tempfile.NamedTemporaryFile(suffix='.pickle')
         self.pickle_file = "/tmp/activities.pickle"
+        self.robot_type = rospy.get_param('robot/type')
         self.robot_name = rospy.get_param('robot/name')
         rospy.loginfo("using '{}' database".format(self.robot_name))
 
-        if self.robot_name == 'aibo':
+        if self.robot_type == 'aibo':
             self.query_types = ['aibo_driver/StringStatus',
                                 'aibo_driver/ObjectStatusArray',
                                 'jsk_recognition_msgs/VQATaskActionResult']
-        elif self.robot_name == 'BelKa':
+        elif self.robot_type == 'spot':
             self.query_types = ['spot_msgs/Feedback',
                                 'spot_msgs/ManipulatorState',
                                 'jsk_recognition_msgs/VQATaskActionResult']
@@ -241,10 +246,11 @@ class MessageListener(object):
         ##
         return diary_activities_raw ##  (timestamp, event)
 
-    def make_state_frequency(self, diary_activities_raw, message):
+    def make_state_frequency(self, diary_activities_raw):
+        message = list(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' not in x, self.query_types))
         diary_activities_freq = []
         for activities_raw in diary_activities_raw:
-            activities_raw_state = [x['state'] for x in [x for x in activities_raw if message in x['type']]]
+            activities_raw_state = [x['state'] for x in [x for x in activities_raw if x['type'] in message]]
             activities_freq = {key: activities_raw_state.count(key) for key in set(activities_raw_state)}
             rospy.logwarn("Found {} activity data (make_state_frequency)".format(len(activities_raw)))
             if len(activities_raw) > 0:
@@ -253,14 +259,16 @@ class MessageListener(object):
             diary_activities_freq.append(activities_freq)
         return diary_activities_freq
 
-    def make_activities_events(self, diary_activities_raw, message):
+    def make_activities_events(self, diary_activities_raw, message = None):
+        if not message:
+            message = list(filter(lambda x: 'jsk_recognition_msgs/VQATaskActionResult' not in x, self.query_types))
         diary_activities_events = []
         for activities_raw in diary_activities_raw:
             activities_events = {}
             for activities in activities_raw:
                 timestamp = activities['timestamp']
                 event = activities['state']
-                if message not in activities['type']:
+                if  activities['type'] not in message:
                     continue
                 if event in activities_events:
                     time_since_last_seen = activities_events[event]['last_seen'] - timestamp
@@ -298,7 +306,8 @@ class MessageListener(object):
                     continue
                 timestamp = activities['timestamp']
                 answer = activities['state']
-                if len(answer.split()) > 3 and answer not in image_activities.keys():
+                if len(answer.split()) > 3 and \
+                   max([jaccard_similarity(x, answer) for x in image_activities.keys()]+[0]) < 0.85:
                     image_activities.update({answer : timestamp})
             if (len(image_activities)) > 0:
                 break
@@ -313,9 +322,12 @@ class MessageListener(object):
 
         response = self.openai_completion(prompt)
         n = re.search(r'(\d+)', response)
+        no = len(image_activities)
         if n:
-            no = min(int(n.group(1)), len(image_activities)-1)
-        else:
+            no = int(n.group(1))
+
+        if no >= len(image_activities):
+            rospy.loginfo("no is {}, so use random....".format(no))
             no = random.randrange(len(image_activities))
 
         answer, timestamp = list(image_activities.items())[no]
@@ -343,14 +355,13 @@ class MessageListener(object):
         # make frequencey data for 7days
         # activities_freq  {'event_1' : count, 'event_2' : count}
         # diary_activities_freq = [activities_freq for day1, activities_freq for day2, ...]
-        #diary_activities_freq = self.make_state_frequency(diary_activities_raw, 'aibo_driver/')
-        diary_activities_freq = self.make_state_frequency(diary_activities_raw, 'spot_msgs/')
+        diary_activities_freq = self.make_state_frequency(diary_activities_raw)
 
         # create activities event data
         # activities_events[event_name] = {'duration', datetime.timedelta, 'count': int}
         # diary_activities_events = [activities_events for day1, activities_events for day2, ....]
         #diary_activities_events = self.make_activities_events(diary_activities_raw, 'aibo_driver/')
-        diary_activities_events = self.make_activities_events(diary_activities_raw, 'spot_msgs/')
+        diary_activities_events = self.make_activities_events(diary_activities_raw)
 
         for activities_events in diary_activities_events:
             print("--")

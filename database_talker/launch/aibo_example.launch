@@ -1,5 +1,6 @@
 <launch>
   <arg name="openai_credentials_json" default="$(find aibo_driver)/auth/openai_credentials.json" />
+  <param name="robot/type" value="aibo" />
   <param name="robot/name" value="aibo" />
 
 
