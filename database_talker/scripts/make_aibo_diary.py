@@ -53,6 +53,13 @@ from mongodb_store_msgs.srv import MongoQueryMsg, MongoQueryMsgRequest, MongoQue
 
 from openai_ros.srv import Completion, CompletionResponse
 
+def is_ascii(string):
+    try:
+        string.encode('ascii')
+        return True
+    except UnicodeEncodeError:
+        return False
+
 class MessageListener(object):
 
     def __init__(self, wait_for_chat_server=True):
@@ -64,6 +71,10 @@ class MessageListener(object):
         if self.robot_name == 'aibo':
             self.query_types = ['aibo_driver/StringStatus',
                                 'aibo_driver/ObjectStatusArray',
+                                'jsk_recognition_msgs/VQATaskActionResult']
+        elif self.robot_name == 'BelKa':
+            self.query_types = ['spot_msgs/Feedback',
+                                'spot_msgs/ManipulatorState',
                                 'jsk_recognition_msgs/VQATaskActionResult']
         else:
             self.query_types = ['jsk_recognition_msgs/VQATaskActionResult']
@@ -198,12 +209,25 @@ class MessageListener(object):
                 elif meta['stored_type'] == 'aibo_driver/ObjectStatusArray':
                     # remove duplicates from list https://stackoverflow.com/questions/7961363/removing-duplicates-in-lists
                     state = list(set(['found ' + state.name for state in msg.status]))
+                elif meta['stored_type'] == 'spot_msgs/Feedback':
+                    state = []
+                    if msg.standing:
+                        state.append("standing")
+                    if msg.sitting:
+                        state.append("sitting")
+                    if msg.moving:
+                        state.append("moving")
+                elif meta['stored_type'] == 'spot_msgs/ManipulatorState':
+                    state = []
+                    if msg.is_gripper_holding_item:
+                        state.append("holding_item")
                 elif meta['stored_type'] == 'jsk_recognition_msgs/VQATaskActionResult':
                     if len(msg.result.result.result) > 0:
                         answer = msg.result.result.result[0].answer
                         if len(answer.split()) > 3:
                             state = [answer]
                 else:
+                    rospy.logwarn("Unknown stored type: {}".format(meta['stored_type']))
                     continue
                 # create activities_raw
                 for s in state:
@@ -319,12 +343,14 @@ class MessageListener(object):
         # make frequencey data for 7days
         # activities_freq  {'event_1' : count, 'event_2' : count}
         # diary_activities_freq = [activities_freq for day1, activities_freq for day2, ...]
-        diary_activities_freq = self.make_state_frequency(diary_activities_raw, 'aibo_driver/')
+        #diary_activities_freq = self.make_state_frequency(diary_activities_raw, 'aibo_driver/')
+        diary_activities_freq = self.make_state_frequency(diary_activities_raw, 'spot_msgs/')
 
         # create activities event data
         # activities_events[event_name] = {'duration', datetime.timedelta, 'count': int}
         # diary_activities_events = [activities_events for day1, activities_events for day2, ....]
-        diary_activities_events = self.make_activities_events(diary_activities_raw, 'aibo_driver/')
+        #diary_activities_events = self.make_activities_events(diary_activities_raw, 'aibo_driver/')
+        diary_activities_events = self.make_activities_events(diary_activities_raw, 'spot_msgs/')
 
         for activities_events in diary_activities_events:
             print("--")
@@ -335,7 +361,7 @@ class MessageListener(object):
         activities_events = [x for events in diary_activities_events for x in events.keys()]  # get all activities with duplicates
 
         # percentages of activities happend
-        prompt = "{}\n\n".format(filter(None, diary_activities_events)[0].items()[0][1]['last_seen'].strftime("%a %d %b %Y"))
+        prompt = "{}\n\n".format(list(list(filter(None, diary_activities_events))[0].items())[0][1]['last_seen'].strftime("%a %d %b %Y"))
         prompt += "\n<actions you always do> 'action : time'\n"
 
         # sort activities event by it's occurence [list] -> sorted({key: count})
@@ -726,7 +752,7 @@ class MessageListener(object):
             return
 
         try:
-            language = 'English' if text.isascii() else 'Japanese'
+            language = 'English' if is_ascii(text) else 'Japanese'
             if any(x in text for x in ['diary', '日記']):
                 self.publish_google_chat_card("Sure!", space)
                 ret = self.make_diary(language)
