@@ -1,7 +1,1 @@
-<launch>
-  <!-- create empty map -->
-  <node name="$(anon empty_map_server)" pkg="map_server" type="map_server"
-        args="$(find jsk_maps)/raw_maps/empty_map.yaml" >
-    <param name="frame_id" value="/map"/>
-  </node>
-</launch>
+start_map_empty_world.launch
