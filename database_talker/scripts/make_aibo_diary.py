@@ -274,13 +274,12 @@ class MessageListener(object):
                     continue
                 timestamp = activities['timestamp']
                 answer = activities['state']
-                print(answer)
                 if len(answer.split()) > 3 and answer not in image_activities.keys():
                     image_activities.update({answer : timestamp})
-                if (len(image_activities)) > 0:
-                    break
-                else:
-                    rospy.logwarn("   no valid image description is found...")
+            if (len(image_activities)) > 0:
+                break
+            else:
+                rospy.logwarn("   no valid image description is found...")
         #
         prompt = "Please select the most memorable and illuminating event by number from the list below.\n\n"
         n = 0
