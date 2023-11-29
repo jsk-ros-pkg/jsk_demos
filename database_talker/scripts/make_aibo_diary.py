@@ -773,7 +773,7 @@ class MessageListener(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node('test', anonymous=True)
 
