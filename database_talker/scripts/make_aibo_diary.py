@@ -320,11 +320,15 @@ class MessageListener(object):
             prompt += "{}: {} ({})\n".format(n, answer, timestamp)
             n += 1
 
-        response = self.openai_completion(prompt)
-        n = re.search(r'(\d+)', response)
+        # Avoid error 'This model's maximum context length is 4097 tokens, however you requested 5464 tokens (4952 in your prompt; 512 for the completion). Please reduce your prompt'
         no = len(image_activities)
-        if n:
-            no = int(n.group(1))
+        if len(prompt) + 512 < 4097:
+            response = self.openai_completion(prompt)
+            n = re.search(r'(\d+)', response)
+            if n:
+                no = int(n.group(1))
+        else:
+            rospy.logwarn("too long prompt...")
 
         if no >= len(image_activities):
             rospy.loginfo("no is {}, so use random....".format(no))
