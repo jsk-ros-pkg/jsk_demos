@@ -10,6 +10,21 @@
 (load "package://jsk_demo_common/euslisp/pr2-action.l")
 (load "package://jsk_2013_04_pr2_610/euslisp/objectdetection.l")
 
+;; use simple boundingbox for :gripper :link, to avoid 'error: float vector expected in (convex-hull-3d ...'
+(unless (assoc :gripper-org (send pr2-robot :methods))
+  (rplaca (assoc :gripper (send pr2-robot :methods)) :gripper-org))
+(defmethod pr2-robot
+  (:gripper
+   (limb &rest args)
+   (cond
+    ((memq :links args)
+     (let (vert-list)
+       (setq vert-list (list (flatten (send-all (flatten (send-all (send self :gripper-org limb :links) :bodies)) :vertices))))
+       (mapcar #'(lambda (v) (instance bodyset-link :init (make-cascoords) :bodies (list (send (make-bounding-box v) :body)))) vert-list)
+       ))
+    (t
+     (send* self :gripper-org limb args)
+    ))))
 (ros::roseus "laundry_button_marker_publisher")
 (ros::advertise *pub-laundry-button-topic* visualization_msgs::Marker 5)
 
