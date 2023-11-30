@@ -193,7 +193,7 @@ def b_control_joy_cb(msg):
         # erase_all_marker()
         try:
             ik_arm = get_ik_arm_srv().ik_arm
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             ik_arm = ":rarm"
         end_effector_pose=Pose(orientation=Quaternion(x=0.0, y=0.0, z=0.0, w=1.0))
         if (ik_arm==":rarm"):
@@ -368,7 +368,7 @@ def selected_box_cb(msg, points_msg):
         set_dim_srv(dimensions=resp1.dim)
         rospy.loginfo("icp succeeded")
         return
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         print("ICP Service call failed: %s"%e)
     # pose
     selected_only_box_cb(msg)
@@ -465,14 +465,14 @@ def erase_all_marker_cb(req):
 def insert_marker(shape_type=TransformableMarkerOperate.BOX, name='default_name', description='default_description', mesh_resource='', mesh_use_embedded_materials=False):
     try:
         req_marker_operate_srv(TransformableMarkerOperate(type=shape_type, action=TransformableMarkerOperate.INSERT, frame_id=default_frame_id, name=name, description=description, mesh_resource=mesh_resource, mesh_use_embedded_materials=mesh_use_embedded_materials))
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         print('insert_marker service call failed: %s'%e)
 
 
 def erase_all_marker():
     try:
         req_marker_operate_srv(TransformableMarkerOperate(type=TransformableMarkerOperate.BOX, action=TransformableMarkerOperate.ERASEALL))
-    except rospy.ServiceException, e:
+    except rospy.ServiceException as e:
         print('insert_marker service call failed: %s'%e)
 
 if __name__ == '__main__':

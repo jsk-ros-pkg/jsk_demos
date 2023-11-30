@@ -41,7 +41,7 @@ class CarPathVisualizer:
                         self.R = quaternion_matrix(quat)[0:3,0:3]
                         # print self.R
                         self.marker_publisher()
-                    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
+                    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
                         print("tf error: %s" % e)
                         pass
             self.r.sleep()
