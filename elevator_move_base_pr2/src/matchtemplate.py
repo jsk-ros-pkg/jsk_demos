@@ -66,7 +66,7 @@ def process_msg ():
     try:
         cv_image = imgmsg_to_cv(msg, "mono8")
     except CvBridgeError, e:
-        print e
+        print(e)
 
     reslist = []
     for template in templates:
@@ -94,7 +94,7 @@ def process_msg ():
             reslist += [(tempname,(status[1],status[3],tempthre,found))]
             if found :
                 result.data += tempname+' '
-        print reslist
+        print(reslist)
 
     result_pub.publish(result)
     publish_debug(cv_image, reslist)
@@ -120,7 +120,7 @@ def publish_debug(img, results):
         #cv.PutText(output, tempname, (0,size[1]-16), font, cv.CV_RGB(255,255,255))
         #cv.PutText(output, str(tempthre)+'<'+str(status[1]), (0,size[1]-8), font, cv.CV_RGB(255,255,255))
         for _,status in [s for s in results if s[0] == template[3]]:
-            print status
+            print(status)
             cv.PutText(output, template[3], (0,size[1]-42), font, cv.CV_RGB(255,255,255))
             cv.PutText(output, "%7.5f"%(status[0]), (0,size[1]-24), font, cv.CV_RGB(255,255,255))
             cv.PutText(output, "%7.5f"%(status[2]), (0,size[1]-8), font, cv.CV_RGB(255,255,255))

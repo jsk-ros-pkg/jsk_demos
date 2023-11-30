@@ -20,7 +20,7 @@ def jointTrajectoryCommandCallback(msg):
     
   with lock:
     if currentJointState == None:
-      print "/atlas/joint_states is not published"
+      print("/atlas/joint_states is not published")
       return
 
     atlasJointNames = [

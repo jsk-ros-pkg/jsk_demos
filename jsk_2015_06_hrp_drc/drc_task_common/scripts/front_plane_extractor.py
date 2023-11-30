@@ -8,7 +8,7 @@ import message_filters
 import tf
 
 def callback(polygon_msg, coeff_msg):
-    print "callback"
+    print("callback")
     # odom->ground
     max_val = -1.0;
     max_index = None

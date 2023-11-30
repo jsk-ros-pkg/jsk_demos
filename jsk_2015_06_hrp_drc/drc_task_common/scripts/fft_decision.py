@@ -21,13 +21,13 @@ def load_data(filename):
         Y.append([float(x) for x in row[1:]])
     return (X, Y)
 def disc_cb(msg):
-    print clf.predict(msg.data)
+    print(clf.predict(msg.data))
 if __name__ == "__main__":
     rospy.init_node('fft_data', anonymous=True)
     x, y = load_data("fft_data.csv")
-    print "tests"
-    print x
-    print y
+    print("tests")
+    print(x)
+    print(y)
     clf = svm.SVC(kernel="rbf")
     clf.fit(y, x)
     rospy.Subscriber("input", Float32ArrayStamped, disc_cb)

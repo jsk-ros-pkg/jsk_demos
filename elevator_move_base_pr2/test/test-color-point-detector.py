@@ -10,7 +10,7 @@ TEST_DURATION = 3
 ## A sample python unit test
 class TestColorPointDetector(unittest.TestCase):
     def callback(self, msg):
-        print "msg.data = ", msg.data, " should be 1.5"
+        print("msg.data = ", msg.data, " should be 1.5")
         self.assert_( abs( msg.data - 1.5 ) <  0.1  )
  
     def test_light_button(self):

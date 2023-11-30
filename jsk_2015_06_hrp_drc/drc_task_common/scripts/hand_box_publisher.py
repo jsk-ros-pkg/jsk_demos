@@ -26,7 +26,7 @@ if __name__ == "__main__":
             listener.waitForTransform('left_camera_optical_frame', pose_stamped.header.frame_id,  now, rospy.Duration(1))
             transed_pose = listener.transformPose('left_camera_optical_frame', pose_stamped)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException, tf.Exception), e:
-            print "tf error: %s" % e
+            print("tf error: %s" % e)
             r.sleep()
             continue
         box = BoundingBox(Header(stamp=rospy.Time.now(), frame_id='left_camera_optical_frame'), transed_pose.pose, Vector3(0.15, 0.15, 0.32))

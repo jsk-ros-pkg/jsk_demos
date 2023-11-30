@@ -24,8 +24,8 @@ class DRCTeleopInterface(Plugin):
                       help="Put plugin in silent mode")
         args, unknowns = parser.parse_known_args(context.argv())
         if not args.quiet:
-            print 'arguments: ', args
-            print 'unknowns: ', unknowns
+            print('arguments: ', args)
+            print('unknowns: ', unknowns)
 
         # Create QWidget
         self._widget = QWidget()
@@ -106,44 +106,44 @@ class DRCTeleopInterface(Plugin):
     # Robot Pose Button Callback
     def reset_pose_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :angle-vector (send *robot* :reset-pose) 5000)')
-        print 'send reset_pose command'
+        print('send reset_pose command')
     def reset_manip_pose_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :angle-vector (send *robot* :reset-manip-pose) 5000)')
-        print 'send reset_manip_pose command'
+        print('send reset_manip_pose command')
     def init_pose_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :angle-vector (send *robot* :init-pose) 5000)')
-        print 'send init_pose command'
+        print('send init_pose command')
 
     # Hand Pose Button Callback
     def hand_reset_pose_cb(self, checked):
         eus_commmand_srv(command='(progn (send *robot* :hand :arms :reset-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))')
-        print 'send hand_reset_pose command'
+        print('send hand_reset_pose command')
     def hand_hook_pose_cb(self, checked):
         eus_commmand_srv(command='(progn (send *robot* :hand :arms :hook-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))')
-        print 'send hand_hook_pose command'
+        print('send hand_hook_pose command')
     def hand_grasp_pose_cb(self, checked):
         eus_commmand_srv(command='(progn (send *robot* :hand :arms :grasp-pose) (send *ri* :hand-angle-vector (apply #\'concatenate float-vector (send *robot* :hand :arms :angle-vector))))')
-        print 'send hand_grasp_pose command'
+        print('send hand_grasp_pose command')
 
     # Hrpsys Button Callback
     def hrpsys_start_abc_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :start-auto-balancer)')
-        print 'send hrpsys_start_abc command'
+        print('send hrpsys_start_abc command')
     def hrpsys_start_st_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :start-st)')
-        print 'send hrpsys_start_st command'
+        print('send hrpsys_start_st command')
     def hrpsys_start_imp_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :start-impedance :arms)')
-        print 'send hrpsys_start_imp command'
+        print('send hrpsys_start_imp command')
     def hrpsys_stop_abc_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :stop-auto-balancer)')
-        print 'send hrpsys_stop_abc command'
+        print('send hrpsys_stop_abc command')
     def hrpsys_stop_st_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :stop-st)')
-        print 'send hrpsys_stop_st command'
+        print('send hrpsys_stop_st command')
     def hrpsys_stop_imp_cb(self, checked):
         eus_commmand_srv(command='(send *ri* :stop-impedance :arms)')
-        print 'send hrpsys_stop_imp command'
+        print('send hrpsys_stop_imp command')
 
     def shutdown_plugin(self):
         eus_commmand_srv.close()

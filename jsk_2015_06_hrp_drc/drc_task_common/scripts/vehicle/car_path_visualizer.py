@@ -42,7 +42,7 @@ class CarPathVisualizer:
                         # print self.R
                         self.marker_publisher()
                     except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
-                        print "tf error: %s" % e
+                        print("tf error: %s" % e)
                         pass
             self.r.sleep()
 
