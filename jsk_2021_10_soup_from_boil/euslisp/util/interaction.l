@@ -1,0 +1,125 @@
+;; add for voice recognition
+(ros::load-ros-manifest "speech_recognition_msgs")
+(ros::load-ros-manifest "pr2_msgs")
+
+;; Wait until speech
+(defun listen-speech (&optional (expected-speech "はい"))
+  (if (send *ri* :simulation-modep)
+    (return-from listen-speech t))
+  (ros::unsubscribe "/speech_to_text")
+  (let ((speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates)))
+    (equal (send speech :transcript) (list expected-speech))))
+
+(defun ok-wait ()
+  (if (send *ri* :simulation-modep)
+    (return-from ok-wait t))
+  (ros::unsubscribe "/speech_to_text")
+  (let ((speech (instance speech_recognition_msgs::SpeechRecognitionCandidates :init)))
+    (while (not (equal (send speech :transcript) '("OK")))
+      (setq speech (one-shot-subscribe "/speech_to_text" speech_recognition_msgs::SpeechRecognitionCandidates))))
+  (send *ri* :speak-jp "ありがとうございます" :wait t))
+
+(defun ok-grasp (&rest args &key (gain 0.01) (arm :rarm) &allow-other-keys)
+  (ok-wait)
+  (send *ri* :start-grasp arm :wait t :gain gain)
+  )
+
+(defun receive-with-dialogue (&rest args &key (gain 0.01) (arm :rarm) &allow-other-keys)
+  ;; (send *ri* :speak-jp "包丁を渡す準備をして，合図をして下さい") ;; 喋らせている想定でスタート
+  (let ((yes-flag nil))
+    (until yes-flag
+           (send *ri* :stop-grasp arm :wait t)
+           (ok-grasp :gain gain :arm arm)
+           (send *ri* :speak-jp "上手く掴めていますか？" :wait t)
+           (unix:usleep (* 1000 1000))
+           (setq yes-flag (listen-speech "はい"))
+           (unless yes-flag
+             (send *ri* :speak-jp "グリッパを開きます。渡す準備をしてokと合図をして下さい。" :wait t))))
+  (send *ri* :speak-jp "次の行動に移ります" :wait t))
+
+(defun boil-with-dialogue (&rest args &key (sleep-time 30) &allow-other-keys)
+  (let ((yes-flag nil))
+    (until yes-flag
+         (unless (send *ri* :simulation-modep)
+           (unix:sleep sleep-time))
+         ;; (send *ri* :speak-jp "画像を記録します" :wait t)
+         ;; (send *ri* :speak-jp "記録しました" :wait t)
+         (send *ri* :speak-jp "鍋の中身は沸騰していますか？" :wait t)
+         (setq yes-flag (listen-speech "はい"))))
+  (send *ri* :speak-jp "次の工程に進みます" :wait t))
+
+(defun have-the-plate-set-with-dialgue ()
+  (send *ri* :speak-jp "盛り付ける器を位置にセットして，OKと合図をして下さい")
+  (ok-wait)
+  (warn "please run (after-arrange-motion) ~%")
+  )
+
+;; Wait until movable (cable checks)
+(defun wait-cable ()
+  (when (send *ri* :simulation-modep)
+    (return-from wait-cable t))
+  (let ((cable t))
+    (while cable
+      (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+        (setq cable (< 0 (send msg :AC_present)))
+        (unix::sleep 1)))
+    ))
+
+(defun wait-cable-in ()
+  (when (send *ri* :simulation-modep)
+    (return-from wait-cable-in t))
+  (let ((cable t))
+    (while cable
+      (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+        (setq cable (>= 0 (send msg :AC_present)))
+        (unix::sleep 1)))
+    ))
+
+(defun cable-test ()
+  (when (send *ri* :simulation-modep)
+    (return-from cable-test t))
+  (let ((msg (one-shot-subscribe "/power_state" pr2_msgs::PowerState)))
+    (format t "now AC_present is ~A ~%" (send msg :AC_present))
+    msg))
+
+(defun speech-before-move-with-rec ()
+  (when (send *ri* :simulation-modep)
+    (return-from speech-before-move-with-rec t))
+  (let ((msg (cable-test)))
+    (if (< 0 (send msg :AC_present))
+      (progn
+        (send *ri* :speak-jp "移動するので電源ケーブルを抜いて下さい" :wait t)
+        (wait-cable)
+        (send *ri* :speak-jp "ありがとうございます．移動を開始します" :wait t)
+        )
+      (send *ri* :speak-jp "移動を開始します" :wait t)
+      )
+    ))
+
+(defun speech-after-move-with-rec ()
+  (when (send *ri* :simulation-modep)
+    (return-from speech-after-move-with-rec t))
+  (let ((msg (cable-test)))
+    (if (< 0 (send msg :AC_present))
+      (send *ri* :speak-jp "調理を再開します" :wait t)
+      (progn
+        (send *ri* :speak-jp "電源ケーブルを挿して下さい" :wait t)
+        (wait-cable-in)
+        (send *ri* :speak-jp "ありがとうございます．調理を再開します" :wait t)
+        ))
+    ))
+
+;; Move with speech
+(defun speech-before-move ()
+  (send *ri* :speak-jp "移動するので電源ケーブルを抜いて，合図して下さい")
+  (ros::unsubscribe "/speech_to_text")
+  (ok-wait)
+  (send *ri* :speak-jp "ありがとうございます．移動を開始します")
+  )
+
+(defun speech-after-move ()
+  (send *ri* :speak-jp "電源ケーブルを挿して，合図して下さい")
+  (ros::unsubscribe "/speech_to_text")
+  (ok-wait)
+  (send *ri* :speak-jp "ありがとうございます．調理を再開します")
+  )
