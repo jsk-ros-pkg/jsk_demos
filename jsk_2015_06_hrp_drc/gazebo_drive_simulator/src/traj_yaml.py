@@ -28,13 +28,13 @@ def jointStatesCallback(msg):
 if __name__ == '__main__':
   # first make sure the input arguments are correct
   if len(sys.argv) != 3:
-    print "usage: traj_yaml.py YAML_FILE TRAJECTORY_NAME"
-    print "  where TRAJECTORY is a dictionary defined in YAML_FILE"
+    print("usage: traj_yaml.py YAML_FILE TRAJECTORY_NAME")
+    print("  where TRAJECTORY is a dictionary defined in YAML_FILE")
     sys.exit(1)
   traj_yaml = yaml.load(file(sys.argv[1], 'r'))
   traj_name = sys.argv[2]
   if not traj_name in traj_yaml:
-    print "unable to find trajectory %s in %s" % (traj_name, sys.argv[1])
+    print("unable to find trajectory %s in %s" % (traj_name, sys.argv[1]))
     sys.exit(1)
   traj_len = len(traj_yaml[traj_name])
 

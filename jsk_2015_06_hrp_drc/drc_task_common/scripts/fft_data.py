@@ -22,7 +22,7 @@ spamWriter = None
 def save_cb(float_msg):
     global flug
     if flug:
-        print "save cb driven %s" % flug
+        print("save cb driven %s" % flug)
         spamWriter.writerow([flug]+list(float_msg.data))
         flug = None
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
         if(input_string == "exit"):
             exit()
         if(not input_string.isdigit()):
-            print "input num only"
+            print("input num only")
             next
         flug = input_string
         time.sleep(1)

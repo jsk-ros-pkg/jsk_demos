@@ -1,0 +1,5 @@
+# this should be removed after updating .rosinstall for each robot
+- git:
+    local-name: jsk_planning
+    uri: https://github.com/jsk-ros-pkg/jsk_planning.git
+    version: master
