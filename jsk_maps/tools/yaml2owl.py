@@ -317,7 +317,7 @@ def create_bldg(inst,types,width,height,depth, prop=None, objs=None, x=0.0, y=0.
     if objs is not None:
         if objs.has_key(inst):
             create_props(prop, objs[inst])
-    print('</owl:NamedIndividual>')
+    print('</owl:NamedIndividual>')    
     
 def create_props(prop, objs):
     for o in objs:
