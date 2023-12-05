@@ -38,11 +38,16 @@ jobs:
           - ROS_DISTRO: noetic
             CONTAINER: jskrobotics/ros-ubuntu:20.04-pcl
             EXTRA_DEB : "python3-rospkg python3-rospkg-modules"  #  drc_task_common need rospkg, but not installed
+            USE_DEB : false
 
     container: ${{ matrix.CONTAINER }}
     steps:
       - name: Install latest git ( use sudo for ros-ubuntu )
         run: |
+          # https://github.com/osrf/docker_images/issues/697#issuecomment-1819626877
+          sudo apt-key del 4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA || echo "OK"
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 4B63CF8FDE49746E98FA01DDAD19BAB3CBF125EA || echo "OK"
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys AD19BAB3CBF125EA || echo "OK"
           [ -e /etc/apt/sources.list.d/ubuntu-esm-infra-$(lsb_release -cs).list ] && sudo rm /etc/apt/sources.list.d/ubuntu-esm-infra-$(lsb_release -cs).list ## fix Err https://esm.ubuntu.com trusty-infra-security/main amd64 Packages, gnutls_handshake() failed: Handshake failed
           (apt-get update && apt-get install -y sudo) || echo "OK"
           sudo apt-get update

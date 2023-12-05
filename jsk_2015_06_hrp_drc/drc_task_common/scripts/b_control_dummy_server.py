@@ -49,7 +49,7 @@ class BControlDummyServerNode():
         return config
 
     def pub_joy(self):
-        print self.joy
+        print(self.joy)
         self.joy_pub.publish(self.joy)
     def u1_cb(self, req):
         self.joy.axes[8] = reverse_f(self.joy.axes[8])

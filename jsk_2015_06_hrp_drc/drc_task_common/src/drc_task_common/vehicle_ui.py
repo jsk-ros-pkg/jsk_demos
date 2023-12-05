@@ -85,20 +85,20 @@ class VehicleUIWidget(QWidget):
         srv = rospy.ServiceProxy(name, Empty)
         try:
             srv()
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("Failed to call %s" % name)
 
     def synchronizeJoyController(self, target):
         try:
             sync_joy = rospy.ServiceProxy('drive/operation/synchronize', StringRequest)
             sync_joy(target)
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("Failed to call drive/operation/synchronize " + target)
     def setControllerMode(self, target, mode):
         try:
             update_mode = rospy.ServiceProxy("drive/controller/set_" + target + "_mode", StringRequest)
             update_mode(mode)
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("drive/controller/set_" + target + "_mode")
             
     def handleModeClickedCallback(self, item):
@@ -789,7 +789,7 @@ class VehicleUIWidget(QWidget):
             update_value = rospy.ServiceProxy(service_name, SetValue)
             next_value = update_value(value)
             return next_value.set_value
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("Failed to call " + service_name)
             return None
 
@@ -798,7 +798,7 @@ class VehicleUIWidget(QWidget):
             update_value = rospy.ServiceProxy(service_name, Uint8Request)
             update_value(value)
             return
-        except rospy.ServiceException, e:
+        except rospy.ServiceException as e:
             self.showError("Failed to call " + service_name)
             return
 

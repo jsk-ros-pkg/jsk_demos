@@ -20,15 +20,15 @@ def request_handle_marker():
     handle_request = rospy.ServiceProxy('/drive/handle_server/request_marker_operate', RequestMarkerOperate)
     try:
         handle_request(jsk_rviz_plugins.msg.TransformableMarkerOperate(2, 0, "BODY", "handle_marker", ""))
-    except rospy.ServiceException, e:
-        print "Service fail: %s" % e
+    except rospy.ServiceException as e:
+        print("Service fail: %s" % e)
         return
     rospy.wait_for_service("/drive/handle_server/set_dimensions")
     handle_size_request = rospy.ServiceProxy('/drive/handle_server/set_dimensions', SetMarkerDimensions)
     try:
         handle_size_request("", jsk_interactive_marker.msg.MarkerDimensions(0, 0, 0, 0.14, 0.01, 0))
-    except rospy.ServiceException, e:
-        print "Service fail: %s" % e
+    except rospy.ServiceException as e:
+        print("Service fail: %s" % e)
         return
 
 

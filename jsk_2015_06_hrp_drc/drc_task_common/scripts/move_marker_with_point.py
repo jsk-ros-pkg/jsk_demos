@@ -17,19 +17,19 @@ from jsk_interactive_marker.srv import *
 def point_cb(point_msg):
     try:
         pose = get_pose("").pose_stamped
-    except rospy.ServiceException, e:
-        print "Service fail: %s" % e
+    except rospy.ServiceException as e:
+        print("Service fail: %s" % e)
         return
     try:
         transed_point = listener.transformPoint(pose.header.frame_id, point_msg)
         pose.pose.position = transed_point.point
-    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException), e:
-        print "tf error: %s" % e
+    except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as e:
+        print("tf error: %s" % e)
         return
     try:
         set_pose(target_name="", pose_stamped=pose)
-    except rospy.ServiceException, e:
-        print "Service fail: %s" % e
+    except rospy.ServiceException as e:
+        print("Service fail: %s" % e)
         return
 
 if __name__ == "__main__":
