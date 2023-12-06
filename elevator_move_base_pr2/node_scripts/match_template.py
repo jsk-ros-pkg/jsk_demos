@@ -108,7 +108,7 @@ class MatchTemplate(ConnectionBasedTransport):
 
         # publish result
         msg = StringStamped(header=msg.header)
-        msg.data = ' '.join([n for n, r in results.items() if r.found])
+        msg.data = ' '.join([n for n, r in list(results.items()) if r.found])
         rospy.loginfo('Matched template: {}'.format(msg.data))
         self.pub_result.publish(msg)
 
@@ -116,7 +116,7 @@ class MatchTemplate(ConnectionBasedTransport):
         self.publish_debug(img, results)
 
     def publish_debug(self, img, results):
-        templates = self.templates.values()
+        templates = list(self.templates.values())
         templates.sort(key=lambda t: t.name)
         imgs = [t.image for t in templates]
 
