@@ -66,7 +66,7 @@
 
 
 (defun init ()
-  (setq *pr2* (pr2))
+  (setq *pr2* (pr2 :pr1040))
   (setq *ri* (instance pr2-interface :init
                        :move-base-action-name "elevator_move_base"))
   (send *pr2* :reset-pose)
