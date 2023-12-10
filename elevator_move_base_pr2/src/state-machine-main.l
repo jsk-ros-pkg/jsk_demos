@@ -27,6 +27,7 @@
 
 
 (defun initialize-env ()
+  (setq *pr2* (pr2 :pr1040))
   (pr2-init)
   (setq *tfl* (instance ros::transform-listener :init))
   (setq *scene* (make-scene-by-tf *tfl*))
