@@ -30,7 +30,8 @@
 #
 - git:
     local-name: openai_ros
-    uri: https://github.com/davesarmoury/openai_ros
+    # uri: https://github.com/davesarmoury/openai_ros
+    uri: https://github.com/k-okada/openai_ros
 #
 # add sample launch code for database_talker #1792
 # https://github.com/jsk-ros-pkg/jsk_robot/pull/1792
