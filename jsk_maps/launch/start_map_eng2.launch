@@ -5,6 +5,7 @@
   <arg name="use_machine" default="false" />
   <arg name="use_pictogram" default="false" />
   <arg name="use_publish_scene" default="true" />
+  <arg name="gui" default="false" />
 
   <machine name="localhost" address="localhost" if="$(arg use_machine)" />
 
@@ -39,4 +40,8 @@
         args="$(find jsk_maps)/tools/publish_scene.l"
         output="screen" >
   </node>
+
+  <node pkg="rviz" type="rviz" name="$(anon rviz)" if="$(arg gui)"
+        args="-d $(find jsk_maps)/launch/map_eng2.rviz" />
+
 </launch>
