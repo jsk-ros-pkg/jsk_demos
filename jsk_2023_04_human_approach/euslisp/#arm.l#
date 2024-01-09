@@ -1,0 +1,37 @@
+#!/usr/bin/env roseus
+
+;;(ros::load-ros-package "jsk_recognition_msgs")
+(load "package://spoteus/spot-interface.l")
+(spot-init)
+(ros::roseus "spot-angle")
+
+(defun look-at (msg)
+  (let (rect-list max-rect)
+    (setq rect-list (send msg :rects))
+    (if (not (= (length rect-list) 0))
+	(progn
+	  (sort rect-list #'compare-area-of rects)
+	  (setq max-rect (car rect-list))
+	  (send *ri* :speak-en "start")
+	  (send *ri* :gripper-close)
+	  (send *ri* :angle-vector (send *spot* :reset-pose))
+	  (send *ri* :angle-vector (send *spot* :head :look-at (float-vector 3000 0 1000)))
+
+    ;;(send *ri* :angle-vector (send *spot* :angle-vector #f(0.0 -150.0 150.0 0.0 0.0 10.0) 2000)
+
+
+    ;;(send *ri* :gripper-open)
+	  )
+      )
+    )
+  )
+
+(defun compare-area-of-rects (a b)
+  (>= (* (send a :width) (send a :height)) (* (send b :width) (send b :height))))
+
+;;(wait-for-julius-trigger "")
+
+(setq *human* (one-shot-subscribe "human" jsk_recognition_msgs::RectArray))
+(look-at *human*)
+;;(ros::subscribe "/human" jsk_recognition_msgs::RectArray #'cb)
+;;(ros::spin)
