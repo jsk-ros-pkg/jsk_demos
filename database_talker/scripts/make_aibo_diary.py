@@ -587,7 +587,7 @@ class MessageListener(object):
                     rospy.logwarn(result)
                     rospy.logwarn("result text is too short, retry completion")
                     rospy.sleep(2)
-                    resut = None
+                    result = None
             except rospy.ServiceException as e:
                 rospy.logerr("Service call failed: %s"%e)
                 rospy.sleep(2)
