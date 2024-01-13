@@ -163,7 +163,7 @@ class MessageListener(object):
                 return pickle.load(f)
 
         activities = []
-        today = datetime.date.today()
+        today = datetime.date.today()  ## for debug ... ->  - datetime.timedelta(hours=24)
         startdate = datetime.datetime(today.year, today.month, today.day, tzinfo=JST)
         for days_before in range(days):
             activities_raw = self.query_mongo_data(types,
@@ -314,6 +314,9 @@ class MessageListener(object):
             else:
                 rospy.logwarn("   no valid image description is found...")
         #
+        if len(image_activities) == 0:
+            return {}
+
         prompt = "Please select the most memorable and illuminating event by number from the list below.\n\n"
         n = 0
         for answer, timestamp in image_activities.items():
@@ -375,6 +378,8 @@ class MessageListener(object):
         # flatten list
         activities_events = [x for events in diary_activities_events for x in events.keys()]  # get all activities with duplicates
 
+        if len(activities_events) == 0:
+            return ""
         # percentages of activities happend
         prompt = "{}\n\n".format(list(list(filter(None, diary_activities_events))[0].items())[0][1]['last_seen'].strftime("%a %d %b %Y"))
         prompt += "\n<actions you always do> 'action : time'\n"
@@ -428,7 +433,7 @@ class MessageListener(object):
         diary_activities_raw = self.make_aibo_activities_raw(mongo_data_days)
         # get most impressive image and text
         topic_of_day = None
-        _filename = False
+        filename = False
 
         image_activity = self.make_image_activities(diary_activities_raw)
         if image_activity:
@@ -452,7 +457,12 @@ class MessageListener(object):
         response = self.openai_completion(prompt)
         rospy.loginfo("prompt = {}".format(prompt))
         rospy.loginfo("response = {}".format(response))
-        return {'text': response, 'filename': filename}
+
+        response = {'text': response}
+        if filename:
+            response.update({'filename': filename})
+
+        return response
 
     def make_response(self, text, language="Japanese"):
         if language=="Japanese":
@@ -798,6 +808,7 @@ if __name__ == '__main__':
     ml = MessageListener(wait_for_chat_server=not args.test)
     if args.test:
         ret = ml.make_diary()
-        rospy.loginfo("image is saved at {}".format(ret['filename']))
+        if 'filename' in ret:
+            rospy.loginfo("image is saved at {}".format(ret['filename']))
         sys.exit(0)
     rospy.spin()
