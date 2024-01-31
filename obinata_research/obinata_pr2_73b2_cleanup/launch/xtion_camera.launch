@@ -1,0 +1,17 @@
+ 
+<launch>
+  <arg name="gui" default="true"/>
+
+  <include file="$(find openni2_launch)/launch/openni2.launch" />
+  
+  <node name="referene_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 1 0 0 -1.57 map camera_depth_optical_frame 10" />
+
+  <group if="$(arg gui)">
+    <node name="rviz"
+          pkg="rviz" type="rviz"
+          args="-d $(find obinata_pr2_73b2_cleanup)/config/xtion.rviz"/>
+  </group>
+
+</launch>

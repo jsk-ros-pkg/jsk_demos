@@ -1,0 +1,133 @@
+<launch>
+    <arg name="launch_demo" default="true" />
+
+    <!-- delivery_demo -->
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="delivery_demo.py"
+        name="delivery_demo"
+        output="screen"
+        required="true"
+        if="$(arg launch_demo)">
+        <rosparam>
+            list_node_strolling:
+                - eng2_JSKEntrance
+                - eng2_73B2
+                - eng2_73A2
+                - eng2_73A4
+            home_id: eng2_73B2
+        </rosparam>
+
+        <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
+        <remap from="~people_pose_array" to="/delivery_demo_person_tracker/people_pose_array" />
+
+        <remap from="~pickup_package" to="/delivery_action_server/pickup_package" />
+        <remap from="~deliver_to" to="/delivery_action_server/deliver_to" />
+    </node>
+
+    <!-- deliver_to and pickup_package action server -->
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="delivery_action_server.py"
+        name="delivery_action_server"
+        output="screen">
+        <rosparam>
+            force_threshold: 1.5
+        </rosparam>
+        <rosparam command="load" file="$(find spot_behavior_graph)/config/nodes.yaml" />
+        <remap from="~person_visible" to="/delivery_demo_person_tracker/visible" />
+        <remap from="~people_pose_array" to="/delivery_demo_person_tracker/people_pose_array" />
+        <remap from="~reset_body_force" to="/body_force_publisher/zero_offset" />
+        <remap from="~body_force" to="/body_force_publisher/wrench_output" />
+    </node>
+
+    <!-- person tracker -->
+    <node
+        pkg="spot_person_lead_behaviors"
+        type="person_tracker.py"
+        name="delivery_demo_person_tracker"
+        output="screen">
+        <remap from="~bbox_array" to="/spot_recognition/bbox_array" />
+        <!-- remap from="~visible" to="" / -->
+
+        <rosparam subst_value="true">
+            frame_id_robot: 'body'
+            label_person: 0
+            dist_visible: 2.0
+            timeout_observation: 5.0
+        </rosparam>
+    </node>
+
+
+    <!-- body force caculation -->
+    <node
+        pkg="jsk_spot_delivery_demo"
+        type="body_force_publisher.py"
+        name="body_force_publisher"
+        output="screen">
+        <remap from="~input_wrench_front_right" to="/front_right/wrench" />
+        <remap from="~input_wrench_front_left" to="/front_left/wrench" />
+        <remap from="~input_wrench_rear_right" to="/rear_right/wrench" />
+        <remap from="~input_wrench_rear_left" to="/rear_left/wrench" />
+    </node>
+
+    <group ns="front_right">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
+            <remap from="joint_states" to="/joint_states" />
+            <rosparam subst_value="true">
+                publish_frequency: 50.0
+                time_constant: 0.3
+                root: body
+                tip: front_right_lower_leg
+            </rosparam>
+        </node>
+    </group>
+
+    <group ns="front_left">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
+            <remap from="joint_states" to="/joint_states" />
+            <rosparam subst_value="true">
+                publish_frequency: 50.0
+                time_constant: 0.3
+                root: body
+                tip: front_left_lower_leg
+            </rosparam>
+        </node>
+    </group>
+
+    <group ns="rear_right">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
+            <remap from="joint_states" to="/joint_states" />
+            <rosparam subst_value="true">
+                publish_frequency: 50.0
+                time_constant: 0.3
+                root: body
+                tip: rear_right_lower_leg
+            </rosparam>
+        </node>
+    </group>
+
+    <group ns="rear_left">
+        <node
+            pkg="virtual_force_publisher"
+            type="virtual_force_publisher"
+            name="virtual_force_publisher">
+            <remap from="joint_states" to="/joint_states" />
+            <rosparam subst_value="true">
+                publish_frequency: 50.0
+                time_constant: 0.3
+                root: body
+                tip: rear_left_lower_leg
+            </rosparam>
+        </node>
+    </group>
+</launch>

@@ -1,0 +1,5 @@
+jsk_spot_delivery_demo/DeliveryTask task
+---
+bool success
+string message
+---
