@@ -1,0 +1,226 @@
+#!/usr/bin/env roseus
+
+(defvar *base_to_body_front*)
+(defvar *base_to_body_back*)
+(defvar *base_to_rarm_elbow_p_servo*)
+(defvar *base_to_rleg_ankle_r_servo*)
+(defvar *base_to_rleg_ankle_r_servo_b*)
+(defvar *target-id*)
+(defvar *target-id-list*)
+(defvar *reparing-servo-num*)
+(defvar *panda_order*)
+
+(setq *null-wrench* #f(0 0 0 0 0 0))
+
+
+
+;;; parameters
+
+(setq *servo-back-to-front*
+      (make-cascoords
+       :pos #f(-4 0 -25)
+       :rpy #f(0 3.14 0)
+       ))
+(setq *body-back-to-larm-grasp-pose*
+      (make-cascoords
+       :pos #f(-124.991 17 -55)
+       :rpy #f(2.171 1.536 2.122)
+       ))
+(setq *body-back-to-rarm-grasp-pose*
+      (make-cascoords
+       :pos #f(124.456 17 -55)
+       :rpy #f(2.576 1.517 -0.646)
+       ))
+
+(setq *rarm_elbow_servo_p_search-pose-1*
+      (make-cascoords
+       :pos #f(0 0 -15)
+       :rpy #f(0 -0.3 0)
+       ))
+(setq *rarm_elbow_servo_p_search-pose-2*
+      (make-cascoords
+       :pos #f(25 0 35)
+       :rpy #f(0 0.5 0)
+       ))
+(setq *rarm_elbow_servo_p_search-pose-3*
+      (make-cascoords
+       :pos #f(30 30 0)
+       :rpy #f(-0.5 0 0)
+       ))
+
+(setq *servo-to-arange-cable-pose-1*
+      (make-cascoords
+       :pos #f(30.646 -43.753 41.312)
+       :rpy #f(2.783 1.34 2.785)
+       ))
+(setq *servo-to-arange-cable-pose-2*
+      (make-cascoords
+       :pos #f(30.066 -4.353 51.323)
+       :rpy #f(2.67 1.353 2.69)
+       ))
+(setq *servo-to-arange-cable-pose-3*
+      (make-cascoords
+       :pos #f(29.544 -15.79 41.237)
+       :rpy #f(2.618 1.341 2.806)
+       ))
+(setq *servo-to-arange-cable-pose-4*
+      (make-cascoords
+       :pos #f(31.268 -80.999 89.198)
+       :rpy #f(2.782 1.393 2.887)
+       ))
+
+(setq *servo-to-search-cable-pose*
+      (make-cascoords
+       :pos #f(-3.797 -98.159 34.853)
+       :rpy #f(1.549 0.916 3.105)
+       ))
+(setq *servo-to-search-cable-pose-1*
+      (make-cascoords
+        :pos #f(46.676 -79.639 45.276)
+        :rpy #f(1.727 0.974 1.716)
+        ))
+(setq *servo-to-search-cable-pose-2*
+      (make-cascoords
+        :pos #f(61.917 -9.069 60.789)
+        :rpy #f(2.458 1.464 2.421)
+        )) 
+(setq *servo-to-search-cable-pose-3*
+      (make-cascoords
+        :pos #f(61.24 18.619 63.366)
+        :rpy #f(-1.812 1.174 -1.821)
+        ))
+
+(setq *servo-to-cable-front-grasp-ready*
+      (make-cascoords
+        :pos #f(34.974 -76.339 49.308)
+        :rpy #f(1.453 0.7 1.446)
+        ))
+(setq *cable-front-to-pre-grasp-pose-1*
+      (make-cascoords
+        :pos #f(-45.691 22.526 27.675)
+        :rpy #f(-1.655 0.7 1.413)
+        )) 
+(setq *cable-front-to-pre-grasp-pose-2*
+      (make-cascoords
+        :pos #f(-39.479 16.61 12.343)
+        :rpy #f(-1.365 0.7 1.57)
+        ))
+(setq *cable-front-to-grasp-pose*
+      (make-cascoords
+        :pos #f(-16.344 21.751 10.114)
+        :rpy #f(-1.45 0.7 1.552)
+        ))
+(setq *cable-front-change-pose-before-insert*
+      (make-cascoords
+        :pos #f(0 0 0)
+        :rpy #f(0 1.57 0)
+        ))
+(setq *cable-front-change-pose-before-insert-1*
+      (make-cascoords
+        :pos #f(17.295 -52.435 39.996)
+        :rpy #f(1.279 0.372 1.172)
+        ))
+(setq *cable-front-change-pose-before-insert-2*
+      (make-cascoords
+        :pos #f(17.353 -43.806 45.33)
+        :rpy #f(1.294 0.654 1.195)
+        ))
+(setq *cable-front-change-pose-before-insert-3*
+      (make-cascoords
+        :pos #f(22.596 -32.874 50.651)
+        :rpy #f(1.347 0.974 1.204)
+        ))
+(setq *cable-front-change-pose-before-insert-4*
+      (make-cascoords
+        :pos #f(26.596 -22.874 50.651)
+        :rpy #f(1.32 1.374 1.404)
+        ))
+(setq *servo-to-slide-insert-right-cable-inter-pose*
+      (make-cascoords
+        :pos #f(34.757 -12.996 40.748)
+        :rpy #f(-2.515 1.479 -2.446)
+        ))
+(setq *servo-to-slide-insert-right-cable-pose*
+      (make-cascoords
+        :pos #f(32 -13.281 38.626)
+        :rpy #f(-1.57 1.57 -1.57)
+        ))
+
+(setq *servo-to-lower-insert-right-cable-pre-pose*
+      (make-cascoords
+        :pos #f(0.313 -29.084 14.451)
+        :rpy #f(0.076 0.952 2.952)
+        ))
+(setq *servo-to-lower-insert-right-cable-pose*
+      (make-cascoords
+        :pos #f(3.789 -31.211 10.625)
+        :rpy #f(0.111 0.946 2.953)
+        ))
+(setq *servo-to-search-tag-pose-1*
+      (make-cascoords
+       :pos #f(1.133 -85.27 61.446)
+       :rpy #f(1.581 1.228 3.132)
+       ))
+(setq *servo-to-search-tag-pose-2*
+      (make-cascoords
+       :pos #f(1.898 -42.878 78.671)
+       :rpy #f(-1.931 1.548 -0.355)
+       ))
+(setq *servo-to-search-tag-pose-3*
+      (make-cascoords
+       :pos #f(2.51 -45.813 49.055)
+       :rpy #f(-1.675 1.106 -0.081)
+       ))
+
+(setq *rarm-elbow-p-to-inter1-pose*
+      (make-cascoords
+       :pos #f(-168.038 -3.379 89.959)
+       :rpy #f(0.042 -0.008 1.539)
+       ))
+(setq *rarm-elbow-p-to-inter2-pose*
+      (make-cascoords
+       :pos #f(-160.254 -5.393 -96.748)
+       :rpy #f(0.024 -0.937 -0.027)
+       ))
+(setq *rarm-elbow-p-to-pre-grasp-pose*
+      (make-cascoords
+       :pos #f(-28.257 -2.82 -95.35)
+       :rpy #f(-2.973 -1.515 2.986)
+       ))
+(setq *rarm-elbow-p-to-grasp-pose*
+      (make-cascoords
+       :pos #f(-24.612 4.967 -30.886)
+       :rpy #f(-2.962 -1.494 3.004)
+       ))
+
+(setq *rleg-ankle-r-b-to-pre-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.695 -53.343 -1.488)
+       :rpy #f(1.496 -0.004 0.024)
+       ))
+(setq *rleg-ankle-r-b-to-inter-pose1*
+      (make-cascoords
+       :pos #f(-4.525 -77.122 23.349)
+       :rpy #f(1.46 0.212 0.035)
+       ))
+(setq *rleg-ankle-r-b-to-pre-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.695 -53.343 -1.488)
+       :rpy #f(1.496 -0.004 0.024)
+       ))
+(setq *rleg-ankle-r-b-to-grasp-pose*
+      (make-cascoords
+       :pos #f(-3.615 -40.964 0.019)
+       :rpy #f(1.479 -0.018 0.025)
+       ))
+
+(setq *cable-frame* "cable-frame")
+
+
+
+;;; parameters for servo
+(setq *servo-to-servo-waiting-pose*
+      (make-cascoords
+       :pos #f(12.503 -38.046 48.706)
+       :rpy #f(2.517 1.299 -2.2)
+       ))

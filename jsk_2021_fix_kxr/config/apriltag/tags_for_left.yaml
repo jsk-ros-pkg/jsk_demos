@@ -1,0 +1,57 @@
+# # Definitions of tags to detect
+#
+# ## General remarks
+#
+# - All length in meters
+# - Ellipsis (...) signifies that the previous element can be repeated multiple times.
+#
+# ## Standalone tag definitions
+# ### Remarks
+#
+# - name is optional
+#
+# ### Syntax
+#
+# standalone_tags:
+#   [
+#     {id: ID, size: SIZE, name: NAME},
+#     ...
+#   ]
+standalone_tags:
+  [
+  {id: 1, size: 0.0295, name: 'lpov-body_back'},
+  {id: 2, size: 0.0152, name: 'lpov-rarm_elbow_p_servo'},
+  {id: 3, size: 0.0152, name: 'lpov-rarm_shoulder_r_servo'},
+  {id: 4, size: 0.0152, name: 'lpov-rleg_ankle_r_servo'},
+  {id: 5, size: 0.0152, name: 'lpov-larm_elbow_p_servo'},
+  {id: 6, size: 0.0152, name: 'lpov-larm_shoulder_r_servo'},
+  {id: 7, size: 0.0152, name: 'lpov-lleg_ankle_r_servo'},
+  {id: 8, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_f'},
+  {id: 9, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_r_b'},
+  {id: 10, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l_f'},
+  {id: 11, size: 0.0052, name: 'lpov-rarm_elbow_p_cable_l_b'},
+  ]
+# ## Tag bundle definitions
+# ### Remarks
+#
+# - name is optional
+# - x, y, z have default values of 0 thus they are optional
+# - qw has default value of 1 and qx, qy, qz have default values of 0 thus they are optional
+#
+# ### Syntax
+#
+# tag_bundles:
+#   [
+#     {
+#       name: 'CUSTOM_BUNDLE_NAME',
+#       layout:
+#         [
+#           {id: ID, size: SIZE, x: X_POS, y: Y_POS, z: Z_POS, qw: QUAT_W_VAL, qx: QUAT_X_VAL, qy: QUAT_Y_VAL, qz: QUAT_Z_VAL},
+#           ...
+#         ]
+#     },
+#     ...
+#   ]
+tag_bundles:
+  [
+  ]

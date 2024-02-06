@@ -1,0 +1,39 @@
+<launch>
+
+  <arg name="debug_view" value="false" />
+
+  <group ns="rarm_cable_terminal_detection">
+    <include file="$(find opencv_apps)/launch/hsv_color_filter.launch">
+      <arg name="image" value="/rarm_camera/color/image_raw"/>
+      <arg name="debug_view" value="$(arg debug_view)"/>
+      <arg name="h_limit_max" default="150"/>
+      <arg name="h_limit_min" default="82"/>
+      <arg name="s_limit_max" default="243"/>
+      <arg name="s_limit_min" default="62"/>
+      <arg name="v_limit_max" default="253"/>
+      <arg name="v_limit_min" default="103"/>
+    </include>
+    <include file="$(find opencv_apps)/launch/general_contours.launch">
+      <arg name="image" value="hsv_color_filter/image"/>
+      <arg name="debug_view" value="$(arg debug_view)"/>
+    </include>
+  </group>
+
+ <group ns="larm_cable_terminal_detection">
+    <include file="$(find opencv_apps)/launch/hsv_color_filter.launch">
+      <arg name="image" value="/larm_camera/color/image_raw"/>
+      <arg name="debug_view" value="$(arg debug_view)"/>
+      <arg name="h_limit_max" default="150"/>
+      <arg name="h_limit_min" default="82"/>
+      <arg name="s_limit_max" default="243"/>
+      <arg name="s_limit_min" default="62"/>
+      <arg name="v_limit_max" default="253"/>
+      <arg name="v_limit_min" default="103"/>
+    </include>
+    <include file="$(find opencv_apps)/launch/general_contours.launch">
+      <arg name="image" value="hsv_color_filter/image"/>
+      <arg name="debug_view" value="$(arg debug_view)"/>
+    </include>
+  </group>
+</launch>
+  <!-- <node name="rviz" pkg="rviz" type="rviz" args="-d $(find cart_humanoid)/config/sample_head_arm_skin_detect.rviz"/> -->
