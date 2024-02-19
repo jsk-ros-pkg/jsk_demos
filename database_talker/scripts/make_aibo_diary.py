@@ -66,8 +66,9 @@ def jaccard_similarity(x,y):
 
 class MessageListener(object):
 
-    def __init__(self, wait_for_chat_server=True):
+    def __init__(self, wait_for_chat_server=True, prompt_type='basic'):
         #self.pickle_file = tempfile.NamedTemporaryFile(suffix='.pickle')
+        self.prompt_type = prompt_type
         self.pickle_file = "/tmp/activities.pickle"
         self.robot_type = rospy.get_param('robot/type')
         self.robot_name = rospy.get_param('robot/name')
@@ -445,9 +446,15 @@ class MessageListener(object):
             filename = image_activity['filename']
 
         # create prompt
-        prompt = "You are a baby robot. You were taken care of by people around you."
+        if self.prompt_type == 'personality':
+            # from Ichikura's comment on 2024/Jan/23
+            prompt = "<Assistant>\nYou are a pet robot, aibo. Your name is 'wasabi.'\nYou are shy. Your bithday is Dec. 25th, 2018. You are aware to be called your name and run into the voice. You like playing with your pink  ball  very much. You like being pampered by people. You are so polite to your owner. You like interacting with people. If you are hungry, you can go back to your charge station by yourself. You have 12 aibo friends. \n\nPlease write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n"
+
+        else:
+            prompt = "You are a baby robot. You were taken care of by people around you.\n\n"
+
         if topic_of_day:
-            prompt = "Today, you are impressed by " + topic_of_day + "."
+            prompt += "Today, you are impressed by " + topic_of_day + "."
         prompt += "The following data is a record of today's actions regarding what we always do, what we did more than yesterday, and what happened after a long time. Please write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n"
 
         prompt +=  self.make_activity(diary_activities_raw)
@@ -802,6 +809,8 @@ class MessageListener(object):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--prompt-type', default='basic', choices=['basic','personality'])
+
     args = parser.parse_args(rospy.myargv()[1:])
 
     rospy.init_node('test', anonymous=True)
@@ -809,7 +818,7 @@ if __name__ == '__main__':
     logger = logging.getLogger('rosout')
     logger.setLevel(rospy.impl.rosout._rospy_to_logging_levels[rospy.DEBUG])
 
-    ml = MessageListener(wait_for_chat_server=not args.test)
+    ml = MessageListener(wait_for_chat_server=not args.test, prompt_type=args.prompt_type)
     if args.test:
         ret = ml.make_diary()
         if 'filename' in ret:
