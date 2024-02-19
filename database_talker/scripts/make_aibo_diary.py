@@ -386,9 +386,13 @@ class MessageListener(object):
 
         # sort activities event by it's occurence [list] -> sorted({key: count})
         activities_events_freq = sorted({key: activities_events.count(key) for key in set(activities_events)}.items(), key=lambda x:x[1], reverse=True)
+        always_action = False
         for event, count in activities_events_freq:
             if count/float(len(diary_activities_events)) > 0.5:
                 prompt += "{} : {:.2f}\n".format(event, count/float(len(diary_activities_events)))
+                always_action = True
+        if not always_action:
+            prompt += "none\n"
 
         # estimate frequence in 24h
         prompt += "\n<actions performed more compared to yesterday> 'action : increase from the number of time done yesterday'\n"
