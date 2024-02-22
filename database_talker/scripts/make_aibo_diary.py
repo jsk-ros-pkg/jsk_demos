@@ -285,8 +285,10 @@ class MessageListener(object):
                     activities_events[event]['last_seen'] = timestamp
                     activities_events[event]['count'] += 1
                 else:
-                    activities_events.update({event : {'last_seen' : timestamp, 'tmp_duration' : datetime.timedelta(), 'duration' : datetime.timedelta(), 'count': 0}})
+                    activities_events.update({event : {'last_seen' : timestamp, 'tmp_duration' : datetime.timedelta(), 'duration' : datetime.timedelta(seconds=300), 'count': 1}}) # initially assume 5 min interaction, set initial count is 1
                 # print("{} {:24} {} {}".format(timestamp, event, activities_events[event]['duration'], activities_events[event]['tmp_duration']))
+            for event in activities_events:
+                activities_events[event]['duration'] += activities_events[event]['tmp_duration']
             diary_activities_events.append(activities_events)
         return diary_activities_events
 
@@ -370,6 +372,9 @@ class MessageListener(object):
         # diary_activities_events = [activities_events for day1, activities_events for day2, ....]
         #diary_activities_events = self.make_activities_events(diary_activities_raw, 'aibo_driver/')
         diary_activities_events = self.make_activities_events(diary_activities_raw)
+        diary_recognition_events = self.make_activities_events(diary_activities_raw,
+                                                               message='jsk_recognition_msgs/VQATaskActionResult')
+        diary_activities_events = [{k: v for d in L for k, v in d.items()} for L in zip(diary_activities_events, diary_recognition_events)]
 
         for activities_events in diary_activities_events:
             print("--")
@@ -389,9 +394,13 @@ class MessageListener(object):
         activities_events_freq = sorted({key: activities_events.count(key) for key in set(activities_events)}.items(), key=lambda x:x[1], reverse=True)
         always_action = False
         for event, count in activities_events_freq:
-            if count/float(len(diary_activities_events)) > 0.5:
-                prompt += "{} : {:.2f}\n".format(event, count/float(len(diary_activities_events)))
+            if count/float(len(diary_activities_events)) > 0.25:
+                if next((x for x in diary_activities_events if event in x.keys()), None):
+                    prompt += "{} : {}\n".format(event, next(x for x in diary_activities_events if event in x.keys())[event]['last_seen'])
+                else:
+                    prompt += "{} : {:.2f}\n".format(event, count/float(len(diary_activities_events)))
                 always_action = True
+
         if not always_action:
             prompt += "none\n"
 
