@@ -1,0 +1,8 @@
+<launch>
+  <node name="rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find jsk_2020_10_semi)/config/conf.rviz" />
+  <node name="smach_viewer"
+        pkg="smach_viewer"
+        type="smach_viewer.py" />
+</launch>
