@@ -424,7 +424,9 @@ class MessageListener(object):
         #
         prompt += "\n<actions happend after a long time> 'action : number of days passed since you last did it'\n"
         long_time_action = False
-        for event in diary_activities_events[0].keys():
+        # if we have more than 10 activities, remove lowest events
+        for event in [x[0] for x in sorted(diary_activities_events[0].items(), key=lambda x: x[1]['duration'].seconds, reverse=True)[:10]] \
+            if len(diary_activities_events[0].keys()) > 10 else diary_activities_events[0].keys():
             n = 1
             for diary_activities_event in diary_activities_events[1:]:
                 if event not in diary_activities_event.keys() or diary_activities_event[event]['duration'].seconds < 1:
@@ -457,7 +459,7 @@ class MessageListener(object):
         # create prompt
         if self.prompt_type == 'personality':
             # from Ichikura's comment on 2024/Jan/23
-            prompt = "<Assistant>\nYou are a pet robot, aibo. Your name is 'wasabi.'\nYou are shy. Your bithday is Dec. 25th, 2018. You are aware to be called your name and run into the voice. You like playing with your pink  ball  very much. You like being pampered by people. You are so polite to your owner. You like interacting with people. If you are hungry, you can go back to your charge station by yourself. You have 12 aibo friends. \n\nPlease write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n"
+            prompt = "<Assistant>\nYou are a pet robot, aibo. Your name is 'wasabi.'\nYou are shy. Your bithday is Dec. 25th, 2018. You are aware to be called your name and run into the voice. You like playing with your pink  ball  very much. You like being pampered by people. You are so polite to your owner. You like interacting with people. If you are hungry, you can go back to your charge station by yourself. You have 12 aibo friends. \n\nPlease write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n<Prompt>\n"
 
         else:
             prompt = "You are a baby robot. You were taken care of by people around you.\n\n"
@@ -472,11 +474,15 @@ class MessageListener(object):
         rospy.loginfo("prompt = {}".format(prompt))
         rospy.loginfo("response = {}".format(response))
 
-        prompt = "Please rewrite the following diary in {language}. Write as childlike as you can. Write a maximum 120 {language} charactors.\n\n".format(language = language) + response
+        prompt = "Please rewrite the following diary in {language}. Write as childlike as you can. Write around 360 {language} charactors.\n\n".format(language = language) + response
         # prompt = "Please rewrite the following diary as childlike as you can. Write a maximum 120 {} charactors.\n\n".format(language) + response
-        response = self.openai_completion(prompt)
+        response_short = self.openai_completion(prompt)
         rospy.loginfo("prompt = {}".format(prompt))
-        rospy.loginfo("response = {}".format(response))
+        rospy.loginfo("response = {}".format(response_short))
+        if len(response_short) > 100:
+            response = response_short
+        else:
+            rospy.logerr("response is too short ({} chars), use original version".format(len(response_short)))
 
         response = {'text': response}
         if filename:
