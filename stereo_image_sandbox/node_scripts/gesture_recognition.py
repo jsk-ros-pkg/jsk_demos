@@ -176,7 +176,7 @@ def main():
         pub.publish(out_img)
         result_pub.publish(std_msgs.msg.String())
 
-    pub = rospy.Publisher('finger', sensor_msgs.msg.Image, queue_size=1)
+    pub = rospy.Publisher('~image', sensor_msgs.msg.Image, queue_size=1)
     # result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
     result_pub = rospy.Publisher('~result', std_msgs.msg.String, queue_size=1)
     sub = rospy.Subscriber('/camera/color/image_raw',
