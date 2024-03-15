@@ -13,7 +13,8 @@ import cv_bridge
 import numpy as np
 import rospy
 import sensor_msgs.msg
-from jsk_recognition_msgs.msg import ClassificationResult
+# from jsk_recognition_msgs.msg import ClassificationResult
+import std_msgs.msg
 
 import os
 
@@ -129,7 +130,8 @@ def main():
         results = hands.process(image)
         image.flags.writeable = True
 
-        result_msg = ClassificationResult(header=msg.header)
+        # result_msg = ClassificationResult(header=msg.header)
+        result_msg = None
 
         #  ####################################################################
         if results.multi_hand_landmarks is not None:
@@ -164,16 +166,19 @@ def main():
                     handedness,
                     keypoint_classifier_labels[hand_sign_id],
                 )
-                result_msg.label_names.append(keypoint_classifier_labels[hand_sign_id])
+                if result_msg is None:
+                    result_msg = std_msgs.msg.String(data=keypoint_classifier_labels[hand_sign_id])
+                # result_msg.label_names.append(keypoint_classifier_labels[hand_sign_id])
         mode = 0
         debug_image = draw_info(debug_image, fps, mode, number)
         out_img = bridge.cv2_to_imgmsg(debug_image, encoding='bgr8')
         out_img.header = msg.header
         pub.publish(out_img)
-        result_pub.publish(result_msg)
+        result_pub.publish(std_msgs.msg.String())
 
     pub = rospy.Publisher('finger', sensor_msgs.msg.Image, queue_size=1)
-    result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
+    # result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
+    result_pub = rospy.Publisher('~result', std_msgs.msg.String, queue_size=1)
     sub = rospy.Subscriber('/camera/color/image_raw',
                            sensor_msgs.msg.Image, queue_size=1,
                            buff_size=2**24,
