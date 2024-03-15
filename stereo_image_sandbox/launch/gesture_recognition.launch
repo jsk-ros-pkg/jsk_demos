@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="model_path" default="$(find stereo_image_sandbox)/models/keypoint_classifier.tflite" />
+  <arg name="label_csv" default="$(find stereo_image_sandbox)/models/keypoint_classifier_label.csv" />
+
+  <node name="gesture_recognition"
+        pkg="stereo_image_sandbox" type="gesture_recognition.py" >
+    <rosparam subst_value="true">
+      model_path: $(arg model_path)
+      label_csv: $(arg label_csv)
+    </rosparam>
+  </node>
+
+</launch>
