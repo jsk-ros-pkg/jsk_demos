@@ -1,6 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import tensorflow as tf
+import mediapipe as mp
 import copy
 import csv
 import itertools
@@ -8,12 +10,14 @@ from collections import Counter, deque
 
 import cv2 as cv
 import cv_bridge
-import mediapipe as mp
 import numpy as np
 import rospy
 import sensor_msgs.msg
-import tensorflow as tf
 from jsk_recognition_msgs.msg import ClassificationResult
+
+import os
+
+os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0:' + os.environ['LD_PRELOAD']
 
 
 class CvFpsCalc(object):
@@ -168,7 +172,7 @@ def main():
 
     pub = rospy.Publisher('finger', sensor_msgs.msg.Image, queue_size=1)
     result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
-    sub = rospy.Subscriber('/camera/color/image_rect_color',
+    sub = rospy.Subscriber('/camera/color/image_raw',
                            sensor_msgs.msg.Image, queue_size=1,
                            callback=img_cb)
     rospy.spin()
