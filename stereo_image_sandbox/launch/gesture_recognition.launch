@@ -4,7 +4,8 @@
   <arg name="label_csv" default="$(find stereo_image_sandbox)/models/keypoint_classifier_label.csv" />
 
   <node name="gesture_recognition"
-        pkg="stereo_image_sandbox" type="gesture_recognition.py" >
+        pkg="stereo_image_sandbox" type="gesture_recognition.py"
+        output="screen" >
      <env name="LD_PRELOAD" value="/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0" />
     <rosparam subst_value="true">
       model_path: $(arg model_path)

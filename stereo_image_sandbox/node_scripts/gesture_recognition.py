@@ -111,6 +111,8 @@ def main():
 
 
     def img_cb(msg):
+        if (rospy.Time.now() - msg.header.stamp).to_sec() > 0.1:
+            return
         image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
         number = 0
         use_brect = True
@@ -174,6 +176,7 @@ def main():
     result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
     sub = rospy.Subscriber('/camera/color/image_raw',
                            sensor_msgs.msg.Image, queue_size=1,
+                           buff_size=2**24,
                            callback=img_cb)
     rospy.spin()
 
