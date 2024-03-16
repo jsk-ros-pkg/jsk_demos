@@ -5,7 +5,7 @@
   <arg name="audio_topic" default="/input_audio" doc="Name of audio topic captured from microphone" />
   <arg name="depth" default="16" doc="Bit depth of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
   <arg name="sample_rate" default="16000" doc="Frame rate of audio topic and microphone. '$ pactl list short sinks' to check your hardware"/>
-  <arg name="device" default="bluealsa:DEV=4C:75:25:A2:78:D6,PROFILE=a2dp" doc="Card and device number of microphone (e.g. hw:0,0). you can check card number and device number by '$ arecord -l', then uses hw:[card number],[device number]" />
+  <arg name="device" default="bluealsa:DEV=64:B7:08:8A:14:16,PROFILE=a2dp" doc="Card and device number of microphone (e.g. hw:0,0). you can check card number and device number by '$ arecord -l', then uses hw:[card number],[device number]" />
   <arg name="n_channel" default="1" doc="Number of channels of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
   <arg name="sound_play_respawn" default="true" />
   <arg name="dynamic_energy_ratio" default="1.0" />
