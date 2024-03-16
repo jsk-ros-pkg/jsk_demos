@@ -174,7 +174,8 @@ def main():
         out_img = bridge.cv2_to_imgmsg(debug_image, encoding='bgr8')
         out_img.header = msg.header
         pub.publish(out_img)
-        result_pub.publish(std_msgs.msg.String())
+        if result_msg is not None:
+            result_pub.publish(result_msg)
 
     pub = rospy.Publisher('~image', sensor_msgs.msg.Image, queue_size=1)
     # result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
