@@ -1,5 +1,15 @@
 <launch>
 
+  <node pkg="rosserial_python" name="serial_node_1" type="serial_node.py">
+	  <param name="~port" value="/dev/ttyACM-righteye"/>
+	  <param name="~baud" value="57600"/>
+  </node>
+
+  <node pkg="rosserial_python" name="serial_node_2" type="serial_node.py">
+	  <param name="~port" value="/dev/ttyACM-lefteye"/>
+	  <param name="~baud" value="57600"/>
+  </node>
+
   <include file="$(find stereo_image_sandbox)/launch/d405.launch" >
   </include>
 
