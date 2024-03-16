@@ -56,19 +56,19 @@
       <param name="wait" value="true" />
     </node>
 
-    <!-- <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch" > -->
-    <!--   <arg name="n_channel" value="$(arg n_channel)" /> -->
-    <!--   <arg name="depth" value="$(arg depth)" /> -->
-    <!--   <arg name="sample_rate" value="$(arg sample_rate)" /> -->
-    <!--   <arg name="audio_topic" value="$(arg audio_topic)" /> -->
-    <!--   <arg name="launch_sound_play" value="false" /> -->
-    <!--   <arg name="launch_audio_capture" value="false" /> -->
-    <!--   <arg name="voice_topic" value="speech_to_text" /> -->
-    <!--   <arg name="device" value="$(arg device)" /> -->
-    <!--   <arg name="language" value="ja-JP" /> -->
-    <!--   <arg name="continuous" value="true" /> -->
-    <!--   <arg name="dynamic_energy_ratio" value="$(arg dynamic_energy_ratio)" /> -->
-    <!-- </include> -->
+    <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch" >
+      <arg name="n_channel" value="$(arg n_channel)" />
+      <arg name="depth" value="$(arg depth)" />
+      <arg name="sample_rate" value="$(arg sample_rate)" />
+      <arg name="audio_topic" value="/$(arg namespace)/$(arg audio_topic)" />
+      <arg name="launch_sound_play" value="false" />
+      <arg name="launch_audio_capture" value="false" />
+      <arg name="voice_topic" value="speech_to_text" />
+      <arg name="device" value="$(arg device)" />
+      <arg name="language" value="ja-JP" />
+      <arg name="continuous" value="true" />
+      <arg name="dynamic_energy_ratio" value="$(arg dynamic_energy_ratio)" />
+    </include>
   </group>
 
 </launch>

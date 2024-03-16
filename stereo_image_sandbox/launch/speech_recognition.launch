@@ -22,27 +22,6 @@
     <param name="device" value="$(arg device)" />
   </node>
 
-  <!-- <node name="sound_play" -->
-  <!--       pkg="sound_play" type="soundplay_node.py" -->
-  <!--       respawn="$(arg sound_play_respawn)" -->
-  <!--       output="screen" > -->
-  <!--   <remap from="robotsound" to="robotsound"/> -->
-  <!--   <remap from="sound_play" to="robotsound"/> -->
-  <!--   <env name="PATH" value="$(find stereo_image_sandbox)/bin:$(env PATH)" /> -->
-  <!--   <env name="PYTHONIOENCODING" value="utf-8" /> -->
-  <!--   <rosparam subst_value="true" > -->
-  <!--     device: $(arg device) -->
-  <!--   </rosparam> -->
-  <!-- </node> -->
-
-  <!-- <group ns="sound_play" > -->
-  <!--   <node name="is_speaking" -->
-  <!--         pkg="sound_play" type="is_speaking.py" > -->
-  <!--     <remap from="~robotsound" to="/robotsound/status" /> -->
-  <!--     <remap from="~output/is_speaking" to="/robotsound/is_speaking" /> -->
-  <!--   </node> -->
-  <!-- </group> -->
-
   <node name="sound_play_jp"
         pkg="sound_play" type="soundplay_node.py"
         respawn="$(arg sound_play_respawn)"
@@ -64,17 +43,6 @@
       <remap from="~output/is_speaking" to="/is_speaking" />
     </node>
   </group>
-
-  <!-- <node name="boolean_node_for_speaking" -->
-  <!--       pkg="stereo_image_sandbox" type="boolean_node.py" -->
-  <!--       clear_params="true" > -->
-  <!--   <remap from="~input1" to="/robotsound/is_speaking" /> -->
-  <!--   <remap from="~input2" to="/robotsound_jp/is_speaking" /> -->
-  <!--   <remap from="~output/or" to="/is_speaking" /> -->
-  <!--   <rosparam> -->
-  <!--     number_of_input: 2 -->
-  <!--   </rosparam> -->
-  <!-- </node> -->
 
   <node name="input_audio_mux"
         pkg="topic_tools" type="mux"
