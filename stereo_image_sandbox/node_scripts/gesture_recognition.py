@@ -356,28 +356,28 @@ class FingerGestureEstimation(ConnectionBasedTransport):
 
         with open(rospy.get_param('~label_csv'), encoding='utf-8-sig') as f:
             keypoint_classifier_labels = csv.reader(f)
-            keypoint_classifier_labels = [
+            self.keypoint_classifier_labels = [
                 row[0] for row in keypoint_classifier_labels
             ]
 
         self.bridge = cv_bridge.CvBridge()
 
-        self.result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
-        self.pub_img = rospy.Publisher('~output', sensor_msgs.msg.Image, queue_size=1)
-        self.pub_img_compressed = rospy.Publisher('~output/compressed',
-                                                  sensor_msgs.msg.Image, queue_size=1)
+        self.result_pub = self.advertise('~result', ClassificationResult, queue_size=1)
+        self.pub_img = self.advertise('~output', sensor_msgs.msg.Image, queue_size=1)
+        self.pub_img_compressed = self.advertise('~output/compressed',
+                                                 sensor_msgs.msg.CompressedImage, queue_size=1)
 
     def subscribe(self):
         self.sub = rospy.Subscriber(
             '~input',
-            Image, self.callback,
+            sensor_msgs.msg.Image, self.callback,
             queue_size=1, buff_size=2**24)
 
     def unsubscribe(self):
         self.sub.unregister()
 
     def callback(self, img_msg):
-        if abs((rospy.Time.now() - msg.header.stamp).to_sec()) > 0.1:
+        if abs((rospy.Time.now() - img_msg.header.stamp).to_sec()) > 0.1:
             return
 
         image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
@@ -388,7 +388,7 @@ class FingerGestureEstimation(ConnectionBasedTransport):
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         image.flags.writeable = False
         results = self.hands.process(image)
-        result_msg = ClassificationResult(header=msg.header)
+        result_msg = ClassificationResult(header=img_msg.header)
         if results.multi_hand_landmarks is not None:
             for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                   results.multi_handedness):
@@ -397,45 +397,45 @@ class FingerGestureEstimation(ConnectionBasedTransport):
                 # 相対座標・正規化座標への変換
                 pre_processed_landmark_list = pre_process_landmark(landmark_list)
                 # ハンドサイン分類
-                hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
-                result_msg.label_names.append(keypoint_classifier_labels[hand_sign_id])
+                hand_sign_id = self.keypoint_classifier(pre_processed_landmark_list)
+                result_msg.label_names.append(self.keypoint_classifier_labels[hand_sign_id])
 
-        result_pub.publish(result_msg)
+        self.result_pub.publish(result_msg)
 
         if self.pub_img.get_num_connections() > 0 or self.pub_img_compressed.get_num_connections() > 0:
             image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            image = cv.cvtColor(image, cv.COLOR_RGB2BGR)
             if results.multi_hand_landmarks is not None:
                 for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
                                                       results.multi_handedness):
                     brect = calc_bounding_rect(image, hand_landmarks)
                     landmark_list = calc_landmark_list(image, hand_landmarks)
                     pre_processed_landmark_list = pre_process_landmark(landmark_list)
-                    hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
+                    hand_sign_id = self.keypoint_classifier(pre_processed_landmark_list)
                     image = draw_bounding_rect(use_brect, image, brect)
                     image = draw_landmarks(image, landmark_list)
                     image = draw_info_text(
                         image,
                         brect,
                         handedness,
-                        keypoint_classifier_labels[hand_sign_id],
+                        self.keypoint_classifier_labels[hand_sign_id],
                     )
 
         if self.pub_img.get_num_connections() > 0:
             # Draw the hand annotations on the image.
-            out_img_msg = bridge.cv2_to_imgmsg(
+            out_img_msg = self.bridge.cv2_to_imgmsg(
                 image, encoding='bgr8')
             out_img_msg.header = img_msg.header
             self.pub_img.publish(out_img_msg)
 
         if self.pub_img_compressed.get_num_connections() > 0:
             # publish compressed http://wiki.ros.org/rospy_tutorials/Tutorials/WritingImagePublisherSubscriber  # NOQA
-            vis_compressed_msg = CompressedImage()
+            vis_compressed_msg = sensor_msgs.msg.CompressedImage()
             vis_compressed_msg.header = img_msg.header
             # image format https://github.com/ros-perception/image_transport_plugins/blob/f0afd122ed9a66ff3362dc7937e6d465e3c3ccf7/compressed_image_transport/src/compressed_publisher.cpp#L116  # NOQA
             vis_compressed_msg.format = 'bgr8' + '; jpeg compressed bgr8'
             vis_compressed_msg.data = np.array(
-                cv2.imencode('.jpg', image)[1]).tobytes()
+                cv.imencode('.jpg', image)[1]).tobytes()
             self.pub_img_compressed.publish(vis_compressed_msg)
 
 
