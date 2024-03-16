@@ -1,0 +1,15 @@
+<launch>
+
+  <include file="$(find stereo_image_sandbox)/launch/d405.launch" >
+  </include>
+
+  <include file="$(find stereo_image_sandbox)/launch/gesture_recognition.launch" >
+  </include>
+
+  <include file="$(find stereo_image_sandbox)/launch/speech_recognition_radxa.launch" >
+  </include>
+
+  <include file="$(find kamakiri)/launch/kxr_controller.launch" >
+  </include>
+
+</launch>
