@@ -13,7 +13,7 @@ import cv_bridge
 import numpy as np
 import rospy
 import sensor_msgs.msg
-# from jsk_recognition_msgs.msg import ClassificationResult
+from jsk_recognition_msgs.msg import ClassificationResult
 import std_msgs.msg
 
 import os
