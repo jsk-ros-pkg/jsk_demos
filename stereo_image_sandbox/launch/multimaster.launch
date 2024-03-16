@@ -10,4 +10,12 @@
         output="screen" >
   </node>
 
+  <node name="param_sync"
+        pkg="fkie_master_sync" type="param_sync.py"
+        output="screen" >
+    <rosparam>
+      add_ns: false
+    </rosparam>
+  </node>
+
 </launch>
