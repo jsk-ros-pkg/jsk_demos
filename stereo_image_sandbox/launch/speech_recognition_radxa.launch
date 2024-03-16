@@ -16,6 +16,7 @@
           pkg="stereo_image_sandbox" type="radxa_i2c_audio_publisher.py"
           output="screen"
           respawn="true">
+      <remap from="/audio" to="/$(arg namespace)/audio" />
     </node>
 
     <node name="sound_play_jp"
