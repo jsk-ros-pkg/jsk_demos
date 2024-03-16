@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="raw_audio_topic" default="/left_ear/audio" doc="Name of audio topic captured from microphone" />
+  <arg name="raw_audio_topic" default="/audio" doc="Name of audio topic captured from microphone" />
   <arg name="dummy_audio_topic" default="/dummy_audio" doc="Dummy audio" />
   <arg name="audio_topic" default="/input_audio" doc="Name of audio topic captured from microphone" />
   <arg name="depth" default="16" doc="Bit depth of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
@@ -9,6 +9,13 @@
   <arg name="n_channel" default="1" doc="Number of channels of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
   <arg name="sound_play_respawn" default="true" />
   <arg name="dynamic_energy_ratio" default="1.0" />
+
+
+  <node name="audio_publisher"
+        pkg="stereo_image_sandbox" type="radxa_i2c_audio_publisher.py"
+        output="screen"
+        respawn="true">
+  </node>
 
   <!-- audio capture from microphone -->
   <!-- <node name="audio_capture" pkg="audio_capture" type="audio_capture" -->
