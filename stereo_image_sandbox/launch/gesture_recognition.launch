@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="namespace" default="" />
+  <arg name="namespace" default="robot_a" />
   <arg name="model_path" default="$(find stereo_image_sandbox)/models/keypoint_classifier.tflite" />
   <arg name="label_csv" default="$(find stereo_image_sandbox)/models/keypoint_classifier_label.csv" />
 

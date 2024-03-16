@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="namespace" default="" />
+  <arg name="namespace" default="robot_a" />
 
   <include file="$(find realsense2_camera)/launch/rs_camera.launch" >
     <arg name="enable_infra1" value="false" />
