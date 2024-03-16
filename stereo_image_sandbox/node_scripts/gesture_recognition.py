@@ -7,6 +7,7 @@ import copy
 import csv
 import itertools
 from collections import Counter, deque
+from jsk_topic_tools import ConnectionBasedTransport
 
 import cv2 as cv
 import cv_bridge
@@ -19,25 +20,6 @@ import std_msgs.msg
 import os
 
 os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0:' + os.environ['LD_PRELOAD']
-
-
-class CvFpsCalc(object):
-    def __init__(self, buffer_len=1):
-        self._start_tick = cv.getTickCount()
-        self._freq = 1000.0 / cv.getTickFrequency()
-        self._difftimes = deque(maxlen=buffer_len)
-
-    def get(self):
-        current_tick = cv.getTickCount()
-        different_time = (current_tick - self._start_tick) * self._freq
-        self._start_tick = current_tick
-
-        self._difftimes.append(different_time)
-
-        fps = 1000.0 / (sum(self._difftimes) / len(self._difftimes))
-        fps_rounded = round(fps, 2)
-
-        return fps_rounded
 
 
 class KeyPointClassifier(object):
@@ -71,119 +53,6 @@ class KeyPointClassifier(object):
 
         return result_index
 
-
-def main():
-    rospy.init_node('hand_gesture')
-    # モデルロード #############################################################
-    mp_hands = mp.solutions.hands
-    use_static_image_mode = False
-    min_tracking_confidence = 0.5
-    min_detection_confidence = 0.7
-    hands = mp_hands.Hands(
-        static_image_mode=use_static_image_mode,
-        max_num_hands=1,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
-    )
-
-    keypoint_classifier = KeyPointClassifier(rospy.get_param('~model_path'))
-
-    # ラベル読み込み ###########################################################
-    with open(rospy.get_param('~label_csv'), encoding='utf-8-sig') as f:
-        keypoint_classifier_labels = csv.reader(f)
-        keypoint_classifier_labels = [
-            row[0] for row in keypoint_classifier_labels
-        ]
-
-    # FPS計測モジュール ########################################################
-    cvFpsCalc = CvFpsCalc(buffer_len=10)
-
-    # 座標履歴 #################################################################
-    history_length = 16
-
-    # フィンガージェスチャー履歴 ################################################
-    finger_gesture_history = deque(maxlen=history_length)
-
-    #  ########################################################################
-
-    pub = None
-    result_pub = None
-    bridge = cv_bridge.CvBridge()
-
-
-    def img_cb(msg):
-        if (rospy.Time.now() - msg.header.stamp).to_sec() > 0.1:
-            return
-        image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-        number = 0
-        use_brect = True
-
-        fps = cvFpsCalc.get()
-
-        image = cv.flip(image, 1)  # ミラー表示
-        debug_image = copy.deepcopy(image)
-
-        # 検出実施 #############################################################
-        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-
-        image.flags.writeable = False
-        results = hands.process(image)
-        image.flags.writeable = True
-
-        result_msg = ClassificationResult(header=msg.header)
-
-        #  ####################################################################
-        if results.multi_hand_landmarks is not None:
-            for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
-                                                  results.multi_handedness):
-                # 外接矩形の計算
-                brect = calc_bounding_rect(debug_image, hand_landmarks)
-                # ランドマークの計算
-                landmark_list = calc_landmark_list(debug_image, hand_landmarks)
-
-                # 相対座標・正規化座標への変換
-                pre_processed_landmark_list = pre_process_landmark(
-                    landmark_list)
-
-                # ハンドサイン分類
-                hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
-
-                # フィンガージェスチャー分類
-                finger_gesture_id = 0
-
-                # 直近検出の中で最多のジェスチャーIDを算出
-                finger_gesture_history.append(finger_gesture_id)
-                most_common_fg_id = Counter(
-                    finger_gesture_history).most_common()
-
-                # 描画
-                debug_image = draw_bounding_rect(use_brect, debug_image, brect)
-                debug_image = draw_landmarks(debug_image, landmark_list)
-                debug_image = draw_info_text(
-                    debug_image,
-                    brect,
-                    handedness,
-                    keypoint_classifier_labels[hand_sign_id],
-                )
-                # if result_msg is None:
-                #     result_msg = std_msgs.msg.String(data=keypoint_classifier_labels[hand_sign_id])
-                result_msg.label_names.append(keypoint_classifier_labels[hand_sign_id])
-        mode = 0
-        debug_image = draw_info(debug_image, fps, mode, number)
-        out_img = bridge.cv2_to_imgmsg(debug_image, encoding='bgr8')
-        out_img.header = msg.header
-        pub.publish(out_img)
-        # if result_msg is not None:
-        result_pub.publish(result_msg)
-
-    pub = rospy.Publisher('~image', sensor_msgs.msg.Image, queue_size=1)
-    result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
-    # result_pub = rospy.Publisher('~result', std_msgs.msg.String, queue_size=1)
-    sub = rospy.Subscriber('/camera/color/image_raw',
-                           sensor_msgs.msg.Image, queue_size=1,
-                           buff_size=2**24,
-                           callback=img_cb)
-    rospy.spin()
 
 
 
@@ -467,23 +336,110 @@ def draw_info_text(image, brect, handedness, hand_sign_text,
     return image
 
 
-def draw_info(image, fps, mode, number):
-    cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
-               1.0, (0, 0, 0), 4, cv.LINE_AA)
-    cv.putText(image, "FPS:" + str(fps), (10, 30), cv.FONT_HERSHEY_SIMPLEX,
-               1.0, (255, 255, 255), 2, cv.LINE_AA)
+class FingerGestureEstimation(ConnectionBasedTransport):
 
-    mode_string = ['Logging Key Point', 'Logging Point History']
-    if 1 <= mode <= 2:
-        cv.putText(image, "MODE:" + mode_string[mode - 1], (10, 90),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
-                   cv.LINE_AA)
-        if 0 <= number <= 9:
-            cv.putText(image, "NUM:" + str(number), (10, 110),
-                       cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1,
-                       cv.LINE_AA)
-    return image
+    def __init__(self):
+        super(FingerGestureEstimation, self).__init__()
+
+        mp_hands = mp.solutions.hands
+        use_static_image_mode = False
+        min_tracking_confidence = 0.5
+        min_detection_confidence = 0.7
+        self.hands = mp_hands.Hands(
+            static_image_mode=use_static_image_mode,
+            max_num_hands=1,
+            min_detection_confidence=min_detection_confidence,
+            min_tracking_confidence=min_tracking_confidence,
+        )
+
+        self.keypoint_classifier = KeyPointClassifier(rospy.get_param('~model_path'))
+
+        with open(rospy.get_param('~label_csv'), encoding='utf-8-sig') as f:
+            keypoint_classifier_labels = csv.reader(f)
+            keypoint_classifier_labels = [
+                row[0] for row in keypoint_classifier_labels
+            ]
+
+        self.bridge = cv_bridge.CvBridge()
+
+        self.result_pub = rospy.Publisher('~result', ClassificationResult, queue_size=1)
+        self.pub_img = rospy.Publisher('~output', sensor_msgs.msg.Image, queue_size=1)
+        self.pub_img_compressed = rospy.Publisher('~output/compressed',
+                                                  sensor_msgs.msg.Image, queue_size=1)
+
+    def subscribe(self):
+        self.sub = rospy.Subscriber(
+            '~input',
+            Image, self.callback,
+            queue_size=1, buff_size=2**24)
+
+    def unsubscribe(self):
+        self.sub.unregister()
+
+    def callback(self, img_msg):
+        if abs((rospy.Time.now() - msg.header.stamp).to_sec()) > 0.1:
+            return
+
+        image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
+        number = 0
+        use_brect = True
+
+        image = cv.flip(image, 1)  # ミラー表示
+        image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
+        image.flags.writeable = False
+        results = self.hands.process(image)
+        result_msg = ClassificationResult(header=msg.header)
+        if results.multi_hand_landmarks is not None:
+            for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
+                                                  results.multi_handedness):
+                # ランドマークの計算
+                landmark_list = calc_landmark_list(image, hand_landmarks)
+                # 相対座標・正規化座標への変換
+                pre_processed_landmark_list = pre_process_landmark(landmark_list)
+                # ハンドサイン分類
+                hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
+                result_msg.label_names.append(keypoint_classifier_labels[hand_sign_id])
+
+        result_pub.publish(result_msg)
+
+        if self.pub_img.get_num_connections() > 0 or self.pub_img_compressed.get_num_connections() > 0:
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            if results.multi_hand_landmarks is not None:
+                for hand_landmarks, handedness in zip(results.multi_hand_landmarks,
+                                                      results.multi_handedness):
+                    brect = calc_bounding_rect(image, hand_landmarks)
+                    landmark_list = calc_landmark_list(image, hand_landmarks)
+                    pre_processed_landmark_list = pre_process_landmark(landmark_list)
+                    hand_sign_id = keypoint_classifier(pre_processed_landmark_list)
+                    image = draw_bounding_rect(use_brect, image, brect)
+                    image = draw_landmarks(image, landmark_list)
+                    image = draw_info_text(
+                        image,
+                        brect,
+                        handedness,
+                        keypoint_classifier_labels[hand_sign_id],
+                    )
+
+        if self.pub_img.get_num_connections() > 0:
+            # Draw the hand annotations on the image.
+            out_img_msg = bridge.cv2_to_imgmsg(
+                image, encoding='bgr8')
+            out_img_msg.header = img_msg.header
+            self.pub_img.publish(out_img_msg)
+
+        if self.pub_img_compressed.get_num_connections() > 0:
+            # publish compressed http://wiki.ros.org/rospy_tutorials/Tutorials/WritingImagePublisherSubscriber  # NOQA
+            vis_compressed_msg = CompressedImage()
+            vis_compressed_msg.header = img_msg.header
+            # image format https://github.com/ros-perception/image_transport_plugins/blob/f0afd122ed9a66ff3362dc7937e6d465e3c3ccf7/compressed_image_transport/src/compressed_publisher.cpp#L116  # NOQA
+            vis_compressed_msg.format = 'bgr8' + '; jpeg compressed bgr8'
+            vis_compressed_msg.data = np.array(
+                cv2.imencode('.jpg', image)[1]).tobytes()
+            self.pub_img_compressed.publish(vis_compressed_msg)
 
 
 if __name__ == '__main__':
-    main()
+    rospy.init_node('gesture_recognition')
+    node = FingerGestureEstimation()
+    rospy.spin()
