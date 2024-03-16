@@ -32,3 +32,19 @@ pip3 install pathlib
 pip3 install torch
 pip3 install git+https://github.com/nburrus/stereodemo
 ```
+
+
+## for radxa
+
+```
+wget https://gist.githubusercontent.com/iory/cb271ef71e6e1471a6d8577f1c643654/raw/7f2ce3d46f35ca2e881af1f7c88f8bd5d225beec/i2c3.dts -O /tmp/i2c3.dts
+sudo dtc -I dts -O dtb -o /boot/dtbs/5.10.69-12-amlogic-g98700611d064/amlogic/overlay/meson-g12a-i2c-ee-m3-gpioa-14-gpioa-15.dtbo /tmp/i2c3.dts
+```
+
+```
+od -tx1 /sys/class/i2c-adapter/i2c-3/of_node/clock-frequency
+0000000 00 0f 42 40
+0000004
+0x0f4240 (= 1000000)になっていれば設定できている。
+```
+
