@@ -85,15 +85,14 @@ def convert_to_str(x):
     return x
 
 
+async def convert_audio(mp3_path, output_path):
+    # AudioSegmentを使用した音声ファイルの変換処理
+    AudioSegment.from_mp3(mp3_path).export(output_path, format='wav')
 
 async def convert_mp3_to_wav(mp3_path, output_path):
     loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        None,
-        AudioSegment.from_mp3(mp3_path).export(
-            output_path,
-            format='wav')
-    )
+    # 別の関数を介してAudioSegmentの処理を実行
+    await loop.run_in_executor(None, convert_audio, mp3_path, output_path)
 
 
 async def request_synthesis(
@@ -111,11 +110,18 @@ async def request_synthesis(
 
 
 app = FastAPI()
+
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
-    mp3_path = await request_synthesis(request.text, request.output_path, request.lang)
-    await convert_mp3_to_wav(mp3_path, request.output_path)
-
+    try:
+        mp3_path = await request_synthesis(request.text, request.lang)
+        output_path = tempfile.mktemp('.wav')
+        await convert_mp3_to_wav(mp3_path, output_path)
+        # 処理が成功した場合のレスポンスを返す
+    except Exception as e:
+        # エラーが発生した場合の処理
+        print(f"Error during processing: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 if __name__ == "__main__":
     import uvicorn
