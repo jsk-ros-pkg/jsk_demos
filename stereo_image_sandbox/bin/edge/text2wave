@@ -50,7 +50,7 @@ if __name__ == '__main__':
             print(f'[Text2Wave] Using cached sound file ({cache_filename}) for {speech_text}')
             shutil.copy(cache_filename, args.output)
         else:
-            server_url = "http://127.0.0.1:8075/text-to-speech/"
+            server_url = "http://127.0.0.1:8000/text-to-speech/"
             headers = {'Content-Type': 'application/json'}
             payload = json.dumps({
                 'text': speech_text,
