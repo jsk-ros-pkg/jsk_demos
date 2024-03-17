@@ -19,11 +19,11 @@
       <remap from="/audio" to="/$(arg namespace)/audio" />
     </node>
 
-    <node name="text2wave_server"
-          pkg="stereo_image_sandbox" type="text2wave_server.py"
-          output="screen"
-          respawn="true">
-    </node>
+    <!-- <node name="text2wave_server" -->
+    <!--       pkg="stereo_image_sandbox" type="text2wave_server.py" -->
+    <!--       output="screen" -->
+    <!--       respawn="true"> -->
+    <!-- </node> -->
 
     <node name="sound_play_jp"
           pkg="sound_play" type="soundplay_node.py"
