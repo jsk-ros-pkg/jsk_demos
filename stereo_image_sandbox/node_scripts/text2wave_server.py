@@ -86,14 +86,16 @@ def convert_to_str(x):
 
 
 async def convert_audio(mp3_path, output_path):
-    # AudioSegmentを使用した音声ファイルの変換処理
-    AudioSegment.from_mp3(mp3_path).export(output_path, format='wav')
+    try:
+        audio = AudioSegment.from_mp3(mp3_path)
+        audio.export(output_path, format='wav')
+    except Exception as e:
+        print(f"Failed to convert audio: {e}")
+        raise
 
 async def convert_mp3_to_wav(mp3_path, output_path):
-    loop = asyncio.get_running_loop()
-    # 別の関数を介してAudioSegmentの処理を実行
-    await loop.run_in_executor(None, convert_audio, mp3_path, output_path)
-
+    # convert_audio が非同期関数の場合、await を使用して呼び出す
+    await convert_audio(mp3_path, output_path)
 
 async def request_synthesis(
         sentence, output_path, lang='en'):
@@ -122,6 +124,7 @@ async def text_to_speech(request: SpeechRequest):
         # エラーが発生した場合の処理
         print(f"Error during processing: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
 
 if __name__ == "__main__":
     import uvicorn
