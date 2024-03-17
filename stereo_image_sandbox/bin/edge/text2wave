@@ -1,133 +1,69 @@
 #!/usr/bin/env python3
-# -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 
+import json
 import argparse
 import os
-import shutil
-import sys
-import warnings
-from pydub import AudioSegment
-import tempfile
+import requests
 import hashlib
-import os
-import asyncio
-
-import edge_tts as et
-
-
-def et_save_to_file(text, voice="en-GB-SoniaNeural", file="test.mp3"):
-    async def wrapper():
-        c = et.Communicate(text, voice)
-        await c.save(file)
-
-    loop = asyncio.get_event_loop_policy().get_event_loop()
-    try:
-        loop.run_until_complete(wrapper())
-    finally:
-        loop.close()
+import shutil
 
 
 def get_cache_dir():
-    """Return cache dir.
-
-    Returns
-    -------
-    cache_dir : str
-        cache directory.
-    """
+    """Return cache dir."""
     ros_home = os.getenv('ROS_HOME', os.path.expanduser('~/.ros'))
     pkg_ros_home = os.path.join(ros_home, 'edge')
     default_cache_dir = os.path.join(pkg_ros_home, 'cache')
-    cache_dir = os.environ.get(
-        'ROS_GOOGLE_TEXTTOSPEECH_CACHE_DIR',
-        default_cache_dir)
+    cache_dir = os.environ.get('ROS_GOOGLE_TEXTTOSPEECH_CACHE_DIR', default_cache_dir)
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
     return cache_dir
 
-
 def checksum_md5(filename, blocksize=8192):
-    """Calculate md5sum.
-
-    Parameters
-    ----------
-    filename : str or pathlib.Path
-        input filename.
-    blocksize : int
-        MD5 has 128-byte digest blocks (default: 8192 is 128x64).
-    Returns
-    -------
-    md5 : str
-        calculated md5sum.
-    """
-    filename = str(filename)
+    """Calculate md5sum."""
     hash_factory = hashlib.md5()
     with open(filename, 'rb') as f:
         for chunk in iter(lambda: f.read(blocksize), b''):
             hash_factory.update(chunk)
     return hash_factory.hexdigest()
 
-
-def convert_to_str(x):
-    if isinstance(x, str):
-        pass
-    elif isinstance(x, bytes):
-        x = x.decode('utf-8')
-    else:
-        raise ValueError(
-            'Invalid input x type: {}'
-            .format(type(x)))
-    return x
-
-
-def request_synthesis(
-        sentence, output_path, lang='en'):
-    sentence = convert_to_str(sentence)
-    mp3_path = tempfile.mktemp('.mp3')
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        if lang == 'en':
-            voice = 'en-US-AnaNeural'
-        else:
-            voice = 'ja-JP-NanamiNeural'
-        et_save_to_file(text=sentence, voice=voice,
-                        file=mp3_path)
-        AudioSegment.from_mp3(mp3_path).export(
-            output_path, format='wav')
-
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-eval', '--evaluate')
-    parser.add_argument('-o', '--output')
-    parser.add_argument('text')
+    parser = argparse.ArgumentParser(description='Send text to FastAPI server for speech synthesis.')
+    parser.add_argument('-eval', '--evaluate', help='Language evaluation', default='(en)')
+    parser.add_argument('-o', '--output', help='Output wav file path', required=True)
+    parser.add_argument('text', help='Input text file path')
     args = parser.parse_args()
 
-    with open(args.text, 'rb') as f:
-        speech_text = f.readline()
+    with open(args.text, 'r') as f:
+        speech_text = f.read()
 
-    lang = args.evaluate.lstrip('(').rstrip(')')
+    lang = args.evaluate.strip('()')
     if lang not in ['ja', 'en']:
         lang = 'en'
+
     cache_enabled = True
     if cache_enabled:
         cache_dir = get_cache_dir()
         md5 = checksum_md5(args.text)
-        cache_filename = os.path.join(
-            cache_dir,
-            '--'.join([md5, lang])
-            + '.wav')
+        cache_filename = os.path.join(cache_dir, f'{md5}--{lang}.wav')
         if os.path.exists(cache_filename):
-            print('[Text2Wave] Using cached sound file ({}) for {}'
-                  .format(cache_filename, speech_text.decode('utf-8')))
+            print(f'[Text2Wave] Using cached sound file ({cache_filename}) for {speech_text}')
             shutil.copy(cache_filename, args.output)
-            sys.exit(0)
+        else:
+            server_url = "http://127.0.0.1:8075/text-to-speech/"
+            headers = {'Content-Type': 'application/json'}
+            payload = json.dumps({
+                'text': speech_text,
+                'lang': lang,
+                'output_path': args.output,
+            })
 
-    request_synthesis(speech_text,
-                      args.output,
-                      lang)
-    if cache_enabled:
-        text_cache_filename = os.path.splitext(cache_filename)[0] + '.txt'
-        print('[Text2Wave] Cache saved to {}'.format(cache_filename))
-        shutil.copy(args.text, text_cache_filename)
-        shutil.copy(args.output, cache_filename)
+            response = requests.post(
+                server_url, data=payload,
+                headers=headers)
+            if response.status_code == 200:
+                with open(args.output, 'wb') as f:
+                    f.write(response.content)
+                print(f'[Text2Wave] Synthesis complete. Output saved to {args.output}')
+            else:
+                print(f'[Text2Wave] Error: {response.text}')
