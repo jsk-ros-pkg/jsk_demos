@@ -86,7 +86,11 @@ def request_synthesis(
     mp3_path = tempfile.mktemp('.mp3')
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        et_save_to_file(text=sentence, lang=lang,
+        if lang == 'en':
+            voice = 'en-US-AnaNeural'
+        else:
+            voice = 'ja-JP-NanamiNeural'
+        et_save_to_file(text=sentence, voice=voice,
                         file=mp3_path)
         AudioSegment.from_mp3(mp3_path).export(
             output_path, format='wav')
