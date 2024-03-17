@@ -85,10 +85,21 @@ def convert_to_str(x):
     return x
 
 
+
+async def convert_mp3_to_wav(mp3_path, output_path):
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        None,
+        AudioSegment.from_mp3(mp3_path).export,
+        output_path,
+        format='wav'
+    )
+
+
 async def request_synthesis(
         sentence, output_path, lang='en'):
     sentence = convert_to_str(sentence)
-    mp3_path = '/tmp/hoge.mp3'
+    mp3_path = tempfile.mktemp('.mp3')
     if lang == 'en':
         voice = 'en-US-AnaNeural'
     else:
@@ -103,8 +114,7 @@ app = FastAPI()
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
     mp3_path = await request_synthesis(request.text, request.output_path, request.lang)
-    AudioSegment.from_mp3(mp3_path).export(
-        request.output_path, format='wav')
+    await convert_mp3_to_wav(mp3_path, request.output_path)
 
 
 if __name__ == "__main__":
