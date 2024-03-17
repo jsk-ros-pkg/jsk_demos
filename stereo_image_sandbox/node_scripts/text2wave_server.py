@@ -95,14 +95,16 @@ async def request_synthesis(
         voice = 'ja-JP-NanamiNeural'
     c = et.Communicate(sentence, voice)
     await c.save(mp3_path)
-    AudioSegment.from_mp3(mp3_path).export(
-        output_path, format='wav')
+    return mp3_path
+
 
 
 app = FastAPI()
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
-    await request_synthesis(request.text, request.output_path, request.lang)
+    mp3_path = await request_synthesis(request.text, request.output_path, request.lang)
+    AudioSegment.from_mp3(mp3_path).export(
+        request.output_path, format='wav')
 
 
 if __name__ == "__main__":
