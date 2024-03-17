@@ -15,6 +15,8 @@ import asyncio
 import edge_tts as et
 from pydantic import BaseModel
 
+app = FastAPI()
+
 class SpeechRequest(BaseModel):
     text: str
     lang: str
@@ -111,14 +113,12 @@ async def request_synthesis(
     return mp3_path
 
 
-app = FastAPI()
 
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
     try:
         mp3_path = await request_synthesis(request.text, request.lang)
-        output_path = tempfile.mktemp('.wav')
-        await convert_mp3_to_wav(mp3_path, output_path)
+        await convert_mp3_to_wav(mp3_path, request.output_path)
         # 処理が成功した場合のレスポンスを返す
     except Exception as e:
         # エラーが発生した場合の処理
