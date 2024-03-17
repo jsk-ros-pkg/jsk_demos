@@ -99,7 +99,7 @@ async def convert_mp3_to_wav(mp3_path, output_path):
     await convert_audio(mp3_path, output_path)
 
 async def request_synthesis(
-        sentence, output_path, lang='en'):
+        sentence, lang='en'):
     sentence = convert_to_str(sentence)
     mp3_path = '/tmp/hoge.mp3'
     if lang == 'en':
