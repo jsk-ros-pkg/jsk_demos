@@ -89,12 +89,21 @@ def convert_to_str(x):
 
 
 async def convert_audio(mp3_path, output_path):
+    loop = asyncio.get_running_loop()
     try:
-        audio = AudioSegment.from_mp3(mp3_path)
-        audio.export(output_path, format='wav')
+        # AudioSegment の操作を別のスレッドで実行
+        await loop.run_in_executor(
+            None,  # None はデフォルトの Executor を使用することを意味します
+            lambda: _sync_convert_audio(mp3_path, output_path)
+        )
     except Exception as e:
         print(f"Failed to convert audio: {e}")
         raise
+
+def _sync_convert_audio(mp3_path, output_path):
+    """実際の変換処理を行う同期関数"""
+    audio = AudioSegment.from_mp3(mp3_path)
+    audio.export(output_path, format='wav')
 
 async def convert_mp3_to_wav(mp3_path, output_path):
     # convert_audio が非同期関数の場合、await を使用して呼び出す
