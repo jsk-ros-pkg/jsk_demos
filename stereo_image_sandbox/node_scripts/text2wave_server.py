@@ -90,9 +90,9 @@ async def convert_mp3_to_wav(mp3_path, output_path):
     loop = asyncio.get_running_loop()
     await loop.run_in_executor(
         None,
-        AudioSegment.from_mp3(mp3_path).export,
-        output_path,
-        format='wav'
+        AudioSegment.from_mp3(mp3_path).export(
+            output_path,
+            format='wav')
     )
 
 
