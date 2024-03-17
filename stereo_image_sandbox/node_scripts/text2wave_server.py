@@ -97,6 +97,7 @@ async def request_synthesis(
     c = et.Communicate(sentence, voice)
     print('communicate')
     await c.save(mp3_path)
+    print(sentence)
     print('save')
     AudioSegment.from_mp3(mp3_path).export(
         output_path, format='wav')
