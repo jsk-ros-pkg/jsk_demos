@@ -2,6 +2,7 @@
 
 from fastapi import FastAPI
 import os
+from fastapi import FastAPI, HTTPException
 
 
 import os
@@ -108,7 +109,6 @@ async def request_synthesis(
     c = et.Communicate(sentence, voice)
     await c.save(mp3_path)
     return mp3_path
-
 
 
 app = FastAPI()
