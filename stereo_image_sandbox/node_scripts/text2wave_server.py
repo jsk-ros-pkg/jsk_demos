@@ -20,6 +20,7 @@ class SpeechRequest(BaseModel):
     lang: str
     output_path: str
 
+
 def et_save_to_file(text, voice="en-GB-SoniaNeural", file="test.mp3"):
     async def wrapper():
         c = et.Communicate(text, voice)
@@ -88,7 +89,8 @@ def convert_to_str(x):
 async def request_synthesis(
         sentence, output_path, lang='en'):
     sentence = convert_to_str(sentence)
-    mp3_path = tempfile.mktemp('.mp3')
+    # mp3_path = tempfile.mktemp('.mp3')
+    mp3_path = '/tmp/hoge.mp3'
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         if lang == 'en':
