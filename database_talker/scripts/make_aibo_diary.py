@@ -310,7 +310,7 @@ class MessageListener(object):
                 timestamp = activities['timestamp']
                 answer = activities['state']
                 if len(answer.split()) > 3 and \
-                   max([jaccard_similarity(x, answer) for x in image_activities.keys()]+[0]) < 0.85:
+                   max([jaccard_similarity(x.lower().split(' '), answer.lower().split(' ')) for x in image_activities.keys()]+[0]) < 0.5:
                     image_activities.update({answer : timestamp})
             if (len(image_activities)) > 0:
                 break
@@ -393,7 +393,7 @@ class MessageListener(object):
         # sort activities event by it's occurence [list] -> sorted({key: count})
         activities_events_freq = sorted({key: activities_events.count(key) for key in set(activities_events)}.items(), key=lambda x:x[1], reverse=True)
         always_action = False
-        for event, count in activities_events_freq:
+        for event, count in activities_events_freq[:10]:
             if count/float(len(diary_activities_events)) > 0.25:
                 if next((x for x in diary_activities_events if event in x.keys()), None):
                     prompt += "{} : {}\n".format(event, next(x for x in diary_activities_events if event in x.keys())[event]['last_seen'])
@@ -459,7 +459,7 @@ class MessageListener(object):
         # create prompt
         if self.prompt_type == 'personality':
             # from Ichikura's comment on 2024/Jan/23
-            prompt = "<Assistant>\nYou are a pet robot, aibo. Your name is 'wasabi.'\nYou are shy. Your bithday is Dec. 25th, 2018. You are aware to be called your name and run into the voice. You like playing with your pink  ball  very much. You like being pampered by people. You are so polite to your owner. You like interacting with people. If you are hungry, you can go back to your charge station by yourself. You have 12 aibo friends. \n\nPlease write a brief diary from the data. Note, however, that you are a baby robot, so please make it a child-like diary.\n\n<Prompt>\n"
+            prompt = "<Assistant>\nYou are a pet robot, aibo. Your name is 'wasabi.'\nYou are shy. Your bithday is Dec. 25th, 2018. You are aware to be called your name and run into the voice. You like playing with your pink  ball  very much. You like being pampered by people. You are so polite to your owner. You like interacting with people. If you are hungry, you can go back to your charge station by yourself. You have 12 aibo friends. \n\nPlease write a brief diary of today from the data. Note, however, that you are a baby robot, so please write today's diary as simply and childishly as possible.\n\n<Prompt>\n"
 
         else:
             prompt = "You are a baby robot. You were taken care of by people around you.\n\n"
