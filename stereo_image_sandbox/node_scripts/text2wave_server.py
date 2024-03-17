@@ -3,7 +3,9 @@
 from fastapi import FastAPI
 import os
 from fastapi import FastAPI, HTTPException
-
+import pyopenjtalk
+import numpy as np
+from scipy.io import wavfile
 
 import os
 from pydub import AudioSegment
@@ -88,47 +90,42 @@ def convert_to_str(x):
     return x
 
 
-async def convert_audio(mp3_path, output_path):
+async def convert_audio(sentence, output_path, lang='en'):
     loop = asyncio.get_running_loop()
     try:
         # AudioSegment の操作を別のスレッドで実行
         await loop.run_in_executor(
             None,  # None はデフォルトの Executor を使用することを意味します
-            lambda: _sync_convert_audio(mp3_path, output_path)
+            lambda: _request_synthesis(sentence, output_path)
         )
     except Exception as e:
         print(f"Failed to convert audio: {e}")
         raise
 
-def _sync_convert_audio(mp3_path, output_path):
-    """実際の変換処理を行う同期関数"""
-    audio = AudioSegment.from_mp3(mp3_path)
-    audio.export(output_path, format='wav')
-
-async def convert_mp3_to_wav(mp3_path, output_path):
-    # convert_audio が非同期関数の場合、await を使用して呼び出す
-    await convert_audio(mp3_path, output_path)
-
-async def request_synthesis(
-        sentence, lang='en'):
+def _request_synthesis(
+        sentence, output_path, lang='en'):
     sentence = convert_to_str(sentence)
-    mp3_path = '/tmp/hoge.mp3'
-    if lang == 'en':
-        voice = 'en-US-AnaNeural'
-    else:
-        voice = 'ja-JP-NanamiNeural'
-    c = et.Communicate(sentence, voice)
-    await c.save(mp3_path)
-    return mp3_path
+    x, sr = pyopenjtalk.tts(sentence)
+    wavfile.write(str(output_path), sr, x.astype(np.int16))
+
+# async def request_synthesis(
+#         sentence, lang='en'):
+#     sentence = convert_to_str(sentence)
+#     mp3_path = '/tmp/hoge.mp3'
+#     if lang == 'en':
+#         voice = 'en-US-AnaNeural'
+#     else:
+#         voice = 'ja-JP-NanamiNeural'
+#     c = et.Communicate(sentence, voice)
+#     await c.save(mp3_path)
+#     return mp3_path
 
 
 
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
     try:
-        mp3_path = await request_synthesis(request.text, request.lang)
-        await convert_mp3_to_wav(mp3_path, request.output_path)
-        # 処理が成功した場合のレスポンスを返す
+        await request_synthesis(request.text, request.output_path, request.lang)
     except Exception as e:
         # エラーが発生した場合の処理
         print(f"Error during processing: {e}")
