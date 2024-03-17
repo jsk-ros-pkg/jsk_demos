@@ -87,7 +87,7 @@ def request_synthesis(
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         et_save_to_file(text=sentence, lang=lang,
-                        mp3_path)
+                        file=mp3_path)
         AudioSegment.from_mp3(mp3_path).export(
             output_path, format='wav')
 
