@@ -90,7 +90,7 @@ def convert_to_str(x):
     return x
 
 
-async def convert_audio(sentence, output_path, lang='en'):
+async def request_synthesis(sentence, output_path, lang='en'):
     loop = asyncio.get_running_loop()
     try:
         # AudioSegment の操作を別のスレッドで実行
