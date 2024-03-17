@@ -5,7 +5,6 @@ import os
 
 
 import os
-import warnings
 from pydub import AudioSegment
 import tempfile
 import hashlib
@@ -91,16 +90,17 @@ async def request_synthesis(
     sentence = convert_to_str(sentence)
     # mp3_path = tempfile.mktemp('.mp3')
     mp3_path = '/tmp/hoge.mp3'
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        if lang == 'en':
-            voice = 'en-US-AnaNeural'
-        else:
-            voice = 'ja-JP-NanamiNeural'
-        c = et.Communicate(sentence, voice)
-        await c.save(mp3_path)
-        AudioSegment.from_mp3(mp3_path).export(
-            output_path, format='wav')
+    if lang == 'en':
+        voice = 'en-US-AnaNeural'
+    else:
+        voice = 'ja-JP-NanamiNeural'
+    c = et.Communicate(sentence, voice)
+    print('communicate')
+    await c.save(mp3_path)
+    print('save')
+    AudioSegment.from_mp3(mp3_path).export(
+        output_path, format='wav')
+    print(output_path)
 
 
 app = FastAPI()
