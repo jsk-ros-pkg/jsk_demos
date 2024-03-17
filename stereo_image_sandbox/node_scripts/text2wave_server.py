@@ -88,27 +88,21 @@ def convert_to_str(x):
 async def request_synthesis(
         sentence, output_path, lang='en'):
     sentence = convert_to_str(sentence)
-    # mp3_path = tempfile.mktemp('.mp3')
     mp3_path = '/tmp/hoge.mp3'
     if lang == 'en':
         voice = 'en-US-AnaNeural'
     else:
         voice = 'ja-JP-NanamiNeural'
     c = et.Communicate(sentence, voice)
-    print('communicate')
     await c.save(mp3_path)
-    print(sentence)
-    print('save')
     AudioSegment.from_mp3(mp3_path).export(
         output_path, format='wav')
-    print(output_path)
 
 
 app = FastAPI()
 @app.post("/text-to-speech/")
 async def text_to_speech(request: SpeechRequest):
-    print('hoge')
-    request_synthesis(request.text, request.output_path, request.lang)
+    await request_synthesis(request.text, request.output_path, request.lang)
 
 
 if __name__ == "__main__":
