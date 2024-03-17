@@ -100,7 +100,7 @@ async def convert_mp3_to_wav(mp3_path, output_path):
 async def request_synthesis(
         sentence, output_path, lang='en'):
     sentence = convert_to_str(sentence)
-    mp3_path = tempfile.mktemp('.mp3')
+    mp3_path = '/tmp/hoge.mp3'
     if lang == 'en':
         voice = 'en-US-AnaNeural'
     else:
