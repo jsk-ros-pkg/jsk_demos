@@ -3,8 +3,20 @@
 import rospy
 from std_msgs.msg import Int16, Empty
 
+
+def get_namespace():
+    full_namespace = rospy.get_namespace()
+    last_slash_pos = full_namespace.rfind('/')
+    clean_namespace = full_namespace[:last_slash_pos] \
+        if last_slash_pos != 0 else ''
+    return clean_namespace
+
+
 class VacuumControl(object):
-    def __init__(self, vacuum_threshold=80, namespace='radxa_zero'):
+    def __init__(self, vacuum_threshold=80):
+
+        namespace = get_namespace()
+
         # Use Radxa's ADC value as vacuum pressure value
         self.vacuum_threshold = vacuum_threshold
         rospy.loginfo('Differental pressure threshold: {}'.format(
