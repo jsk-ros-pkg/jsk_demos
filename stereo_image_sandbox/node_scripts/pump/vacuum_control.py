@@ -45,11 +45,11 @@ class VacuumControl(object):
         self.atm_pressure = None
 
     def on_cb(self, msg):
-        rospy.logwarn('Start vacuuming')
+        rospy.loginfo('Start vacuuming')
         self.vacuum = True
 
     def off_cb(self, msg):
-        rospy.logwarn('Stop vacuuming')
+        rospy.loginfo('Stop vacuuming')
         self.vacuum = False
         self.pub_off.publish(Empty())
 
@@ -72,7 +72,7 @@ class VacuumControl(object):
         # Control vacuum state
         if self.vacuum is True:
             if differential_pressure < self.vacuum_threshold:
-                rospy.logwarn('Pump ON')
+                rospy.loginfo('Pump ON')
                 self.pub_on.publish(Empty())
             else:
                 self.pub_off.publish(Empty())
