@@ -8,6 +8,10 @@
   <arg name="teleop_twist_joy_param_file" default="$(find stereo_image_sandbox)/config/dualshock3_teleop_twist_joy.yaml" />
 
   <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
+    <node name="joy_map"
+          pkg="stereo_image_sandbox" type="joy_map.py" >
+    </node>
+
     <node name="joy_node"
           pkg="joy" type="joy_node"
           respawn="true">
@@ -40,6 +44,10 @@
       <remap from="joy" to="$(arg joy_topic)" />
       <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
       <rosparam command="load" file="$(arg teleop_twist_joy_param_file)" />
+    </node>
+
+    <node name="joy_map"
+          pkg="stereo_image_sandbox" type="joy_map.py" >
     </node>
   </group>
 
