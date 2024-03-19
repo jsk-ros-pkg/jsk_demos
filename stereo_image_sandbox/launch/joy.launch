@@ -1,0 +1,46 @@
+<launch>
+
+  <arg name="joy_topic" default="joy" />
+  <arg name="cmd_vel_topic" default="diff_drive_controller/cmd_vel" />
+  <arg name="namespace" default="" />
+  <arg name="device" default="/dev/ps4joy" />
+
+  <arg name="teleop_twist_joy_param_file" default="$(find stereo_image_sandbox)/config/dualshock3_teleop_twist_joy.yaml" />
+
+  <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
+    <node name="joy_node"
+          pkg="joy" type="joy_node"
+          respawn="true">
+      <remap from="joy" to="joy"/>
+      <param name="dev" value="$(arg device)" />
+      <param name="deadzone" value="0.1" />
+      <param name="autorepeat_rate" value="10" />
+    </node>
+
+    <node name="teleop_twist_joy"
+          pkg="teleop_twist_joy" type="teleop_node" >
+      <remap from="joy" to="$(arg joy_topic)" />
+      <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+      <rosparam command="load" file="$(arg teleop_twist_joy_param_file)" />
+    </node>
+  </group>
+
+  <group unless="$(eval len(arg('namespace')) > 0)">
+    <node name="joy_node"
+          pkg="joy" type="joy_node"
+          respawn="true">
+      <remap from="joy" to="joy"/>
+      <param name="dev" value="$(arg device)" />
+      <param name="deadzone" value="0.1" />
+      <param name="autorepeat_rate" value="10" />
+    </node>
+
+    <node name="teleop_twist_joy"
+          pkg="teleop_twist_joy" type="teleop_node" >
+      <remap from="joy" to="$(arg joy_topic)" />
+      <remap from="cmd_vel" to="$(arg cmd_vel_topic)" />
+      <rosparam command="load" file="$(arg teleop_twist_joy_param_file)" />
+    </node>
+  </group>
+
+</launch>
