@@ -6,9 +6,12 @@
     <arg name="namespace" value="$(arg namespace)" />
   </include>
 
-  <include file="$(find kxr_controller)/launch/kxr_controller_for_wheel.launch" >
+  <include file="$(find stereo_image_sandbox)/launch/joy.launch" >
     <arg name="namespace" value="$(arg namespace)" />
   </include>
 
+  <include file="$(find kxr_controller)/launch/kxr_controller_for_wheel.launch" >
+    <arg name="namespace" value="$(arg namespace)" />
+  </include>
 
 </launch>
