@@ -37,9 +37,9 @@ class JoyMap(object):
             callback=self.callback)
 
     def callback(self, msg):
-        if len(msg.butttons) >= 2 and msg.buttons[2] == 1:
+        if len(msg.buttons) >= 2 and msg.buttons[2] == 1:
             self.ri.servo_on()
-        elif len(msg.butttons) >= 3 and msg.buttons[3] == 1:
+        elif len(msg.buttons) >= 3 and msg.buttons[3] == 1:
             self.ri.servo_off()
 
 
