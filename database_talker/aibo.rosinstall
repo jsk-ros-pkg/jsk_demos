@@ -1,0 +1,42 @@
+# database talker for aibo
+- git:
+    local-name: jsk_demos
+    uri: https://github.com/sktometometo/jsk_demos
+    version: PR/hoge-py
+# use k-okada' version of aibo_driver (for message)
+- git:
+    local-name: aibo_driver
+    uri: https://gitlab.jsk.imi.i.u-tokyo.ac.jp/k-okada/aibo_status
+    version: driver
+#
+# use latest google_chat_ros, until noetic is synced
+# armhf users need to use https://github.com/k-okada/jsk_3rdparty/commit/8524aaa4118cb7ab02c65f47c46343bbb4f7147c
+# rosinstall_generator google_chat_ros --rosdistro noetic
+#
+- git:
+    local-name: google_chat_ros
+    uri: https://github.com/tork-a/jsk_3rdparty-release.git
+    version: release/noetic/google_chat_ros/2.1.28-1
+#
+# use latest jsk_recognition_msgs, until noetic is synced
+#
+- git:
+    local-name: jsk_recognition/jsk_recognition_msgs
+    uri: https://github.com/tork-a/jsk_recognition-release.git
+    version: release/noetic/jsk_recognition_msgs/1.2.17-1
+#
+# need releasing
+# https://github.com/davesarmoury/openai_ros/pulls?q=is%3Apr
+#
+- git:
+    local-name: openai_ros
+    # uri: https://github.com/davesarmoury/openai_ros
+    uri: https://github.com/k-okada/openai_ros
+#
+# add sample launch code for database_talker #1792
+# https://github.com/jsk-ros-pkg/jsk_robot/pull/1792
+#
+- git:
+    local-name: jsk_robot
+    uri: https://github.com/k-okada/jsk_robot.git
+    version: ichikura_sample

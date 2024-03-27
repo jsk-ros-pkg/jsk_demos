@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>database_talker</name>
+  <version>0.0.0</version>
+  <description>The database_talker package</description>
+
+  <maintainer
+    email="sktometometo@todo.todo">sktometometo</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>catkin_virtualenv</build_depend>
+
+
+  <export>
+    <pip_requirements>requirements.txt</pip_requirements>
+  </export>
+</package>

@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="database_talker" type="make_aibo_diary.py" name="make_aibo_diary" output="screen"
+	args="--prompt-type personality" />
+</launch>
