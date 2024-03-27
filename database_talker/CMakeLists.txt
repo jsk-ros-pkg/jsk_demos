@@ -3,6 +3,9 @@ project(database_talker)
 
 find_package(catkin REQUIRED COMPONENTS catkin_virtualenv)
 
+## This macro ensures modules and global scripts declared therein get installed
+catkin_python_setup()
+
 catkin_generate_virtualenv(
   PYTHON_INTERPRETER python3
   CHECK_VENV FALSE
