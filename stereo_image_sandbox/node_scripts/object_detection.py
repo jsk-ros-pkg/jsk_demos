@@ -20,7 +20,10 @@ from jsk_perception.cfg import MaskRCNNInstanceSegmentationConfig as Config
 
 import os
 
-os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1.0.0:' + os.environ['LD_PRELOAD']
+if 'LD_PRELOAD' in os.environ:
+    os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1.0.0:' + os.environ['LD_PRELOAD']
+else:
+    os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1.0.0'
 
 
 def resize_masks(masks, wh):
