@@ -9,6 +9,7 @@
 
   <node name="object_detection"
         pkg="stereo_image_sandbox" type="object_detection.py"
+        respawn="true"
         output="screen" >
     <remap from="~input" to="$(arg input_image)" />
     <rosparam subst_value="true" >
@@ -20,6 +21,7 @@
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/EuclideanClustering $(arg manager)"
         output="screen"
+        respawn="true"
         clear_params="true">
     <remap from="~input" to="$(arg input_cloud)"/>
     <remap from="~input/cluster_indices" to="$(arg input_indices)"/>
@@ -38,6 +40,7 @@
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
         output="screen"
+        respawn="true"
         clear_params="true">
     <remap from="~input" to="$(arg input_cloud)"/>
     <remap from="~target" to="fg_euclidean_clustering/output"/>

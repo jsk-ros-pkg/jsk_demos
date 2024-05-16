@@ -8,6 +8,7 @@
   <arg name="align_depth" default="true" />
   <arg name="enable_pointcloud" default="true" />
   <arg name="ordered_pc" default="true" />
+  <arg name="respawn" default="true" />
 
   <include file="$(find realsense2_camera)/launch/rs_camera.launch">
     <arg name="color_width" value="$(arg color_width)" />
@@ -19,5 +20,6 @@
     <arg name="align_depth" value="$(arg align_depth)" />
     <arg name="enable_pointcloud" value="$(arg enable_pointcloud)" />
     <arg name="ordered_pc" value="$(arg ordered_pc)" />
+    <arg name="respawn" value="true" />
   </include>
 </launch>
