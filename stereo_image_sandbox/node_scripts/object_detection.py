@@ -12,9 +12,8 @@ from jsk_recognition_msgs.msg import (ClassificationResult,
                                       ClusterPointIndices, Rect, RectArray)
 from jsk_topic_tools import ConnectionBasedTransport
 from pcl_msgs.msg import PointIndices
-import torch.nn.functional as F
-from scipy.ndimage import zoom
 import cv2
+from ultralytics.utils.ops import scale_image
 
 from jsk_perception.cfg import MaskRCNNInstanceSegmentationConfig as Config
 
@@ -24,12 +23,6 @@ if 'LD_PRELOAD' in os.environ:
     os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1.0.0:' + os.environ['LD_PRELOAD']
 else:
     os.environ['LD_PRELOAD'] = '/usr/lib/aarch64-linux-gnu/libgomp.so.1.0.0'
-
-
-def resize_masks(masks, wh):
-    out = [cv2.resize(mask, wh, interpolation=cv2.INTER_NEAREST)
-           for mask in masks]
-    return np.array(out)
 
 
 class ObjectDetectionNode(ConnectionBasedTransport):
@@ -143,7 +136,7 @@ class ObjectDetectionNode(ConnectionBasedTransport):
         lbl_ins = np.zeros((im.shape[0], im.shape[1]), dtype=np.int32)
         if result.masks is not None:
             masks = result.masks.data.cpu().numpy()
-            masks = resize_masks(masks, (org_w, org_h))
+            masks = scale_image(masks, im.shape)
 
             masks = masks[valid_indices]
             R, H, W = masks.shape
