@@ -50,6 +50,12 @@ od -tx1 /sys/class/i2c-adapter/i2c-3/of_node/clock-frequency
 
 ### for object segmentation
 
+Place this repository to your catkin workspace.
+
+```
+git clone --single-branch https://github.com/iory/jsk_demos -b kxr-demos ./kxr_demos
+```
+
 ```
 rosdep install --from-paths -i -y -r .
 pip install ultralytics[export] ncnn dill -U --no-cache-dir
@@ -62,5 +68,5 @@ roslaunch stereo_image_sandbox d405_light.launch
 ```
 
 ```
-roslaunch stereo_image_sandbox object_detection.launch model_path:=<your model path>
+roslaunch stereo_image_sandbox object_detection.launch
 ```

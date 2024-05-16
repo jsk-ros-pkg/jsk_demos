@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="model_path" />
+  <arg name="model_path" default="$(find stereo_image_sandbox)/trained_data/2024-05-16-drink-dataset_ncnn_model" />
   <arg name="input_image" default="/camera/color/image_raw" />
   <arg name="input_cloud" default="/camera/depth/color/points" />
   <arg name="input_indices" default="/object_detection/output/cluster_indices" />
