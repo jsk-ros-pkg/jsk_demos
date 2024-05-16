@@ -48,3 +48,19 @@ od -tx1 /sys/class/i2c-adapter/i2c-3/of_node/clock-frequency
 0x0f4240 (= 1000000)になっていれば設定できている。
 ```
 
+### for object segmentation
+
+```
+rosdep install --from-paths -i -y -r .
+pip install ultralytics[export] ncnn dill -U --no-cache-dir
+```
+
+#### Quickstart
+
+```
+roslaunch stereo_image_sandbox d405_light.launch
+```
+
+```
+roslaunch stereo_image_sandbox object_detection.launch model_path:=<your model path>
+```
