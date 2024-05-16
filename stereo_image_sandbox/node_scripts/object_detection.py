@@ -136,8 +136,9 @@ class ObjectDetectionNode(ConnectionBasedTransport):
         lbl_ins = np.zeros((im.shape[0], im.shape[1]), dtype=np.int32)
         if result.masks is not None:
             masks = result.masks.data.cpu().numpy()
-            print(masks.shape, im.shape)
+            masks = masks.transpose(1, 2, 0)
             masks = scale_image(masks, im.shape)
+            masks = masks.transpose(2, 0, 1)
 
             masks = masks[valid_indices]
             R, H, W = masks.shape
