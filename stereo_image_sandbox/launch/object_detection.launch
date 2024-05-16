@@ -3,8 +3,8 @@
   <arg name="model_path" />
   <arg name="input_image" default="/camera/color/image_raw" />
   <arg name="input_cloud" default="/camera/depth/color/points" />
-  <arg name="input_indices" default="/object_detection_node/output/cluster_indices" />
-  <arg name="input_classes" default="/object_detection_node/output/class" />
+  <arg name="input_indices" default="/object_detection/output/cluster_indices" />
+  <arg name="input_classes" default="/object_detection/output/class" />
   <arg name="manager" default="/camera/realsense2_camera_manager" />
 
   <node name="object_detection"
