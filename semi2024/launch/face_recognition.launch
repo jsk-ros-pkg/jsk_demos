@@ -7,7 +7,7 @@
   <group ns="$(arg camera_name)">
     <group ns="left_camera" >
       <node name="face_recognition"
-            pkg="stereo_image_sandbox" type="face_recognition.py"
+            pkg="semi2024" type="face_recognition.py"
             clear_params="true"
             respawn="true"
             output="screen" >
@@ -20,7 +20,7 @@
 
     <group ns="right_camera" >
       <node name="face_recognition"
-            pkg="stereo_image_sandbox" type="face_recognition.py"
+            pkg="semi2024" type="face_recognition.py"
             clear_params="true"
             respawn="true"
             output="screen" >
@@ -32,7 +32,7 @@
     </group>
 
     <node name="face_recognition"
-          pkg="stereo_image_sandbox" type="stereo_keypoint_matching.py"
+          pkg="semi2024" type="stereo_keypoint_matching.py"
           clear_params="true"
           respawn="true"
           output="screen" >

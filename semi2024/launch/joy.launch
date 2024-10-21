@@ -5,11 +5,11 @@
   <arg name="namespace" default="" />
   <arg name="device" default="/dev/ps4joy" />
 
-  <arg name="teleop_twist_joy_param_file" default="$(find stereo_image_sandbox)/config/dualshock3_teleop_twist_joy.yaml" />
+  <arg name="teleop_twist_joy_param_file" default="$(find semi2024)/config/dualshock3_teleop_twist_joy.yaml" />
 
   <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
     <node name="joy_map"
-          pkg="stereo_image_sandbox" type="joy_map.py" >
+          pkg="semi2024" type="joy_map.py" >
     </node>
 
     <node name="joy_node"
@@ -47,7 +47,7 @@
     </node>
 
     <node name="joy_map"
-          pkg="stereo_image_sandbox" type="joy_map.py" >
+          pkg="semi2024" type="joy_map.py" >
     </node>
   </group>
 

@@ -1,6 +1,6 @@
 ;;;
 ;;;	roslaunch realsense2_camera rs_rgbd.launch gui:=false
-;;;	roslaunch stereo_image_sandbox hand_pose_estimation_d405.launch gui:=false
+;;;	roslaunch semi2024 hand_pose_estimation_d405.launch gui:=false
 ;;;
 
 (require :rcb4robots "rcb4robots.l")

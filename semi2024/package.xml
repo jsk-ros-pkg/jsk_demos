@@ -47,6 +47,6 @@
   <!-- ALPHABETICAL ORDER -->
 
   <export>
-    <nodelet plugin="${prefix}/plugins/nodelet/libstereo_image_sandbox.xml"/>
+    <nodelet plugin="${prefix}/plugins/nodelet/libsemi2024.xml"/>
   </export>
 </package>

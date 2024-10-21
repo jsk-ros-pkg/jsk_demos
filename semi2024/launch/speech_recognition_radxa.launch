@@ -13,14 +13,14 @@
 
   <group ns="$(arg namespace)" >
     <node name="audio_publisher"
-          pkg="stereo_image_sandbox" type="radxa_i2c_audio_publisher.py"
+          pkg="semi2024" type="radxa_i2c_audio_publisher.py"
           output="screen"
           respawn="true">
       <remap from="/audio" to="/$(arg namespace)/audio" />
     </node>
 
     <!-- <node name="text2wave_server" -->
-    <!--       pkg="stereo_image_sandbox" type="text2wave_server.py" -->
+    <!--       pkg="semi2024" type="text2wave_server.py" -->
     <!--       output="screen" -->
     <!--       respawn="true"> -->
     <!-- </node> -->
@@ -31,7 +31,7 @@
           output="screen" >
       <remap from="robotsound" to="robotsound_jp"/>
       <remap from="sound_play" to="robotsound_jp"/>
-      <env name="PATH" value="$(find stereo_image_sandbox)/bin/openjtalk:$(env PATH)" />
+      <env name="PATH" value="$(find semi2024)/bin/openjtalk:$(env PATH)" />
       <env name="PYTHONIOENCODING" value="utf-8" />
       <rosparam subst_value="true" >
         device: $(arg device)
@@ -55,7 +55,7 @@
     </node>
 
     <node name="input_audio_selector"
-          pkg="stereo_image_sandbox" type="mux_selector.py"
+          pkg="semi2024" type="mux_selector.py"
 	        respawn="true"
 	        args="/$(arg namespace)/is_speaking 'm.data is False' /$(arg namespace)/$(arg raw_audio_topic) /$(arg namespace)/is_speaking 'm.data is True' /$(arg namespace)/$(arg dummy_audio_topic)">
       <remap from="mux" to="input_audio_mux" />

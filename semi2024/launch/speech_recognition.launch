@@ -28,7 +28,7 @@
         output="screen" >
     <remap from="robotsound" to="robotsound_jp"/>
     <remap from="sound_play" to="robotsound_jp"/>
-    <env name="PATH" value="$(find stereo_image_sandbox)/bin:$(env PATH)" />
+    <env name="PATH" value="$(find semi2024)/bin:$(env PATH)" />
     <env name="PYTHONIOENCODING" value="utf-8" />
     <rosparam subst_value="true" >
       device: $(arg device)
@@ -52,7 +52,7 @@
   </node>
 
   <node name="input_audio_selector"
-        pkg="stereo_image_sandbox" type="mux_selector.py"
+        pkg="semi2024" type="mux_selector.py"
 	    respawn="true"
 	    args="/is_speaking 'm.data is False' $(arg raw_audio_topic) /is_speaking 'm.data is True' $(arg dummy_audio_topic)">
     <remap from="mux" to="input_audio_mux" />
@@ -74,7 +74,7 @@
   </include>
 
   <node name="pi_hat_mic_doa"
-        pkg="stereo_image_sandbox" type="pi_hat_mic_doa.py" >
+        pkg="semi2024" type="pi_hat_mic_doa.py" >
     <remap from="/audio" to="$(arg audio_topic)" />
     <rosparam>
       enable_vital_check: false

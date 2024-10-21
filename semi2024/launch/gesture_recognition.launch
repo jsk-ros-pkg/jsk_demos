@@ -1,12 +1,12 @@
 <launch>
 
   <arg name="namespace" default="robot_a" />
-  <arg name="model_path" default="$(find stereo_image_sandbox)/models/keypoint_classifier.tflite" />
-  <arg name="label_csv" default="$(find stereo_image_sandbox)/models/keypoint_classifier_label.csv" />
+  <arg name="model_path" default="$(find semi2024)/models/keypoint_classifier.tflite" />
+  <arg name="label_csv" default="$(find semi2024)/models/keypoint_classifier_label.csv" />
 
   <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
     <node name="gesture_recognition"
-          pkg="stereo_image_sandbox" type="gesture_recognition.py"
+          pkg="semi2024" type="gesture_recognition.py"
           output="screen" >
       <env name="LD_PRELOAD" value="/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0" />
       <remap from="~input" to="/$(arg namespace)/camera/color/image_raw" />
@@ -19,7 +19,7 @@
 
   <group unless="$(eval len(arg('namespace')) > 0)">
     <node name="gesture_recognition"
-          pkg="stereo_image_sandbox" type="gesture_recognition.py"
+          pkg="semi2024" type="gesture_recognition.py"
           output="screen" >
       <env name="LD_PRELOAD" value="/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0" />
       <remap from="~input" to="/camera/color/image_raw" />
