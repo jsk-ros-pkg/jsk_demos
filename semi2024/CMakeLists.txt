@@ -20,6 +20,4 @@ catkin_package(
   nodelet
   sensor_msgs
   DEPENDS
-  INCLUDE_DIRS include ${EIGEN3_INCLUDE_DIRS}
-  LIBRARIES ${PROJECT_NAME}
 )
