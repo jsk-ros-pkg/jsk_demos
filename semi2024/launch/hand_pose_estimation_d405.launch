@@ -2,7 +2,7 @@
 
   <arg name="camera_name" default="camera" />
   <arg name="rgb" default="color" />
-  <arg name="gui" default="true" />
+  <arg name="gui" default="false" />
   <arg name="queue_size" default="10" />
 
   <group ns="$(arg camera_name)">

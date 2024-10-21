@@ -2,7 +2,7 @@
 
   <arg name="camera_name" default="camera" />
   <arg name="rgb" default="color" />
-  <arg name="gui" default="true" />
+  <arg name="gui" default="false" />
   <arg name="queue_size" default="10" />
 
   <group ns="$(arg camera_name)">
@@ -12,7 +12,8 @@
             respawn="true"
             clear_params="true"
             output="screen" >
-        <remap from="~input" to="image_rect_color" />
+        <!-- <remap from="~input" to="image_rect_color" /> -->
+        <remap from="~input" to="image_raw" />
         <rosparam subst_value="true" >
           enable_vital_check: false
         </rosparam>
