@@ -1,1 +1,1 @@
-# Stereo image sandbox for semi2023 in JSK
+# Workspace for Semi2024 in JSK

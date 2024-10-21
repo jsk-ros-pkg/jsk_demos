@@ -1,8 +1,8 @@
 <package format="3">
-  <name>stereo_image_sandbox</name>
+  <name>semi2024</name>
   <version>0.0.1</version>
 
-  <description>ROS nodes and nodelets for 2-D stereo image perception.</description>
+  <description>Workspace for Semi2024 in JSK.</description>
   <author>Iori Yanokura</author>
   <author email="yanokura@jsk.imi.i.u-tokyo.ac.jp">Iori Yanokura</author>
   <maintainer email="yanokura@jsk.imi.i.u-tokyo.ac.jp">Iori Yanokura</maintainer>

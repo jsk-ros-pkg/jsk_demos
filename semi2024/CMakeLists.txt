@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(stereo_image_sandbox)
+project(semi2024)
 
 find_package(catkin REQUIRED COMPONENTS
   camera_info_manager
