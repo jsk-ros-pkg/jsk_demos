@@ -1,7 +1,14 @@
 <launch>
 
+  <arg name="namespace" default="" />
+
   <include file="$(find kxr_controller)/launch/kxr_controller.launch">
     <arg name="joint_group_description" value="$(find kxreus)/config/kxrl2l2a6h2m.yaml" />
+    <arg name="namespace" value="$(arg namespace)" />
+  </include>
+
+  <include file="$(find kxreus)/launch/eusmodel_server.launch">
+    <arg name="namespace" value="$(arg namespace)" />
   </include>
 
 </launch>
