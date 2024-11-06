@@ -3,14 +3,35 @@
 ;;;	roslaunch semi2024 hand_pose_estimation_d405.launch gui:=false
 ;;;
 
-(require :rcb4robots "rcb4robots.l")
+(load "package://kxreus/euslisp/kxr-interface.l")
+(load "package://semi2024/euslisp/semi-kxr.l")
 (load "models/arrow-object.l")
 
-(make-kxr-robot)
-(send *ri* :com-init)
-(send *ri* :hold)
-(send *ri* :neutral)
-(send *ri* :send-stretch 40)
+(ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::roseus "visualize_hand_pose")
+
+
+(defun kxr-init (&key
+                   (namespace nil)
+                   (create-viewer t)
+                   (controller-name "fullbody_controller"))
+  (unless (boundp '*robot*)
+    (setq *robot* (kxrl2l2a6h2m)))
+  (unless (ros::ok) (ros::roseus "robot_eus_interface"))
+  (unless (boundp '*ri*)
+    (setq *ri* (instance kxr-interface :init *robot* :namespace namespace
+                         :controller-name controller-name
+                         )))
+
+  (ros::spin-once)
+  (send *ri* :spin-once)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (when create-viewer (objects (list *robot*))))
+
+
+(kxr-init)
+
 
 (setq *camera-color-optical-frame* (arrow))
 (send *camera-color-optical-frame* :newcoords
@@ -19,9 +40,6 @@
 (objects (list *robot* *camera-color-optical-frame*))
 
 
-(ros::load-ros-manifest "roseus")
-(ros::load-ros-manifest "jsk_recognition_msgs")
-(ros::roseus "visualize_hand_pose")
 
 (defvar *topic-name* "/camera/hand_skeleton_with_depth/output/pose")
 (defvar *skeleton-array* nil)
@@ -43,9 +61,10 @@
 
 (defun human-skeleton-array-cb (msg)
   (setq *skeleton-array* (send msg :skeletons))
+  (print *skeleton-array*)
   (when *skeleton-array*
     (send *irtviewer* :draw-objects :flush nil)
-    (send *robot* :angle-vector (send *ri* :read-angle-vector))
+    (send *robot* :angle-vector (send *ri* :state :potentio-vector))
     (send *irtviewer* :draw-objects)
     (dolist (cube-list (mapcar #'skeleton->cube *skeleton-array*))
       (dolist (cube cube-list)
@@ -57,8 +76,6 @@
   (send *irtviewer* :viewer :viewsurface :flush))
 
 (ros::subscribe *topic-name* jsk_recognition_msgs::HumanSkeletonArray #'human-skeleton-array-cb 1)
-
-(unless (boundp '*irtviewer*) (make-irtviewer))
 
 (do-until-key
     (x::window-main-one)
