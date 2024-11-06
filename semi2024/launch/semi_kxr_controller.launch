@@ -7,8 +7,4 @@
     <arg name="namespace" value="$(arg namespace)" />
   </include>
 
-  <include file="$(find kxreus)/launch/eusmodel_server.launch">
-    <arg name="namespace" value="$(arg namespace)" />
-  </include>
-
 </launch>
