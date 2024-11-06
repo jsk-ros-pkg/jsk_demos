@@ -1808,4 +1808,22 @@
       geom))
   )
 
+
+(defun kxr-init (&key
+                   (namespace nil)
+                   (create-viewer t)
+                   (controller-name "fullbody_controller"))
+  (unless (boundp '*robot*)
+    (setq *robot* (kxrl2l2a6h2m)))
+  (unless (ros::ok) (ros::roseus "robot_eus_interface"))
+  (unless (boundp '*ri*)
+    (setq *ri* (instance kxr-interface :init *robot* :namespace namespace
+                         :controller-name controller-name
+                         )))
+
+  (ros::spin-once)
+  (send *ri* :spin-once)
+  (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+  (when create-viewer (objects (list *robot*))))
+
 (provide :kxrl2l2a6h2m "(loamy-endeavor Linux-5.10.69-12-amlogic-g98700611d064-aarch64-with-glibc2.29) at 2024-10-30 14:00:32")
