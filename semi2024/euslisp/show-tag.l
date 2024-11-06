@@ -1,3 +1,5 @@
+#!/usr/bin/env roseus
+
 (ros::roseus "get_apriltag_corners")
 (ros::load-ros-manifest "apriltag_ros")
 
