@@ -6,6 +6,7 @@
 
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "jsk_recognition_msgs")
+(ros::load-ros-manifest "apriltag_ros")
 (ros::roseus "visualize_hand_pose")
 
 (kxr-init)
@@ -27,7 +28,7 @@
 (ros::subscribe "/camera/color/tag_detections"
                 apriltag_ros::AprilTagDetectionArray
                 #'tag-detection-callback)
-(ros::rate 10)
+(ros::rate 1)
 
 
 (send *ri* :servo-on)
@@ -40,20 +41,22 @@
   (when (and *tag-detection* (> (length (send *tag-detection* :detections)) 0))
     (dotimes (i (length (send *tag-detection* :detections)))
       (when (send *tag-detection* :detections)
-        (setq tag-id (car (send (elt (send *tag-detection* :detections) 0) :id)))
-        (print tag-id)
-        (when (= tag-id 0)
-          (send *robot* :init-pose)
-          (send *robot* :RARM_JOINT0 :joint-angle 90)
-          (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
-          (send *ri* :wait-interpolation)
-          )
-        (when (= tag-id 1)
-          (send *robot* :init-pose)
-          (send *robot* :LARM_JOINT0 :joint-angle -90)
-          (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
-          (send *ri* :wait-interpolation)
-          )
-        ))
+        (let ((detection (car (send *tag-detection* :detections))))
+          (when (send detection :id)
+            (setq tag-id (elt (send detection :id) 0))
+            (print tag-id)
+            (when (= tag-id 49) ;; ここのtag-idは自分のマーカーに合わせて変える
+              (send *robot* :init-pose)
+              (send *robot* :RARM_JOINT0 :joint-angle 90)
+              (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+              (send *ri* :wait-interpolation)
+              )
+            (when (= tag-id 43) ;; ここのtag-idは自分のマーカーに合わせて変える
+              (send *robot* :init-pose)
+              (send *robot* :LARM_JOINT0 :joint-angle -90)
+              (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+              (send *ri* :wait-interpolation)
+              )
+            )))
     )
-  (ros::sleep))
+  ))
