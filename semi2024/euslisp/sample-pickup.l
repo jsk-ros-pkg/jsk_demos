@@ -62,31 +62,31 @@
             (send bx :newcoords target-coords)
             (send bx :worldcoords)
             (send bx :draw-on :flush nil :color #f(1 0 0)) ;; 描画
-            (send *robot* :RARM_JOINT6 :joint-angle 30)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 1000) ;; gripperをオープンする
-            (send *ri* :wait-interpolation)
+            ;; (send *robot* :RARM_JOINT6 :joint-angle 30)
+            ;; (send *ri* :angle-vector (send *robot* :angle-vector) 1000) ;; gripperをオープンする
+            ;; (send *ri* :wait-interpolation)
 
-            (send *robot* :rarm :inverse-kinematics
-                  target-coords
-                  :rotation-axis :mx
-                  :revert-if-fail nil)
-            (setq pick-angle-vector (send *robot* :angle-vector))
+            ;; (send *robot* :rarm :inverse-kinematics
+            ;;       target-coords
+            ;;       :rotation-axis :mx
+            ;;       :revert-if-fail nil)
+            ;; (setq pick-angle-vector (send *robot* :angle-vector))
 
-            (send *robot* :rarm :move-end-pos #f(-30 0 0) :local :revert-if-fail nil)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-            (send *ri* :wait-interpolation)
+            ;; (send *robot* :rarm :move-end-pos #f(-30 0 0) :local :revert-if-fail nil)
+            ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+            ;; (send *ri* :wait-interpolation)
 
-            (send *robot* :angle-vector pick-angle-vector)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-            (send *ri* :wait-interpolation)
+            ;; (send *robot* :angle-vector pick-angle-vector)
+            ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+            ;; (send *ri* :wait-interpolation)
 
-            (send *robot* :RARM_JOINT6 :joint-angle 0)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-            (send *ri* :wait-interpolation)
+            ;; (send *robot* :RARM_JOINT6 :joint-angle 0)
+            ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+            ;; (send *ri* :wait-interpolation)
 
-            (send *robot* :init-pose)
-            (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
-            (send *ri* :wait-interpolation)
+            ;; (send *robot* :init-pose)
+            ;; (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
+            ;; (send *ri* :wait-interpolation)
             )))
     )
   )
