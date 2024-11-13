@@ -32,31 +32,42 @@
 
 
 (send *ri* :servo-on)
+(send *ri* :send-stretch :value 30)
 (send *robot* :init-pose)
 (send *ri* :angle-vector (send *robot* :angle-vector) 3000)
 (send *ri* :wait-interpolation)
 
+(send *robot* :angle-vector (send *ri* :state :potentio-vector))
+
 (do-until-key
     (ros::spin-once)
+  (send *irtviewer* :draw-objects :flush nil)
   (when (and *tag-detection* (> (length (send *tag-detection* :detections)) 0))
     (dotimes (i (length (send *tag-detection* :detections)))
       (when (send *tag-detection* :detections)
-        (let ((detection (car (send *tag-detection* :detections))))
+        (let ((detection (car (send *tag-detection* :detections)))
+              target-coords
+              (bx (make-cube 40 40 40)))
           (when (send detection :id)
-            (setq tag-id (elt (send detection :id) 0))
-            (print tag-id)
-            (when (= tag-id 49) ;; ここのtag-idは自分のマーカーに合わせて変える
-              (send *robot* :init-pose)
-              (send *robot* :RARM_JOINT0 :joint-angle 90)
-              (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
-              (send *ri* :wait-interpolation)
-              )
-            (when (= tag-id 43) ;; ここのtag-idは自分のマーカーに合わせて変える
-              (send *robot* :init-pose)
-              (send *robot* :LARM_JOINT0 :joint-angle -90)
-              (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
-              (send *ri* :wait-interpolation)
-              )
+            (send *robot* :angle-vector (send *ri* :state :potentio-vector))
+            (setq target-coords
+                  (ros::tf-pose->coords (send (send (send (car (send *tag-detection* :detections)) :pose) :pose) :pose)))
+            (setq target-coords (send (send *camera-color-optical-frame* :copy-worldcoords)
+                                      :transform target-coords))
+
+            (send bx :newcoords target-coords)
+            (send bx :worldcoords)
+            (send bx :draw-on :flush nil :color #f(1 0 0)) ;; 描画
+            (send *robot* :inverse-kinematics-loop-for-look-at :head
+                  (send target-coords :worldpos) :move-target *camera-color-optical-frame*)
+            (send *ri* :angle-vector (send *robot* :angle-vector) 1000)
+
+            ;; (send *ri* :wait-interpolation)
             )))
     )
-  ))
+  )
+  (send *irtviewer* :viewer :viewsurface :flush)
+  (x::window-main-one) ;; IRT viewerの視点を変えられる。見にくければ変えよう
+  )
+
+(send *ri* :servo-off)
