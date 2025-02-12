@@ -34,6 +34,11 @@ source <ワークスペース>/devel/setup.bash
 roslaunch jsk_2023_12_codesign codesigned_robot.launch robot_name:=kuromitsu
 ```
 ※launchするときにrobot_nameに動かしたいロボットの名前（kashiwagi/kuromitsu）を指定する。
+※joyを使いたいときは、joyをlaunchファイルを立ち上げているPCにUSB接続したうえで、`joy`を`true`に設定する。
+e.g.
+```
+roslaunch jsk_2023_12_codesign codesigned_robot.launch joy:=true
+```
 
 ### 動作を保存する
 ```
@@ -70,5 +75,42 @@ $ ipython
 ```
 
 ## TODO(2025-01-31)
-### 目の光らせ方・ほっぺ, 梅の光らせ方
+### 目・ほっぺ・梅の光らせ方
+```
+source <ワークスペース>/devel/setup.bash
+roslaunch jsk_2023_12_codesign codesigned_module.launch
+```
+した上で、以下の表に示すトピックにpublishすることで変化する
+
+| 箇所  |　トピック | 型 | 機能 |
+| ------------- | ------------- |---| --- |
+| 目 | `/eye_status`  |UInt16| 表情変化 |
+| ほっぺ  | `/cheek/led_blink_time`  | UInt16 |点滅回数を指定|
+||`/cheek/led_duration`| UInt16 | 点滅時間を秒数で指定|
+||`/cheek/led_mode`| UInt16 | 光り方を1,2,3で指定 1:常時 2:点滅 3:虹色|
+||`/cheek/led_rainbow_delta_hue`| UInt16 | 虹色の光り方を1-50で指定(数字が大きいほど隣同士が別の色)|
+||`/cheek/led_rgb`| ColorRGBA |r:Red, g:Green, b:Blue, a:明るさ (rgbは0-255で指定, aは10くらいでOK) |
+| 梅（柏木さんのみ) | `/ume/led_blink_time` |UInt16|点滅回数を指定 |
+||`/ume/led_duration`| UInt16 | 点滅時間を秒数で指定|
+||`/ume/led_mode`| UInt16 |光り方を1,2,3で指定 1:常時 2:点滅 3:虹色 |
+||`/ume/led_rainbow_delta_hue`| UInt16 |虹色の光り方を1-50で指定(数字が大きいほど隣同士が別の色) |
+||`/ume/led_rgb`| ColorRGBA |r:Red, g:Green, b:Blue, a:明るさ (rgbは0-255で指定, aは10くらいでOK)|
+
+<表情の対応表>
+| 番号 | くろみつ |柏木さん|
+|---|---|---|
+|0| 通常|通常|
+|1| まばたき|まばたき|
+|2| キラキラ|おどろき|
+|3| 眠い |眠い|
+|4| 真剣 |怒る|
+|5| 悲しい|悲しい|
+|6| 嬉しい |楽しい|
+|7|悔しい１|困る|
+|8| 悔しい2|嬉しい|
+|9| 退屈|期待|
+|10| ハート ||
+|11| ぐるぐる ||
+|12| キラキラ2||
+
 ### くろみつでの動作確認

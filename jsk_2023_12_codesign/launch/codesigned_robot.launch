@@ -11,6 +11,9 @@
   <!-- Define the path to the servo configuration file -->
   <arg name="servo_config_path" value="$(find codesigned_robot_2023)/config/$(arg robot_name)_servo_config.yaml" />
 
+  <!-- Define the joystick launch flag -->
+  <arg name="joy" default="false" />
+
   <!-- Launch the main controller -->
   <include file="$(find kxr_controller)/launch/kxr_controller.launch">
     <arg name="urdf_path" value="$(arg urdf_path)" />
@@ -21,6 +24,8 @@
   <include file="$(find kxr_controller)/launch/diff_drive_controller.launch" />
 
   <!-- Launch the joystick control (uncomment if needed) -->
-  <!-- <include file="$(find kxr_controller)/launch/joy.launch" /> -->
+  <group if="$(arg joy)">
+    <include file="$(find jsk_2023_12_codesign)/launch/joy.launch" />
+  </group>
   
 </launch>
