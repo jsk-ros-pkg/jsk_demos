@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>pr2_surgery</name>
+  <name>pr2_tubes</name>
   <version>0.0.0</version>
-  <description>The pr2_surgery package</description>
+  <description>The pr2_tubes package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
