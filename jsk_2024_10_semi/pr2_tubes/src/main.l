@@ -4,47 +4,158 @@
 PR2で血管モデルを縫合する．
 |#
 
-;;Load pkgs around PR2 Interface
+;; PR2のインタフェースをロードする
 (require "package://pr2eus/pr2.l")
 (require "package://pr2eus/pr2-utils.l")
 (require "package://pr2eus/pr2-interface.l") ;;*ri*
 (require "package://pr2eus/speak.l") ;;pkg for speaking
 
-;;ros msgs
+;; jskのメッセージ型をロードする
 (ros::load-ros-package "jsk_recognition_msgs")
 (ros::roseus-add-msgs "speech_recognition_msgs")
 (ros::roseus-add-msgs "geometry_msgs")
 
+;; PR2の初期化
+(if (not (boundp '*pr2*))
+    (pr2-init)
+  ) ;; 変数*pr2*が存在しなければ(pr2-init)を実行する
 
-;;ここをかえるだけで調整できる！（外界の変化に合わせて）
-;; Drawing Pram
-(setq *draw-param-left* 0.2)
-(setq *draw-param-right* 0.6)
-;; Env Param
+
+;; 実験環境の中心の設定
 (setq *centerx* 700)
 (setq *centery* 0)
 (setq *centerz* 755)
+(setq *center* (make-cube 10 10 10))
+(send *center* :translate (float-vector *centerx* *centery* *centerz*))
+(send *center* :set-color :black)
+(setq *o* (send *center* :copy-worldcoords))
+
+;; 実験机の設定
 (setq *deskw* 500)
-;; Hampen Param
-(setq *target-ypos* 0)
-(setq *target-xpos* 0)
-(setq *target-zpos* 30)
-;; Traj Param
-(setq *needle_len* 70)
-(setq *interval* 10)
-(setq *traj_num* 10)
-(setq *traj_len* (* *interval* *traj_num*))
-;; Set remain
-(setq *remain* 450) ;;450 ;;how long remaining thread?
-(setq *diff_remain* 55) ;;55
-;; Offset
-(setq *rarm_offset* 2)
+(setq *deskd* 800)
+(setq *deskh* *centerz*)
+(setq *desk* (make-cube *deskw* *deskd* *deskh*))
+(send *desk* :translate (float-vector *centerx* *centery* (* *centerz* 0.5)))
+(send *desk* :set-color :white)
+
+;; 血管実験台
+(setq *tablew* 50)
+(setq *tabled* 80)
+(setq *tableh* 10)
+(setq *table* (make-cube *tablew* *tabled* *tableh*))
+(send *table* :translate (float-vector (- *centerx* 200) *centery* (+ *centerz* (* *tableh* 0.5)) ))
+(send *table* :set-color :red)
+
+;;針
+(setq *needle-radius* 35)      ; radius of curvature
+(setq *needle-thickness* 0.5)  ; thickness of the needle
+(setq *needle-angle* (/ pi 2)) ; angle of the arc
+
+;; Create points for the needle path
+(setq segments 40)
+(setq theta-step (/ *needle-angle* segments))
+(setq points nil)
+(dotimes (i (+ segments 1))
+  (let ((theta (* i theta-step)))
+    (push (float-vector 
+           (* *needle-radius* (- 1 (cos theta)))  ; x
+           0                                      ; y
+           (* *needle-radius* (sin theta)))       ; z
+          points)))
+(setq points (reverse points))
+
+;; Function to calculate rotation matrix from two points
+(defun make-rotation-matrix (p1 p2)
+  (let* ((diff (v- p2 p1))
+         (z-axis (normalize-vector diff))
+         (y-axis (float-vector 0 1 0))
+         (x-axis (v* y-axis z-axis)))
+    (setq y-axis (v* z-axis x-axis))  ; ensure orthogonality
+    (transpose (matrix (normalize-vector x-axis) 
+                      (normalize-vector y-axis) 
+                      (normalize-vector z-axis)))))
+
+;; Create cylinders along the arc
+(setq needle-parts nil)
+(let ((prev-point (car points)))
+  (dolist (point (cdr points))
+    (let* ((diff (v- point prev-point))
+           (height (norm diff))
+           (center (midpoint 0.5 prev-point point))
+           (cylinder (make-cylinder *needle-thickness* height :segments 12))
+           (rot-mat (make-rotation-matrix prev-point point)))
+      ;; Create coordinates at center with proper orientation
+      (setq coords (make-coords :pos center :rot rot-mat))
+      ;; Orient and position cylinder
+      (send cylinder :transform coords)
+      (push cylinder needle-parts)
+      (setq prev-point point))))
+
+;; bodysetにする
+(setq needle-bodies (reverse needle-parts))
+
+;; assocする
+(dolist (body (cdr needle-bodies))
+  (send (car needle-bodies) :assoc body))
+
+;; 針の色（銀色）にする
+(dolist (body needle-bodies)
+  (send body :set-color :black))
+
+;; needleをbodyset-linkとして定義する
+(setq *needle* 
+      (instance bodyset-link :init (make-cascoords)
+                :bodies needle-bodies))
+
+(send *needle* :translate (float-vector *centerx* *centery* *centerz*))
 
 
-;; Frag (DO NOT CHANGE)
-(setq *start-flag* 0)
-(setq *is_first* 1)
+(make-irtviewer)
+(objects (list *pr2* *center* *desk* *table* *needle*))
 
+(send *irtviewer* :draw-objects)
+
+#|
+
+  (setq *deskh* *centerz*)
+
+  (setq *center* (make-cube 10 10 10))
+  (send *center* :translate (float-vector *centerx* *centery* *centerz*))
+  (send *center* :set-color :black)
+  (setq *o* (send *center* :copy-worldcoords))
+
+  ;;Set desk
+  (setq *desk* (make-cube *deskw* *deskw* *deskh*))
+  (send *desk* :translate (float-vector *centerx* *centery* (/ *centerz* 2))) 
+  (send *desk* :set-color :brown)
+
+  ;;Set needle
+  (setq *needle* (make-cylinder 0.5 *needle_len*))
+  (send *needle* :translate (v+ (float-vector -100 20 300) (send *center* :pos)))
+  (send *needle* :set-color :yellow)
+  (send *needle* :rotate #d90 :y)
+
+  ;;Set hampen
+  (setq *hampen* (make-cube 50 50 50))
+  (send *hampen* :translate (v+ (float-vector 0 0 10) (send *center* :pos)))
+  (send *hampen* :set-color :white)
+  (send *hampen* :rotate #d45 :x)
+
+
+  
+  (send *desk* :put :left-coords
+	(make-cascoords
+       :coords (send (send *desk* :copy-worldcoords) :translate (float-vector 0 0 500))
+       :parent *pr2*))
+  (send *needle* :put :left-coords
+	(make-cascoords
+       :coords (send (send *needle* :copy-worldcoords) :translate (float-vector 0 0 -5))
+       :parent *needle*)) 
+
+
+
+
+;;ここをかえるだけで調整できる！（外界の変化に合わせて）
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; Environment ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define set-environment method
 (defun set-env()
@@ -73,6 +184,8 @@ PR2で血管モデルを縫合する．
   (send *hampen* :set-color :white)
   (send *hampen* :rotate #d45 :x)
 
+
+  
   (send *desk* :put :left-coords
 	(make-cascoords
        :coords (send (send *desk* :copy-worldcoords) :translate (float-vector 0 0 500))
