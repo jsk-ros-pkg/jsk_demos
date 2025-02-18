@@ -1,0 +1,36 @@
+(defun initial-task()
+    (require "package://pr2eus/pr2.l")
+    (require "package://pr2eus/pr2-utils.l")
+    (require "package://pr2eus/pr2-interface.l")
+    (require "package://pr2eus/speak.l")
+    
+    (send *ri* :speak-jp "初期姿勢に戻ります。" :wait t)
+    (send *pr2* :reset-pose)
+    (send *ri* :start-grasp :arms)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 2000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+
+    (send *pr2* :larm :inverse-kinematics
+	  (send (send (send *needle* :get :left-coords)
+		      :copy-worldcoords)
+		:rotate (deg2rad 90) :z)
+	  :rotation-axis :z
+	  :debug-view t)
+    (send *pr2* :larm :end-coords :assoc *needle*)
+    (send *ri* :angle-vector (send *pr2* :angle-vector) 1000)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+
+        (send *ri* :speak-jp "左手を開きます。針を持たせてください。")
+    (send *ri* :stop-grasp :larm :wait t)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+
+    (send *ri* :speak-jp "閉じます。" :wait t)
+    (send *ri* :start-grasp :larm :wait t)
+    (send *ri* :wait-interpolation)
+    (send *irtviewer* :draw-objects)
+    (send *ri* :speak-jp "これから針を持って作業します．離れてください．" :wait t)
+    (unix:sleep 2)
+)

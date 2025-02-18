@@ -1,0 +1,106 @@
+<launch>
+        <!--
+        <node name="usb_cam" pkg="usb_cam" type="usb_cam_node">
+                <rosparam>
+                        video_device: /dev/video2
+                </rosparam>
+        </node>
+
+        <node name="hls_color_filter" pkg="opencv_apps" type="hls_color_filter">
+                <remap from="image" to="usb_cam/image_raw"/>
+                <rosparam>
+                        debug_view: true
+                        h_limit_max: 10
+                        h_limit_min: 345
+                        s_limit_max: 256
+                        s_limit_min: 77
+                        l_limit_max: 256
+                        l_limit_min: 201
+                </rosparam>
+        </node>
+
+        <node name="hough_lines" pkg="opencv_apps" type="hough_lines">
+                <remap from="image" to="hls_color_filter/image"/>
+                <rosparam>
+                        debug_view: true
+                </rosparam>
+        </node>
+        -->
+
+        <group ns="recognize_wound">
+
+          <node name="image_decompresser"
+                pkg="image_transport" type="republish"
+                args="compressed raw" respawn="true">
+            <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+            <remap from="out" to="decompressed_image"/>
+          </node>
+
+          <node name="depth_decompresser"
+                pkg="image_transport" type="republish"
+                args="compressedDepth raw" respawn="true">
+            <remap from="in" to="/kinect_head/depth_registered/image"/>
+            <remap from="out" to="decompressed_depth"/>
+          </node>
+
+          <node pkg="jsk_topic_tools" type="synchronize_republish.py" name="synchronize_republish">
+            <param name="topics" value="[/recognize_wound/decompressed_image, /recognize_wound/decompressed_depth]" type="yaml"/>
+            <param name="approximate_sync" value="true" />
+          </node>
+
+          <arg name="manager" value="recognize_wound_manager" />
+
+          <node pkg="nodelet" type="nodelet" name="$(arg manager)"
+                args="manager" output="screen"/>
+
+          <node pkg="nodelet" type="nodelet" name="decompress_points"
+                args="load depth_image_proc/point_cloud_xyzrgb $(arg manager)">
+            <remap from="rgb/camera_info" to="/kinect_head/depth_registered/camera_info"/>
+            <remap from="rgb/image_rect_color" to="synchronize_republish/pub_00"/>
+            <remap from="depth_registered/image_rect" to="synchronize_republish/pub_01"/>
+            <rosparam>
+              queue_size: 100
+            </rosparam>
+          </node>
+
+          <node pkg="nodelet" type="nodelet" name="hsi_filter"
+                args="load jsk_pcl/HSIColorFilter $(arg manager)" output="screen">
+            <remap from="~input" to="depth_registered/points" />
+            <rosparam>
+              use_indices: false
+              keep_organized: true
+              h_limit_max: 11
+              h_limit_min: -8
+              s_limit_max: 255
+              s_limit_min: 104
+              i_limit_max: 255
+              i_limit_min: 0
+            </rosparam>
+          </node>
+
+          <node pkg="nodelet" type="nodelet" name="euclidean_clustering"
+                args="load jsk_pcl/EuclideanClustering $(arg manager)" output="screen">
+            <remap from="~input" to="hsi_filter/output" />
+            <rosparam>
+              tolerance: 0.02
+              min_size: 10 
+            </rosparam>
+          </node>
+
+          <node pkg="nodelet" type="nodelet"
+                name="cluster_decomposer"
+                args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
+                output="screen" clear_params="true">
+            <remap from="~input" to="hsi_filter/output" />
+            <remap from="~target" to="euclidean_clustering/output" />
+            <rosparam>
+              align_boxes: true
+              align_boxes_with_plane: false
+              force_to_flip_z_axis: false
+              use_pca: false
+              target_frame_id: base_footprint
+            </rosparam>
+          </node>
+
+        </group>
+</launch>

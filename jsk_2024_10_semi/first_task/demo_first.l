@@ -1,0 +1,5 @@
+(require "package://pr2eus/pr2.l")
+(if (not (boundp '*pr2*)) (setq *pr2* (pr2)))
+(objects (list *pr2*))
+(send *pr2* :larm :shoulder-p :joint-angle 10)
+(send *irtviewer* :draw-objects)

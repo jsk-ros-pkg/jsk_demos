@@ -1,0 +1,3783 @@
+mech-user@ki00119:~/semi_ws/src$ roseus
+configuring by "/opt/ros/noetic/share/euslisp/jskeus/eus//lib/eusrt.l"
+;; readmacro ;; object ;; packsym ;; common ;; constants ;; stream ;; string ;; loader ;; pprint ;; process ;; hashtab ;; array ;; mathtran ;; eusdebug ;; eusforeign ;; extnum ;; coordinates ;; tty ;; history ;; toplevel ;; trans ;; comp ;; builtins ;; par ;; intersection ;; geoclasses ;; geopack ;; geobody ;; primt ;; compose ;; polygon ;; viewing ;; viewport ;; viewsurface ;; hid ;; shadow ;; bodyrel ;; dda ;; helpsub ;; eushelp ;; xforeign ;; Xdecl ;; Xgraphics ;; Xcolor ;; Xeus ;; Xevent ;; Xpanel ;; Xitem ;; Xtext ;; Xmenu ;; Xscroll ;; Xcanvas ;; Xtop ;; Xapplwin 
+connected to Xserver DISPLAY=:0
+X events are being asynchronously monitored.
+;; pixword ;; RGBHLS ;; convolve ;; piximage ;; pbmfile ;; image_correlation ;; oglforeign ;; gldecl ;; glconst ;; glforeign ;; gluconst ;; gluforeign ;; glxconst ;; glxforeign ;; eglforeign ;; eglfunc ;; glutil ;; gltexture ;; glprim ;; gleus ;; glview ;; toiv-undefined ;; fstringdouble irtmath irtutil irtc irtgeoc irtgraph gnuplotlib ___time ___pgsql irtgeo euspqp pqp irtscene irtmodel irtdyna irtrobot irtsensor irtbvh irtcollada irtstl irtwrl irtpointcloud eusbullet bullet irtcollision irtx eusjpeg euspng png irtimage irtglrgb 
+;; extending gcstack 0x55e070c10680[16374] --> 0x55e0710a0c90[32748] top=3d4b
+irtgl irtglc irtviewer 
+EusLisp 9.29( 1.2.5) for Linux64 created on ip-10-0-1-5(Tue Jun 20 10:34:21 PST 2023)
+roseus ;; loading roseus("1.7.5") on euslisp((9.29 ip-10-0-1-5 Tue Jun 20 10:34:21 PST 2023  1.2.5))
+eustf roseus_c_util 1.irteusgl$ (load "first_motion.l")
+;; (make-irtviewer) executed
+t
+2.irteusgl$ (require "package://pr2eus/pr2-util.l")  ;;import pr2 package
+:larm :start-grasp)
+;; error: cannot find method :start-grasp
+nilp
+3.irteusgl$ (require "package://pr2eus/pr2-util.l")  ;;import pr2 package
+:larm :start-grasp)
+Call Stack (max depth: 20):
+  0: at (apply #'ros::load-org-for-ros ros::fullname args)
+  1: at (apply #'ros::load-org-for-ros ros::fullname args)
+  2: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  3: at (require "package://pr2eus/pr2-util.l")
+  4: at (require "package://pr2eus/pr2-util.l")
+  5: at #<compiled-code #X55e070cc9e08>
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: file #P"/opt/ros/noetic/share/pr2eus/pr2-util.l" not found in (apply #'ros::load-org-for-ros ros::fullname args)
+4.E1-irteusgl$ nil
+5.E1-irteusgl$ sh: 1: Syntax error: ")" unexpected
+512
+6.E1-irteusgl$ (require "package://pr2eus/pr2-util.l")  
+:larm :start-grasp)
+Call Stack (max depth: 20):
+  0: at (apply #'ros::load-org-for-ros ros::fullname args)
+  1: at (apply #'ros::load-org-for-ros ros::fullname args)
+  2: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  3: at (require "package://pr2eus/pr2-util.l")
+  4: at (require "package://pr2eus/pr2-util.l")
+  5: at euserror
+  6: at euserror
+  7: at (apply #'ros::load-org-for-ros ros::fullname args)
+  8: at (apply #'ros::load-org-for-ros ros::fullname args)
+  9: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  10: at (require "package://pr2eus/pr2-util.l")
+  11: at (require "package://pr2eus/pr2-util.l")
+  12: at #<compiled-code #X55e070cc9e08>
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: file #P"/opt/ros/noetic/share/pr2eus/pr2-util.l" not found in (apply #'ros::load-org-for-ros ros::fullname args)
+7.E2-irteusgl$ nil
+7.E2-irteusgl$ sh: 1: Syntax error: ")" unexpected
+512
+8.E2-irteusgl$ (require "package://pr2eus/pr2-util.l")  
+
+Call Stack (max depth: 20):
+  0: at (apply #'ros::load-org-for-ros ros::fullname args)
+  1: at (apply #'ros::load-org-for-ros ros::fullname args)
+  2: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  3: at (require "package://pr2eus/pr2-util.l")
+  4: at (require "package://pr2eus/pr2-util.l")
+  5: at euserror
+  6: at euserror
+  7: at (apply #'ros::load-org-for-ros ros::fullname args)
+  8: at (apply #'ros::load-org-for-ros ros::fullname args)
+  9: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  10: at (require "package://pr2eus/pr2-util.l")
+  11: at (require "package://pr2eus/pr2-util.l")
+  12: at euserror
+  13: at euserror
+  14: at (apply #'ros::load-org-for-ros ros::fullname args)
+  15: at (apply #'ros::load-org-for-ros ros::fullname args)
+  16: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  17: at (require "package://pr2eus/pr2-util.l")
+  18: at (require "package://pr2eus/pr2-util.l")
+  19: at #<compiled-code #X55e070cc9e08>
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: file #P"/opt/ros/noetic/share/pr2eus/pr2-util.l" not found in (apply #'ros::load-org-for-ros ros::fullname args)
+9.E3-irteusgl$ nil
+9.E3-irteusgl$ nil
+9.E3-irteusgl$ (require "package://pr2eus/pr2-util.l")
+Call Stack (max depth: 20):
+  0: at (apply #'ros::load-org-for-ros ros::fullname args)
+  1: at (apply #'ros::load-org-for-ros ros::fullname args)
+  2: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  3: at (require "package://pr2eus/pr2-util.l")
+  4: at (require "package://pr2eus/pr2-util.l")
+  5: at euserror
+  6: at euserror
+  7: at (apply #'ros::load-org-for-ros ros::fullname args)
+  8: at (apply #'ros::load-org-for-ros ros::fullname args)
+  9: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  10: at (require "package://pr2eus/pr2-util.l")
+  11: at (require "package://pr2eus/pr2-util.l")
+  12: at euserror
+  13: at euserror
+  14: at (apply #'ros::load-org-for-ros ros::fullname args)
+  15: at (apply #'ros::load-org-for-ros ros::fullname args)
+  16: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  17: at (require "package://pr2eus/pr2-util.l")
+  18: at (require "package://pr2eus/pr2-util.l")
+  19: at euserror
+  And more...
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: file #P"/opt/ros/noetic/share/pr2eus/pr2-util.l" not found in (apply #'ros::load-org-for-ros ros::fullname args)
+10.E4-irteusgl$ (require "package://pr2eus/pr2-utils.l")
+:|PACKAGE://PR2EUS/PR2-UTILS.L|
+11.E4-irteusgl$ (send *pr2* :larm :start-grasp)
+;; error: cannot find method :start-grasp
+nil
+12.E4-irteusgl$ (send *pr2* :start-grasp :larm)
+nil
+13.E4-irteusgl$ (send *pr2* :stop-grasp :larm)
+Call Stack (max depth: 20):
+  0: at (if (eq #:case3317 ':larm) larm-grasping-obj nil nil)
+  1: at (if (eq #:case3317 ':rarm) rarm-grasping-obj (if (eq #:case3317 ':larm) larm-grasping-obj nil nil) nil)
+  2: at (let ((#:case3317 arm)) (if (eq #:case3317 ':rarm) rarm-grasping-obj (if (eq #:case3317 ':larm) larm-grasping-obj nil nil) nil))
+  3: at (case arm (:rarm rarm-grasping-obj) (:larm larm-grasping-obj))
+  4: at (cond ((or (derivedp target body) (derivedp target cascaded-coords)) (case arm (:rarm (setq rarm-grasping-obj target)) (:larm (setq larm-grasping-obj target)))) (target (case arm (:rarm rarm-grasping-obj) (:larm larm-grasping-obj))) ((null target) (case arm (:rarm (setq rarm-grasping-obj nil)) (:larm (setq larm-grasping-obj nil)))) (t))
+  5: at (send self :grasping-obj am)
+  6: at (setq target (send self :grasping-obj am))
+  7: at (progn (setq target (send self :grasping-obj am)))
+  8: at (if (null target) (progn (setq target (send self :grasping-obj am))))
+  9: at (when (null target) (setq target (send self :grasping-obj am)))
+  10: at (while #:dolist3315 (setq am (pop #:dolist3315)) (when (null target) (setq target (send self :grasping-obj am))) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target) (send self :gripper am :joint-angle (+ (send (send self :gripper_finger_joint am) :max-angle) 15)))
+  11: at (let ((am nil) (#:dolist3315 arm-lst)) nil (while #:dolist3315 (setq am (pop #:dolist3315)) (when (null target) (setq target (send self :grasping-obj am))) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target) (send self :gripper am :joint-angle (+ (send (send self :gripper_finger_joint am) :max-angle) 15))) nil)
+  12: at (dolist (am arm-lst) (when (null target) (setq target (send self :grasping-obj am))) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target) (send self :gripper am :joint-angle (+ (send (send self :gripper_finger_joint am) :max-angle) 15)))
+  13: at (cond ((and (numberp arg1) (derivedp arg2 body)) (setq angle arg1 target arg2) (dolist (am arm-lst) (when (eq (send self :grasping-obj am) target) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target)) (send self :gripper am :joint-angle angle))) ((numberp arg1) (setq angle arg1) (dolist (am arm-lst) (send self :gripper am :joint-angle angle))) (t (when (derivedp arg1 body) (setq target arg1)) (dolist (am arm-lst) (when (null target) (setq target (send self :grasping-obj am))) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target) (send self :gripper am :joint-angle (+ (send (send self :gripper_finger_joint am) :max-angle) 15)))))
+  14: at (let (angle target finger-joint (arm-lst (case arm ((:rarm :larm) (list arm)) (:arms (list :rarm :larm))))) (cond ((and (numberp arg1) (derivedp arg2 body)) (setq angle arg1 target arg2) (dolist (am arm-lst) (when (eq (send self :grasping-obj am) target) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target)) (send self :gripper am :joint-angle angle))) ((numberp arg1) (setq angle arg1) (dolist (am arm-lst) (send self :gripper am :joint-angle angle))) (t (when (derivedp arg1 body) (setq target arg1)) (dolist (am arm-lst) (when (null target) (setq target (send self :grasping-obj am))) (send self :grasping-obj am nil) (send (send self :gripper_finger_joint am) :parent-link :dissoc target) (send self :gripper am :joint-angle (+ (send (send self :gripper_finger_joint am) :max-angle) 15))))))
+  15: at (send *pr2* :stop-grasp :larm)
+  16: at euserror
+  17: at euserror
+  18: at (apply #'ros::load-org-for-ros ros::fullname args)
+  19: at (apply #'ros::load-org-for-ros ros::fullname args)
+  And more...
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: unbound variable larm-grasping-obj in (if (eq #:case3317 ':larm) larm-grasping-obj nil nil)
+14.E5-irteusgl$ (send *pr2* :larm :gripper :joint-angle 30)
+30
+15.E5-irteusgl$ (send *pr2* :larm :gripper :joint-angle -30)
+;; #<rotational-joint #X55e0725f5850 l_gripper_l_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647b08 l_gripper_r_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0725f5988 l_gripper_l_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647c40 l_gripper_r_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+-30
+16.E5-irteusgl$ (send *pr2* :larm :gripper :joint-angle -0)
+0
+17.E5-irteusgl$ (load "first_motion.l")
+;; #<rotational-joint #X55e0725f5850 l_gripper_l_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647b08 l_gripper_r_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0725f5988 l_gripper_l_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647c40 l_gripper_r_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728678e0 r_gripper_l_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728bfe80 r_gripper_r_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728679a0 r_gripper_l_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728bff40 r_gripper_r_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+t
+18.E5-irteusgl$ o(send *pr2* :larm :gripper :joint-angle -30)
+(send *pr2* :rarm :gripper :joint-angle -30)
+
+;; #<rotational-joint #X55e0725f5850 l_gripper_l_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647b08 l_gripper_r_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0725f5988 l_gripper_l_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e072647c40 l_gripper_r_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+-30
+19.E5-irteusgl$ ;; #<rotational-joint #X55e0728678e0 r_gripper_l_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728bfe80 r_gripper_r_finger_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728679a0 r_gripper_l_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+;; #<rotational-joint #X55e0728bff40 r_gripper_r_finger_tip_joint> :joint-angle(-15) violate min-angle(0.0)
+-30
+20.E5-irteusgl$ nil
+20.E5-irteusgl$ (load "first_motion.l")
+t
+21.E5-irteusgl$ (exit)
+[ INFO] [1729664760.034245223]: cell* ROSEUS_EXIT(context*, int, cell**)
+mech-user@ki00119:~/semi_ws/src$ rossetmaster pr1040
+set ROS_MASTER_URI to http://pr1040:11311
+[http://pr1040:11311][] mech-user@ki00119:~/semi_ws/src$ rossetip 
+Could not resolve ip from address. Subnet may be different
+set ROS_IP and ROS_HOSTNAME to 10.100.196.111
+[http://pr1040:11311][10.100.196.111] mech-user@ki00119:~/semi_ws/src$ rossetip
+Could not resolve ip from address. Subnet may be different
+set ROS_IP and ROS_HOSTNAME to 133.11.216.23
+[http://pr1040:11311][133.11.216.23] mech-user@ki00119:~/semi_ws/src$ rostopic list
+/accelerometer/l_gripper_motor
+/accelerometer/r_gripper_motor
+/amcl/parameter_descriptions
+/amcl/parameter_updates
+/amcl_pose
+/app_scheduler/app_schedules
+/audible_warning/output/original_text
+/audible_warning/output/text
+/audible_warning/parameter_descriptions
+/audible_warning/parameter_updates
+/audio
+/audio_play/audio
+/base_controller/bl_caster_l_wheel_joint/parameter_descriptions
+/base_controller/bl_caster_l_wheel_joint/parameter_updates
+/base_controller/bl_caster_r_wheel_joint/parameter_descriptions
+/base_controller/bl_caster_r_wheel_joint/parameter_updates
+/base_controller/bl_caster_rotation_joint/position_controller/parameter_descriptions
+/base_controller/bl_caster_rotation_joint/position_controller/parameter_updates
+/base_controller/br_caster_l_wheel_joint/parameter_descriptions
+/base_controller/br_caster_l_wheel_joint/parameter_updates
+/base_controller/br_caster_r_wheel_joint/parameter_descriptions
+/base_controller/br_caster_r_wheel_joint/parameter_updates
+/base_controller/br_caster_rotation_joint/position_controller/parameter_descriptions
+/base_controller/br_caster_rotation_joint/position_controller/parameter_updates
+/base_controller/cmd_vel
+/base_controller/command
+/base_controller/command_unchecked
+/base_controller/fl_caster_l_wheel_joint/parameter_descriptions
+/base_controller/fl_caster_l_wheel_joint/parameter_updates
+/base_controller/fl_caster_r_wheel_joint/parameter_descriptions
+/base_controller/fl_caster_r_wheel_joint/parameter_updates
+/base_controller/fl_caster_rotation_joint/position_controller/parameter_descriptions
+/base_controller/fl_caster_rotation_joint/position_controller/parameter_updates
+/base_controller/follow_joint_trajectory/cancel
+/base_controller/follow_joint_trajectory/feedback
+/base_controller/follow_joint_trajectory/goal
+/base_controller/follow_joint_trajectory/result
+/base_controller/follow_joint_trajectory/status
+/base_controller/fr_caster_l_wheel_joint/parameter_descriptions
+/base_controller/fr_caster_l_wheel_joint/parameter_updates
+/base_controller/fr_caster_r_wheel_joint/parameter_descriptions
+/base_controller/fr_caster_r_wheel_joint/parameter_updates
+/base_controller/fr_caster_rotation_joint/position_controller/parameter_descriptions
+/base_controller/fr_caster_rotation_joint/position_controller/parameter_updates
+/base_controller/state
+/base_hokuyo_node/parameter_descriptions
+/base_hokuyo_node/parameter_updates
+/base_odometry/odom
+/base_odometry/odometer
+/base_odometry/state
+/base_scan
+/base_scan_filtered
+/base_scan_filtered/scan
+/base_scan_shadow_filtered
+/base_scan_throttled
+/base_shadow_filter/dark_shadows/parameter_descriptions
+/base_shadow_filter/dark_shadows/parameter_updates
+/base_shadow_filter/shadows/parameter_descriptions
+/base_shadow_filter/shadows/parameter_updates
+/battery/server
+/battery/server2
+/calibrated
+/calibration_status
+/camera_synchronizer_node/parameter_descriptions
+/camera_synchronizer_node/parameter_updates
+/check_room_light/output
+/client_count
+/cmd_vel_smoother/parameter_descriptions
+/cmd_vel_smoother/parameter_updates
+/connected_clients
+/dashboard_agg
+/ddwrt/accesspoint
+/diagnostics
+/diagnostics_agg
+/diagnostics_toplevel_state
+/dialog_response
+/dialogflow_client/text_action/cancel
+/dialogflow_client/text_action/feedback
+/dialogflow_client/text_action/goal
+/dialogflow_client/text_action/result
+/dialogflow_client/text_action/status
+/edgetpu_human_pose_estimator/output/class
+/edgetpu_human_pose_estimator/output/image
+/edgetpu_human_pose_estimator/output/image/compressed
+/edgetpu_human_pose_estimator/output/poses
+/edgetpu_human_pose_estimator/output/rects
+/edgetpu_human_pose_estimator/output/skeletons
+/edgetpu_human_pose_estimator/parameter_descriptions
+/edgetpu_human_pose_estimator/parameter_updates
+/email
+/empty_cloud
+/eng2/1f
+/eng2/1f_tf
+/eng2/2f
+/eng2/2f_tf
+/eng2/3f
+/eng2/3f_tf
+/eng2/7f
+/eng2/7f_tf
+/eng2/8f
+/eng2/8f_tf
+/femto_mega/accel/imu_info
+/femto_mega/color/camera_info
+/femto_mega/color/image_raw
+/femto_mega/depth/camera_info
+/femto_mega/depth/image_raw
+/femto_mega/depth/points
+/femto_mega/depth_to_accel
+/femto_mega/depth_to_color
+/femto_mega/depth_to_gyro
+/femto_mega/depth_to_ir
+/femto_mega/filter_status
+/femto_mega/gyro/imu_info
+/femto_mega/gyro_accel/sample
+/femto_mega/ir/camera_info
+/femto_mega/ir/image_raw
+/femto_mega/sdk_version
+/google_chat_ros/card_activity
+/google_chat_ros/message_activity
+/google_chat_ros/send/cancel
+/google_chat_ros/send/feedback
+/google_chat_ros/send/goal
+/google_chat_ros/send/result
+/google_chat_ros/send/status
+/google_chat_ros/space_activity
+/head_camera_trigger/trigger
+/head_camera_trigger/waveform
+/head_traj_controller/command
+/head_traj_controller/command_deadman
+/head_traj_controller/command_dummy
+/head_traj_controller/follow_joint_trajectory/cancel
+/head_traj_controller/follow_joint_trajectory/feedback
+/head_traj_controller/follow_joint_trajectory/goal
+/head_traj_controller/follow_joint_trajectory/result
+/head_traj_controller/follow_joint_trajectory/status
+/head_traj_controller/gains/head_pan_joint/parameter_descriptions
+/head_traj_controller/gains/head_pan_joint/parameter_updates
+/head_traj_controller/gains/head_tilt_joint/parameter_descriptions
+/head_traj_controller/gains/head_tilt_joint/parameter_updates
+/head_traj_controller/joint_trajectory_action/cancel
+/head_traj_controller/joint_trajectory_action/feedback
+/head_traj_controller/joint_trajectory_action/goal
+/head_traj_controller/joint_trajectory_action/result
+/head_traj_controller/joint_trajectory_action/status
+/head_traj_controller/mux/selected
+/head_traj_controller/point_head_action/cancel
+/head_traj_controller/point_head_action/feedback
+/head_traj_controller/point_head_action/goal
+/head_traj_controller/point_head_action/result
+/head_traj_controller/point_head_action/status
+/head_traj_controller/state
+/head_traj_controller_loose/command
+/head_traj_controller_loose/state
+/initialpose
+/initialpose3d
+/input_vel
+/input_vel_mux/selected
+/joint_states
+/joy
+/joy/set_feedback
+/joy_org
+/joy_org_ds3
+/joy_other
+/joy_vel
+/kinect_head/depth/camera_info
+/kinect_head/depth/disparity
+/kinect_head/depth/image
+/kinect_head/depth/image/compressed
+/kinect_head/depth/image/compressed/parameter_descriptions
+/kinect_head/depth/image/compressed/parameter_updates
+/kinect_head/depth/image/compressedDepth
+/kinect_head/depth/image/compressedDepth/parameter_descriptions
+/kinect_head/depth/image/compressedDepth/parameter_updates
+/kinect_head/depth/image/theora
+/kinect_head/depth/image/theora/parameter_descriptions
+/kinect_head/depth/image/theora/parameter_updates
+/kinect_head/depth/image/zdepth
+/kinect_head/depth/image_raw
+/kinect_head/depth/image_raw/compressed
+/kinect_head/depth/image_raw/compressed/parameter_descriptions
+/kinect_head/depth/image_raw/compressed/parameter_updates
+/kinect_head/depth/image_raw/compressedDepth
+/kinect_head/depth/image_raw/compressedDepth/parameter_descriptions
+/kinect_head/depth/image_raw/compressedDepth/parameter_updates
+/kinect_head/depth/image_raw/theora
+/kinect_head/depth/image_raw/theora/parameter_descriptions
+/kinect_head/depth/image_raw/theora/parameter_updates
+/kinect_head/depth/image_raw/zdepth
+/kinect_head/depth/image_rect
+/kinect_head/depth/image_rect/compressed
+/kinect_head/depth/image_rect/compressed/parameter_descriptions
+/kinect_head/depth/image_rect/compressed/parameter_updates
+/kinect_head/depth/image_rect/compressedDepth
+/kinect_head/depth/image_rect/compressedDepth/parameter_descriptions
+/kinect_head/depth/image_rect/compressedDepth/parameter_updates
+/kinect_head/depth/image_rect/theora
+/kinect_head/depth/image_rect/theora/parameter_descriptions
+/kinect_head/depth/image_rect/theora/parameter_updates
+/kinect_head/depth/image_rect/zdepth
+/kinect_head/depth/image_rect_raw
+/kinect_head/depth/image_rect_raw/compressed
+/kinect_head/depth/image_rect_raw/compressed/parameter_descriptions
+/kinect_head/depth/image_rect_raw/compressed/parameter_updates
+/kinect_head/depth/image_rect_raw/compressedDepth
+/kinect_head/depth/image_rect_raw/compressedDepth/parameter_descriptions
+/kinect_head/depth/image_rect_raw/compressedDepth/parameter_updates
+/kinect_head/depth/image_rect_raw/theora
+/kinect_head/depth/image_rect_raw/theora/parameter_descriptions
+/kinect_head/depth/image_rect_raw/theora/parameter_updates
+/kinect_head/depth/image_rect_raw/zdepth
+/kinect_head/depth/points
+/kinect_head/depth_rectify_depth/parameter_descriptions
+/kinect_head/depth_rectify_depth/parameter_updates
+/kinect_head/depth_registered/camera_info
+/kinect_head/depth_registered/disparity
+/kinect_head/depth_registered/downsample_cloud_half/input/mask
+/kinect_head/depth_registered/downsample_cloud_half/parameter_descriptions
+/kinect_head/depth_registered/downsample_cloud_half/parameter_updates
+/kinect_head/depth_registered/downsample_cloud_quater/input/mask
+/kinect_head/depth_registered/downsample_cloud_quater/parameter_descriptions
+/kinect_head/depth_registered/downsample_cloud_quater/parameter_updates
+/kinect_head/depth_registered/half/points
+/kinect_head/depth_registered/half/throttled/points
+/kinect_head/depth_registered/hw_registered/image_rect
+/kinect_head/depth_registered/hw_registered/image_rect/compressed
+/kinect_head/depth_registered/hw_registered/image_rect/compressed/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect/compressed/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect/compressedDepth
+/kinect_head/depth_registered/hw_registered/image_rect/compressedDepth/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect/compressedDepth/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect/theora
+/kinect_head/depth_registered/hw_registered/image_rect/theora/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect/theora/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect/zdepth
+/kinect_head/depth_registered/hw_registered/image_rect_raw
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressed
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressed/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressed/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressedDepth
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressedDepth/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect_raw/compressedDepth/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect_raw/theora
+/kinect_head/depth_registered/hw_registered/image_rect_raw/theora/parameter_descriptions
+/kinect_head/depth_registered/hw_registered/image_rect_raw/theora/parameter_updates
+/kinect_head/depth_registered/hw_registered/image_rect_raw/zdepth
+/kinect_head/depth_registered/image
+/kinect_head/depth_registered/image/compressed
+/kinect_head/depth_registered/image/compressed/parameter_descriptions
+/kinect_head/depth_registered/image/compressed/parameter_updates
+/kinect_head/depth_registered/image/compressedDepth
+/kinect_head/depth_registered/image/compressedDepth/parameter_descriptions
+/kinect_head/depth_registered/image/compressedDepth/parameter_updates
+/kinect_head/depth_registered/image/theora
+/kinect_head/depth_registered/image/theora/parameter_descriptions
+/kinect_head/depth_registered/image/theora/parameter_updates
+/kinect_head/depth_registered/image/zdepth
+/kinect_head/depth_registered/image_raw
+/kinect_head/depth_registered/image_raw/compressed
+/kinect_head/depth_registered/image_raw/compressed/parameter_descriptions
+/kinect_head/depth_registered/image_raw/compressed/parameter_updates
+/kinect_head/depth_registered/image_raw/compressedDepth
+/kinect_head/depth_registered/image_raw/compressedDepth/parameter_descriptions
+/kinect_head/depth_registered/image_raw/compressedDepth/parameter_updates
+/kinect_head/depth_registered/image_raw/theora
+/kinect_head/depth_registered/image_raw/theora/parameter_descriptions
+/kinect_head/depth_registered/image_raw/theora/parameter_updates
+/kinect_head/depth_registered/image_raw/zdepth
+/kinect_head/depth_registered/image_rect
+/kinect_head/depth_registered/image_rect/compressedDepth
+/kinect_head/depth_registered/points
+/kinect_head/depth_registered/points_self_filtered
+/kinect_head/depth_registered/quater/points
+/kinect_head/depth_registered/quater/throttled/points
+/kinect_head/depth_registered/throttle_camera_info/parameter_descriptions
+/kinect_head/depth_registered/throttle_camera_info/parameter_updates
+/kinect_head/depth_registered/throttle_cloud/parameter_descriptions
+/kinect_head/depth_registered/throttle_cloud/parameter_updates
+/kinect_head/depth_registered/throttle_cloud_half/parameter_descriptions
+/kinect_head/depth_registered/throttle_cloud_half/parameter_updates
+/kinect_head/depth_registered/throttle_cloud_quater/parameter_descriptions
+/kinect_head/depth_registered/throttle_cloud_quater/parameter_updates
+/kinect_head/depth_registered/throttle_image/parameter_descriptions
+/kinect_head/depth_registered/throttle_image/parameter_updates
+/kinect_head/depth_registered/throttle_image_compressed/parameter_descriptions
+/kinect_head/depth_registered/throttle_image_compressed/parameter_updates
+/kinect_head/depth_registered/throttled/camera_info
+/kinect_head/depth_registered/throttled/image_rect
+/kinect_head/depth_registered/throttled/image_rect/compressedDepth
+/kinect_head/depth_registered/throttled/points
+/kinect_head/depth_registered_rectify_depth/parameter_descriptions
+/kinect_head/depth_registered_rectify_depth/parameter_updates
+/kinect_head/driver/parameter_descriptions
+/kinect_head/driver/parameter_updates
+/kinect_head/ir/camera_info
+/kinect_head/ir/image_raw
+/kinect_head/ir/image_raw/compressed
+/kinect_head/ir/image_raw/compressed/parameter_descriptions
+/kinect_head/ir/image_raw/compressed/parameter_updates
+/kinect_head/ir/image_raw/compressedDepth
+/kinect_head/ir/image_raw/compressedDepth/parameter_descriptions
+/kinect_head/ir/image_raw/compressedDepth/parameter_updates
+/kinect_head/ir/image_raw/theora
+/kinect_head/ir/image_raw/theora/parameter_descriptions
+/kinect_head/ir/image_raw/theora/parameter_updates
+/kinect_head/ir/image_raw/zdepth
+/kinect_head/ir/image_rect_ir
+/kinect_head/ir/image_rect_ir/compressed
+/kinect_head/ir/image_rect_ir/compressed/parameter_descriptions
+/kinect_head/ir/image_rect_ir/compressed/parameter_updates
+/kinect_head/ir/image_rect_ir/compressedDepth
+/kinect_head/ir/image_rect_ir/compressedDepth/parameter_descriptions
+/kinect_head/ir/image_rect_ir/compressedDepth/parameter_updates
+/kinect_head/ir/image_rect_ir/theora
+/kinect_head/ir/image_rect_ir/theora/parameter_descriptions
+/kinect_head/ir/image_rect_ir/theora/parameter_updates
+/kinect_head/ir/image_rect_ir/zdepth
+/kinect_head/ir_rectify_ir/parameter_descriptions
+/kinect_head/ir_rectify_ir/parameter_updates
+/kinect_head/kinect_head_c2_nodelet_manager/bond
+/kinect_head/kinect_head_nodelet_manager/bond
+/kinect_head/projector/camera_info
+/kinect_head/rgb/camera_info
+/kinect_head/rgb/downsample_half/parameter_descriptions
+/kinect_head/rgb/downsample_half/parameter_updates
+/kinect_head/rgb/downsample_quater/parameter_descriptions
+/kinect_head/rgb/downsample_quater/parameter_updates
+/kinect_head/rgb/half/camera_info
+/kinect_head/rgb/half/image_rect_color
+/kinect_head/rgb/half/image_rect_color/compressed
+/kinect_head/rgb/half/image_rect_color/compressed/parameter_descriptions
+/kinect_head/rgb/half/image_rect_color/compressed/parameter_updates
+/kinect_head/rgb/half/image_rect_color/compressedDepth
+/kinect_head/rgb/half/image_rect_color/compressedDepth/parameter_descriptions
+/kinect_head/rgb/half/image_rect_color/compressedDepth/parameter_updates
+/kinect_head/rgb/half/image_rect_color/theora
+/kinect_head/rgb/half/image_rect_color/theora/parameter_descriptions
+/kinect_head/rgb/half/image_rect_color/theora/parameter_updates
+/kinect_head/rgb/half/image_rect_color/zdepth
+/kinect_head/rgb/image_color
+/kinect_head/rgb/image_color/compressed
+/kinect_head/rgb/image_color/compressed/parameter_descriptions
+/kinect_head/rgb/image_color/compressed/parameter_updates
+/kinect_head/rgb/image_color/compressedDepth
+/kinect_head/rgb/image_color/compressedDepth/parameter_descriptions
+/kinect_head/rgb/image_color/compressedDepth/parameter_updates
+/kinect_head/rgb/image_color/theora
+/kinect_head/rgb/image_color/theora/parameter_descriptions
+/kinect_head/rgb/image_color/theora/parameter_updates
+/kinect_head/rgb/image_color/zdepth
+/kinect_head/rgb/image_mono
+/kinect_head/rgb/image_mono/compressed
+/kinect_head/rgb/image_mono/compressed/parameter_descriptions
+/kinect_head/rgb/image_mono/compressed/parameter_updates
+/kinect_head/rgb/image_mono/compressedDepth
+/kinect_head/rgb/image_mono/compressedDepth/parameter_descriptions
+/kinect_head/rgb/image_mono/compressedDepth/parameter_updates
+/kinect_head/rgb/image_mono/theora
+/kinect_head/rgb/image_mono/theora/parameter_descriptions
+/kinect_head/rgb/image_mono/theora/parameter_updates
+/kinect_head/rgb/image_mono/zdepth
+/kinect_head/rgb/image_raw
+/kinect_head/rgb/image_raw/compressed
+/kinect_head/rgb/image_raw/compressed/parameter_descriptions
+/kinect_head/rgb/image_raw/compressed/parameter_updates
+/kinect_head/rgb/image_raw/compressedDepth
+/kinect_head/rgb/image_raw/compressedDepth/parameter_descriptions
+/kinect_head/rgb/image_raw/compressedDepth/parameter_updates
+/kinect_head/rgb/image_raw/theora
+/kinect_head/rgb/image_raw/theora/parameter_descriptions
+/kinect_head/rgb/image_raw/theora/parameter_updates
+/kinect_head/rgb/image_raw/zdepth
+/kinect_head/rgb/image_rect_color
+/kinect_head/rgb/image_rect_color/compressed
+/kinect_head/rgb/image_rect_color/compressed/parameter_descriptions
+/kinect_head/rgb/image_rect_color/compressed/parameter_updates
+/kinect_head/rgb/image_rect_color/compressedDepth
+/kinect_head/rgb/image_rect_color/compressedDepth/parameter_descriptions
+/kinect_head/rgb/image_rect_color/compressedDepth/parameter_updates
+/kinect_head/rgb/image_rect_color/theora
+/kinect_head/rgb/image_rect_color/theora/parameter_descriptions
+/kinect_head/rgb/image_rect_color/theora/parameter_updates
+/kinect_head/rgb/image_rect_color/zdepth
+/kinect_head/rgb/image_rect_mono
+/kinect_head/rgb/image_rect_mono/compressed
+/kinect_head/rgb/image_rect_mono/compressed/parameter_descriptions
+/kinect_head/rgb/image_rect_mono/compressed/parameter_updates
+/kinect_head/rgb/image_rect_mono/compressedDepth
+/kinect_head/rgb/image_rect_mono/compressedDepth/parameter_descriptions
+/kinect_head/rgb/image_rect_mono/compressedDepth/parameter_updates
+/kinect_head/rgb/image_rect_mono/theora
+/kinect_head/rgb/image_rect_mono/theora/parameter_descriptions
+/kinect_head/rgb/image_rect_mono/theora/parameter_updates
+/kinect_head/rgb/image_rect_mono/zdepth
+/kinect_head/rgb/quater/camera_info
+/kinect_head/rgb/quater/image_rect_color
+/kinect_head/rgb/quater/image_rect_color/compressed
+/kinect_head/rgb/quater/image_rect_color/compressed/parameter_descriptions
+/kinect_head/rgb/quater/image_rect_color/compressed/parameter_updates
+/kinect_head/rgb/quater/image_rect_color/compressedDepth
+/kinect_head/rgb/quater/image_rect_color/compressedDepth/parameter_descriptions
+/kinect_head/rgb/quater/image_rect_color/compressedDepth/parameter_updates
+/kinect_head/rgb/quater/image_rect_color/theora
+/kinect_head/rgb/quater/image_rect_color/theora/parameter_descriptions
+/kinect_head/rgb/quater/image_rect_color/theora/parameter_updates
+/kinect_head/rgb/quater/image_rect_color/zdepth
+/kinect_head/rgb/throttle_camera_info/parameter_descriptions
+/kinect_head/rgb/throttle_camera_info/parameter_updates
+/kinect_head/rgb/throttle_rgb/parameter_descriptions
+/kinect_head/rgb/throttle_rgb/parameter_updates
+/kinect_head/rgb/throttle_rgb_compressed/parameter_descriptions
+/kinect_head/rgb/throttle_rgb_compressed/parameter_updates
+/kinect_head/rgb/throttled/camera_info
+/kinect_head/rgb/throttled/image_rect_color
+/kinect_head/rgb/throttled/image_rect_color/compressed
+/kinect_head/rgb_debayer/parameter_descriptions
+/kinect_head/rgb_debayer/parameter_updates
+/kinect_head/rgb_rectify_color/parameter_descriptions
+/kinect_head/rgb_rectify_color/parameter_updates
+/kinect_head/rgb_rectify_mono/parameter_descriptions
+/kinect_head/rgb_rectify_mono/parameter_updates
+/kinect_head_c2/depth_registered/camera_info
+/kinect_head_c2/depth_registered/points
+/kinect_head_c2/rgb/camera_info
+/kinect_head_c2/rgb/image_rect_color
+/l_arm_controller/command
+/l_arm_controller/follow_joint_trajectory/cancel
+/l_arm_controller/follow_joint_trajectory/feedback
+/l_arm_controller/follow_joint_trajectory/goal
+/l_arm_controller/follow_joint_trajectory/result
+/l_arm_controller/follow_joint_trajectory/status
+/l_arm_controller/gains/l_elbow_flex_joint/parameter_descriptions
+/l_arm_controller/gains/l_elbow_flex_joint/parameter_updates
+/l_arm_controller/gains/l_forearm_roll_joint/parameter_descriptions
+/l_arm_controller/gains/l_forearm_roll_joint/parameter_updates
+/l_arm_controller/gains/l_shoulder_lift_joint/parameter_descriptions
+/l_arm_controller/gains/l_shoulder_lift_joint/parameter_updates
+/l_arm_controller/gains/l_shoulder_pan_joint/parameter_descriptions
+/l_arm_controller/gains/l_shoulder_pan_joint/parameter_updates
+/l_arm_controller/gains/l_upper_arm_roll_joint/parameter_descriptions
+/l_arm_controller/gains/l_upper_arm_roll_joint/parameter_updates
+/l_arm_controller/gains/l_wrist_flex_joint/parameter_descriptions
+/l_arm_controller/gains/l_wrist_flex_joint/parameter_updates
+/l_arm_controller/gains/l_wrist_roll_joint/parameter_descriptions
+/l_arm_controller/gains/l_wrist_roll_joint/parameter_updates
+/l_arm_controller/joint_trajectory_action/cancel
+/l_arm_controller/joint_trajectory_action/feedback
+/l_arm_controller/joint_trajectory_action/goal
+/l_arm_controller/joint_trajectory_action/result
+/l_arm_controller/joint_trajectory_action/status
+/l_arm_controller/state
+/l_arm_controller_loose/command
+/l_arm_controller_loose/state
+/l_forearm_cam/camera_info
+/l_forearm_cam/image_color
+/l_forearm_cam/image_color/compressed
+/l_forearm_cam/image_color/compressed/parameter_descriptions
+/l_forearm_cam/image_color/compressed/parameter_updates
+/l_forearm_cam/image_color/compressedDepth
+/l_forearm_cam/image_color/compressedDepth/parameter_descriptions
+/l_forearm_cam/image_color/compressedDepth/parameter_updates
+/l_forearm_cam/image_color/theora
+/l_forearm_cam/image_color/theora/parameter_descriptions
+/l_forearm_cam/image_color/theora/parameter_updates
+/l_forearm_cam/image_color/zdepth
+/l_forearm_cam/image_mono
+/l_forearm_cam/image_mono/compressed
+/l_forearm_cam/image_mono/compressed/parameter_descriptions
+/l_forearm_cam/image_mono/compressed/parameter_updates
+/l_forearm_cam/image_mono/compressedDepth
+/l_forearm_cam/image_mono/compressedDepth/parameter_descriptions
+/l_forearm_cam/image_mono/compressedDepth/parameter_updates
+/l_forearm_cam/image_mono/theora
+/l_forearm_cam/image_mono/theora/parameter_descriptions
+/l_forearm_cam/image_mono/theora/parameter_updates
+/l_forearm_cam/image_mono/zdepth
+/l_forearm_cam/image_proc_debayer/parameter_descriptions
+/l_forearm_cam/image_proc_debayer/parameter_updates
+/l_forearm_cam/image_proc_rectify_color/parameter_descriptions
+/l_forearm_cam/image_proc_rectify_color/parameter_updates
+/l_forearm_cam/image_proc_rectify_mono/parameter_descriptions
+/l_forearm_cam/image_proc_rectify_mono/parameter_updates
+/l_forearm_cam/image_raw
+/l_forearm_cam/image_raw/compressed
+/l_forearm_cam/image_raw/compressed/parameter_descriptions
+/l_forearm_cam/image_raw/compressed/parameter_updates
+/l_forearm_cam/image_raw/compressedDepth
+/l_forearm_cam/image_raw/compressedDepth/parameter_descriptions
+/l_forearm_cam/image_raw/compressedDepth/parameter_updates
+/l_forearm_cam/image_raw/theora
+/l_forearm_cam/image_raw/theora/parameter_descriptions
+/l_forearm_cam/image_raw/theora/parameter_updates
+/l_forearm_cam/image_raw/zdepth
+/l_forearm_cam/image_rect
+/l_forearm_cam/image_rect/compressed
+/l_forearm_cam/image_rect/compressed/parameter_descriptions
+/l_forearm_cam/image_rect/compressed/parameter_updates
+/l_forearm_cam/image_rect/compressedDepth
+/l_forearm_cam/image_rect/compressedDepth/parameter_descriptions
+/l_forearm_cam/image_rect/compressedDepth/parameter_updates
+/l_forearm_cam/image_rect/theora
+/l_forearm_cam/image_rect/theora/parameter_descriptions
+/l_forearm_cam/image_rect/theora/parameter_updates
+/l_forearm_cam/image_rect/zdepth
+/l_forearm_cam/image_rect_color
+/l_forearm_cam/image_rect_color/compressed
+/l_forearm_cam/image_rect_color/compressed/parameter_descriptions
+/l_forearm_cam/image_rect_color/compressed/parameter_updates
+/l_forearm_cam/image_rect_color/compressedDepth
+/l_forearm_cam/image_rect_color/compressedDepth/parameter_descriptions
+/l_forearm_cam/image_rect_color/compressedDepth/parameter_updates
+/l_forearm_cam/image_rect_color/theora
+/l_forearm_cam/image_rect_color/theora/parameter_descriptions
+/l_forearm_cam/image_rect_color/theora/parameter_updates
+/l_forearm_cam/image_rect_color/zdepth
+/l_forearm_cam/parameter_descriptions
+/l_forearm_cam/parameter_updates
+/l_forearm_cam_trigger/waveform
+/l_gripper_controller/command
+/l_gripper_controller/gripper_action/cancel
+/l_gripper_controller/gripper_action/feedback
+/l_gripper_controller/gripper_action/goal
+/l_gripper_controller/gripper_action/result
+/l_gripper_controller/gripper_action/status
+/l_gripper_controller/pid/parameter_descriptions
+/l_gripper_controller/pid/parameter_updates
+/l_gripper_controller/state
+/l_gripper_sensor_controller/command
+/l_gripper_sensor_controller/contact_state
+/l_gripper_sensor_controller/event_detector
+/l_gripper_sensor_controller/event_detector/cancel
+/l_gripper_sensor_controller/event_detector/feedback
+/l_gripper_sensor_controller/event_detector/goal
+/l_gripper_sensor_controller/event_detector/result
+/l_gripper_sensor_controller/event_detector/status
+/l_gripper_sensor_controller/event_detector_state
+/l_gripper_sensor_controller/find_contact
+/l_gripper_sensor_controller/find_contact/cancel
+/l_gripper_sensor_controller/find_contact/feedback
+/l_gripper_sensor_controller/find_contact/goal
+/l_gripper_sensor_controller/find_contact/result
+/l_gripper_sensor_controller/find_contact/status
+/l_gripper_sensor_controller/force_servo
+/l_gripper_sensor_controller/force_servo/cancel
+/l_gripper_sensor_controller/force_servo/feedback
+/l_gripper_sensor_controller/force_servo/goal
+/l_gripper_sensor_controller/force_servo/result
+/l_gripper_sensor_controller/force_servo/status
+/l_gripper_sensor_controller/force_servo_state
+/l_gripper_sensor_controller/grab/cancel
+/l_gripper_sensor_controller/grab/feedback
+/l_gripper_sensor_controller/grab/goal
+/l_gripper_sensor_controller/grab/result
+/l_gripper_sensor_controller/grab/status
+/l_gripper_sensor_controller/gripper_action/cancel
+/l_gripper_sensor_controller/gripper_action/feedback
+/l_gripper_sensor_controller/gripper_action/goal
+/l_gripper_sensor_controller/gripper_action/result
+/l_gripper_sensor_controller/gripper_action/status
+/l_gripper_sensor_controller/release/cancel
+/l_gripper_sensor_controller/release/feedback
+/l_gripper_sensor_controller/release/goal
+/l_gripper_sensor_controller/release/result
+/l_gripper_sensor_controller/release/status
+/l_gripper_sensor_controller/slip_servo
+/l_gripper_sensor_controller/slip_servo/cancel
+/l_gripper_sensor_controller/slip_servo/feedback
+/l_gripper_sensor_controller/slip_servo/goal
+/l_gripper_sensor_controller/slip_servo/result
+/l_gripper_sensor_controller/slip_servo/status
+/l_gripper_sensor_controller/slip_servo_state
+/l_gripper_sensor_controller/state
+/laser_tilt_controller/gains/parameter_descriptions
+/laser_tilt_controller/gains/parameter_updates
+/laser_tilt_controller/laser_scanner_signal
+/laser_tilt_controller/set_periodic_cmd
+/laser_tilt_controller/set_traj_cmd
+/left_endeffector/wrench
+/lifelog/joint_states_logger/output
+/lifelog/joint_states_logger/parameter_descriptions
+/lifelog/joint_states_logger/parameter_updates
+/lifelog/joint_states_throttle/output
+/lifelog/joint_states_throttle/parameter_descriptions
+/lifelog/joint_states_throttle/parameter_updates
+/look_at_human/enabled
+/map
+/map_keepout
+/map_metadata
+/map_reload
+/map_tf_mux/selected
+/map_updates
+/mechanism_statistics
+/message_store/insert
+/motor_trace/bl_caster_l_wheel_motor
+/motor_trace/bl_caster_r_wheel_motor
+/motor_trace/bl_caster_rotation_motor
+/motor_trace/br_caster_l_wheel_motor
+/motor_trace/br_caster_r_wheel_motor
+/motor_trace/br_caster_rotation_motor
+/motor_trace/fl_caster_l_wheel_motor
+/motor_trace/fl_caster_r_wheel_motor
+/motor_trace/fl_caster_rotation_motor
+/motor_trace/fr_caster_l_wheel_motor
+/motor_trace/fr_caster_r_wheel_motor
+/motor_trace/fr_caster_rotation_motor
+/motor_trace/head_pan_motor
+/motor_trace/head_tilt_motor
+/motor_trace/l_elbow_flex_motor
+/motor_trace/l_forearm_roll_motor
+/motor_trace/l_gripper_motor
+/motor_trace/l_shoulder_lift_motor
+/motor_trace/l_shoulder_pan_motor
+/motor_trace/l_upper_arm_roll_motor
+/motor_trace/l_wrist_l_motor
+/motor_trace/l_wrist_r_motor
+/motor_trace/laser_tilt_mount_motor
+/motor_trace/r_elbow_flex_motor
+/motor_trace/r_forearm_roll_motor
+/motor_trace/r_gripper_motor
+/motor_trace/r_shoulder_lift_motor
+/motor_trace/r_shoulder_pan_motor
+/motor_trace/r_upper_arm_roll_motor
+/motor_trace/r_wrist_l_motor
+/motor_trace/r_wrist_r_motor
+/motor_trace/torso_lift_motor
+/move_base/cancel
+/move_base/feedback
+/move_base/goal
+/move_base/recovery_status
+/move_base/result
+/move_base/status
+/move_base_node/DWAPlannerROS/cost_cloud
+/move_base_node/DWAPlannerROS/global_plan
+/move_base_node/DWAPlannerROS/local_plan
+/move_base_node/DWAPlannerROS/parameter_descriptions
+/move_base_node/DWAPlannerROS/parameter_updates
+/move_base_node/DWAPlannerROS/trajectory_cloud
+/move_base_node/NavfnROS/plan
+/move_base_node/current_goal
+/move_base_node/global_costmap/costmap
+/move_base_node/global_costmap/costmap_updates
+/move_base_node/global_costmap/footprint
+/move_base_node/global_costmap/inflation_layer/parameter_descriptions
+/move_base_node/global_costmap/inflation_layer/parameter_updates
+/move_base_node/global_costmap/obstacle_layer/parameter_descriptions
+/move_base_node/global_costmap/obstacle_layer/parameter_updates
+/move_base_node/global_costmap/parameter_descriptions
+/move_base_node/global_costmap/parameter_updates
+/move_base_node/global_costmap/static_layer/parameter_descriptions
+/move_base_node/global_costmap/static_layer/parameter_updates
+/move_base_node/local_costmap/costmap
+/move_base_node/local_costmap/costmap_updates
+/move_base_node/local_costmap/footprint
+/move_base_node/local_costmap/inflation_layer/parameter_descriptions
+/move_base_node/local_costmap/inflation_layer/parameter_updates
+/move_base_node/local_costmap/obstacle_layer/parameter_descriptions
+/move_base_node/local_costmap/obstacle_layer/parameter_updates
+/move_base_node/local_costmap/parameter_descriptions
+/move_base_node/local_costmap/parameter_updates
+/move_base_node/parameter_descriptions
+/move_base_node/parameter_updates
+/move_base_simple/goal
+/multiple_joystick_mux/selected
+/narrow_stereo/disparity
+/narrow_stereo/left/camera_info
+/narrow_stereo/left/image_color
+/narrow_stereo/left/image_color/compressed
+/narrow_stereo/left/image_color/compressed/parameter_descriptions
+/narrow_stereo/left/image_color/compressed/parameter_updates
+/narrow_stereo/left/image_color/compressedDepth
+/narrow_stereo/left/image_color/compressedDepth/parameter_descriptions
+/narrow_stereo/left/image_color/compressedDepth/parameter_updates
+/narrow_stereo/left/image_color/theora
+/narrow_stereo/left/image_color/theora/parameter_descriptions
+/narrow_stereo/left/image_color/theora/parameter_updates
+/narrow_stereo/left/image_color/zdepth
+/narrow_stereo/left/image_mono
+/narrow_stereo/left/image_mono/compressed
+/narrow_stereo/left/image_mono/compressed/parameter_descriptions
+/narrow_stereo/left/image_mono/compressed/parameter_updates
+/narrow_stereo/left/image_mono/compressedDepth
+/narrow_stereo/left/image_mono/compressedDepth/parameter_descriptions
+/narrow_stereo/left/image_mono/compressedDepth/parameter_updates
+/narrow_stereo/left/image_mono/theora
+/narrow_stereo/left/image_mono/theora/parameter_descriptions
+/narrow_stereo/left/image_mono/theora/parameter_updates
+/narrow_stereo/left/image_mono/zdepth
+/narrow_stereo/left/image_raw
+/narrow_stereo/left/image_raw/compressed
+/narrow_stereo/left/image_raw/compressed/parameter_descriptions
+/narrow_stereo/left/image_raw/compressed/parameter_updates
+/narrow_stereo/left/image_raw/compressedDepth
+/narrow_stereo/left/image_raw/compressedDepth/parameter_descriptions
+/narrow_stereo/left/image_raw/compressedDepth/parameter_updates
+/narrow_stereo/left/image_raw/theora
+/narrow_stereo/left/image_raw/theora/parameter_descriptions
+/narrow_stereo/left/image_raw/theora/parameter_updates
+/narrow_stereo/left/image_raw/zdepth
+/narrow_stereo/left/image_rect
+/narrow_stereo/left/image_rect/compressed
+/narrow_stereo/left/image_rect/compressed/parameter_descriptions
+/narrow_stereo/left/image_rect/compressed/parameter_updates
+/narrow_stereo/left/image_rect/compressedDepth
+/narrow_stereo/left/image_rect/compressedDepth/parameter_descriptions
+/narrow_stereo/left/image_rect/compressedDepth/parameter_updates
+/narrow_stereo/left/image_rect/theora
+/narrow_stereo/left/image_rect/theora/parameter_descriptions
+/narrow_stereo/left/image_rect/theora/parameter_updates
+/narrow_stereo/left/image_rect/zdepth
+/narrow_stereo/left/image_rect_color
+/narrow_stereo/left/image_rect_color/compressed
+/narrow_stereo/left/image_rect_color/compressed/parameter_descriptions
+/narrow_stereo/left/image_rect_color/compressed/parameter_updates
+/narrow_stereo/left/image_rect_color/compressedDepth
+/narrow_stereo/left/image_rect_color/compressedDepth/parameter_descriptions
+/narrow_stereo/left/image_rect_color/compressedDepth/parameter_updates
+/narrow_stereo/left/image_rect_color/theora
+/narrow_stereo/left/image_rect_color/theora/parameter_descriptions
+/narrow_stereo/left/image_rect_color/theora/parameter_updates
+/narrow_stereo/left/image_rect_color/zdepth
+/narrow_stereo/narrow_stereo_proc/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc/parameter_updates
+/narrow_stereo/narrow_stereo_proc_debayer_left/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_debayer_left/parameter_updates
+/narrow_stereo/narrow_stereo_proc_debayer_right/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_debayer_right/parameter_updates
+/narrow_stereo/narrow_stereo_proc_rectify_color_left/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_rectify_color_left/parameter_updates
+/narrow_stereo/narrow_stereo_proc_rectify_color_right/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_rectify_color_right/parameter_updates
+/narrow_stereo/narrow_stereo_proc_rectify_mono_left/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_rectify_mono_left/parameter_updates
+/narrow_stereo/narrow_stereo_proc_rectify_mono_right/parameter_descriptions
+/narrow_stereo/narrow_stereo_proc_rectify_mono_right/parameter_updates
+/narrow_stereo/points2
+/narrow_stereo/right/camera_info
+/narrow_stereo/right/image_color
+/narrow_stereo/right/image_color/compressed
+/narrow_stereo/right/image_color/compressed/parameter_descriptions
+/narrow_stereo/right/image_color/compressed/parameter_updates
+/narrow_stereo/right/image_color/compressedDepth
+/narrow_stereo/right/image_color/compressedDepth/parameter_descriptions
+/narrow_stereo/right/image_color/compressedDepth/parameter_updates
+/narrow_stereo/right/image_color/theora
+/narrow_stereo/right/image_color/theora/parameter_descriptions
+/narrow_stereo/right/image_color/theora/parameter_updates
+/narrow_stereo/right/image_color/zdepth
+/narrow_stereo/right/image_mono
+/narrow_stereo/right/image_mono/compressed
+/narrow_stereo/right/image_mono/compressed/parameter_descriptions
+/narrow_stereo/right/image_mono/compressed/parameter_updates
+/narrow_stereo/right/image_mono/compressedDepth
+/narrow_stereo/right/image_mono/compressedDepth/parameter_descriptions
+/narrow_stereo/right/image_mono/compressedDepth/parameter_updates
+/narrow_stereo/right/image_mono/theora
+/narrow_stereo/right/image_mono/theora/parameter_descriptions
+/narrow_stereo/right/image_mono/theora/parameter_updates
+/narrow_stereo/right/image_mono/zdepth
+/narrow_stereo/right/image_raw
+/narrow_stereo/right/image_raw/compressed
+/narrow_stereo/right/image_raw/compressed/parameter_descriptions
+/narrow_stereo/right/image_raw/compressed/parameter_updates
+/narrow_stereo/right/image_raw/compressedDepth
+/narrow_stereo/right/image_raw/compressedDepth/parameter_descriptions
+/narrow_stereo/right/image_raw/compressedDepth/parameter_updates
+/narrow_stereo/right/image_raw/theora
+/narrow_stereo/right/image_raw/theora/parameter_descriptions
+/narrow_stereo/right/image_raw/theora/parameter_updates
+/narrow_stereo/right/image_raw/zdepth
+/narrow_stereo/right/image_rect
+/narrow_stereo/right/image_rect/compressed
+/narrow_stereo/right/image_rect/compressed/parameter_descriptions
+/narrow_stereo/right/image_rect/compressed/parameter_updates
+/narrow_stereo/right/image_rect/compressedDepth
+/narrow_stereo/right/image_rect/compressedDepth/parameter_descriptions
+/narrow_stereo/right/image_rect/compressedDepth/parameter_updates
+/narrow_stereo/right/image_rect/theora
+/narrow_stereo/right/image_rect/theora/parameter_descriptions
+/narrow_stereo/right/image_rect/theora/parameter_updates
+/narrow_stereo/right/image_rect/zdepth
+/narrow_stereo/right/image_rect_color
+/narrow_stereo/right/image_rect_color/compressed
+/narrow_stereo/right/image_rect_color/compressed/parameter_descriptions
+/narrow_stereo/right/image_rect_color/compressed/parameter_updates
+/narrow_stereo/right/image_rect_color/compressedDepth
+/narrow_stereo/right/image_rect_color/compressedDepth/parameter_descriptions
+/narrow_stereo/right/image_rect_color/compressedDepth/parameter_updates
+/narrow_stereo/right/image_rect_color/theora
+/narrow_stereo/right/image_rect_color/theora/parameter_descriptions
+/narrow_stereo/right/image_rect_color/theora/parameter_updates
+/narrow_stereo/right/image_rect_color/zdepth
+/narrow_stereo_both/parameter_descriptions
+/narrow_stereo_both/parameter_updates
+/narrow_stereo_left/parameter_descriptions
+/narrow_stereo_left/parameter_updates
+/narrow_stereo_right/parameter_descriptions
+/narrow_stereo_right/parameter_updates
+/narrow_stereo_textured/disparity
+/narrow_stereo_textured/left/camera_info
+/narrow_stereo_textured/left/image_color
+/narrow_stereo_textured/left/image_color/compressed
+/narrow_stereo_textured/left/image_color/compressed/parameter_descriptions
+/narrow_stereo_textured/left/image_color/compressed/parameter_updates
+/narrow_stereo_textured/left/image_color/compressedDepth
+/narrow_stereo_textured/left/image_color/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/left/image_color/compressedDepth/parameter_updates
+/narrow_stereo_textured/left/image_color/theora
+/narrow_stereo_textured/left/image_color/theora/parameter_descriptions
+/narrow_stereo_textured/left/image_color/theora/parameter_updates
+/narrow_stereo_textured/left/image_color/zdepth
+/narrow_stereo_textured/left/image_mono
+/narrow_stereo_textured/left/image_mono/compressed
+/narrow_stereo_textured/left/image_mono/compressed/parameter_descriptions
+/narrow_stereo_textured/left/image_mono/compressed/parameter_updates
+/narrow_stereo_textured/left/image_mono/compressedDepth
+/narrow_stereo_textured/left/image_mono/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/left/image_mono/compressedDepth/parameter_updates
+/narrow_stereo_textured/left/image_mono/theora
+/narrow_stereo_textured/left/image_mono/theora/parameter_descriptions
+/narrow_stereo_textured/left/image_mono/theora/parameter_updates
+/narrow_stereo_textured/left/image_mono/zdepth
+/narrow_stereo_textured/left/image_raw
+/narrow_stereo_textured/left/image_raw/compressed
+/narrow_stereo_textured/left/image_raw/compressed/parameter_descriptions
+/narrow_stereo_textured/left/image_raw/compressed/parameter_updates
+/narrow_stereo_textured/left/image_raw/compressedDepth
+/narrow_stereo_textured/left/image_raw/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/left/image_raw/compressedDepth/parameter_updates
+/narrow_stereo_textured/left/image_raw/theora
+/narrow_stereo_textured/left/image_raw/theora/parameter_descriptions
+/narrow_stereo_textured/left/image_raw/theora/parameter_updates
+/narrow_stereo_textured/left/image_raw/zdepth
+/narrow_stereo_textured/left/image_rect
+/narrow_stereo_textured/left/image_rect/compressed
+/narrow_stereo_textured/left/image_rect/compressed/parameter_descriptions
+/narrow_stereo_textured/left/image_rect/compressed/parameter_updates
+/narrow_stereo_textured/left/image_rect/compressedDepth
+/narrow_stereo_textured/left/image_rect/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/left/image_rect/compressedDepth/parameter_updates
+/narrow_stereo_textured/left/image_rect/theora
+/narrow_stereo_textured/left/image_rect/theora/parameter_descriptions
+/narrow_stereo_textured/left/image_rect/theora/parameter_updates
+/narrow_stereo_textured/left/image_rect/zdepth
+/narrow_stereo_textured/left/image_rect_color
+/narrow_stereo_textured/left/image_rect_color/compressed
+/narrow_stereo_textured/left/image_rect_color/compressed/parameter_descriptions
+/narrow_stereo_textured/left/image_rect_color/compressed/parameter_updates
+/narrow_stereo_textured/left/image_rect_color/compressedDepth
+/narrow_stereo_textured/left/image_rect_color/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/left/image_rect_color/compressedDepth/parameter_updates
+/narrow_stereo_textured/left/image_rect_color/theora
+/narrow_stereo_textured/left/image_rect_color/theora/parameter_descriptions
+/narrow_stereo_textured/left/image_rect_color/theora/parameter_updates
+/narrow_stereo_textured/left/image_rect_color/zdepth
+/narrow_stereo_textured/narrow_stereo_textured_proc/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_debayer_left/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_debayer_left/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_debayer_right/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_debayer_right/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_color_left/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_color_left/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_color_right/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_color_right/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_mono_left/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_mono_left/parameter_updates
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_mono_right/parameter_descriptions
+/narrow_stereo_textured/narrow_stereo_textured_proc_rectify_mono_right/parameter_updates
+/narrow_stereo_textured/points2
+/narrow_stereo_textured/right/camera_info
+/narrow_stereo_textured/right/image_color
+/narrow_stereo_textured/right/image_color/compressed
+/narrow_stereo_textured/right/image_color/compressed/parameter_descriptions
+/narrow_stereo_textured/right/image_color/compressed/parameter_updates
+/narrow_stereo_textured/right/image_color/compressedDepth
+/narrow_stereo_textured/right/image_color/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/right/image_color/compressedDepth/parameter_updates
+/narrow_stereo_textured/right/image_color/theora
+/narrow_stereo_textured/right/image_color/theora/parameter_descriptions
+/narrow_stereo_textured/right/image_color/theora/parameter_updates
+/narrow_stereo_textured/right/image_color/zdepth
+/narrow_stereo_textured/right/image_mono
+/narrow_stereo_textured/right/image_mono/compressed
+/narrow_stereo_textured/right/image_mono/compressed/parameter_descriptions
+/narrow_stereo_textured/right/image_mono/compressed/parameter_updates
+/narrow_stereo_textured/right/image_mono/compressedDepth
+/narrow_stereo_textured/right/image_mono/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/right/image_mono/compressedDepth/parameter_updates
+/narrow_stereo_textured/right/image_mono/theora
+/narrow_stereo_textured/right/image_mono/theora/parameter_descriptions
+/narrow_stereo_textured/right/image_mono/theora/parameter_updates
+/narrow_stereo_textured/right/image_mono/zdepth
+/narrow_stereo_textured/right/image_raw
+/narrow_stereo_textured/right/image_raw/compressed
+/narrow_stereo_textured/right/image_raw/compressed/parameter_descriptions
+/narrow_stereo_textured/right/image_raw/compressed/parameter_updates
+/narrow_stereo_textured/right/image_raw/compressedDepth
+/narrow_stereo_textured/right/image_raw/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/right/image_raw/compressedDepth/parameter_updates
+/narrow_stereo_textured/right/image_raw/theora
+/narrow_stereo_textured/right/image_raw/theora/parameter_descriptions
+/narrow_stereo_textured/right/image_raw/theora/parameter_updates
+/narrow_stereo_textured/right/image_raw/zdepth
+/narrow_stereo_textured/right/image_rect
+/narrow_stereo_textured/right/image_rect/compressed
+/narrow_stereo_textured/right/image_rect/compressed/parameter_descriptions
+/narrow_stereo_textured/right/image_rect/compressed/parameter_updates
+/narrow_stereo_textured/right/image_rect/compressedDepth
+/narrow_stereo_textured/right/image_rect/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/right/image_rect/compressedDepth/parameter_updates
+/narrow_stereo_textured/right/image_rect/theora
+/narrow_stereo_textured/right/image_rect/theora/parameter_descriptions
+/narrow_stereo_textured/right/image_rect/theora/parameter_updates
+/narrow_stereo_textured/right/image_rect/zdepth
+/narrow_stereo_textured/right/image_rect_color
+/narrow_stereo_textured/right/image_rect_color/compressed
+/narrow_stereo_textured/right/image_rect_color/compressed/parameter_descriptions
+/narrow_stereo_textured/right/image_rect_color/compressed/parameter_updates
+/narrow_stereo_textured/right/image_rect_color/compressedDepth
+/narrow_stereo_textured/right/image_rect_color/compressedDepth/parameter_descriptions
+/narrow_stereo_textured/right/image_rect_color/compressedDepth/parameter_updates
+/narrow_stereo_textured/right/image_rect_color/theora
+/narrow_stereo_textured/right/image_rect_color/theora/parameter_descriptions
+/narrow_stereo_textured/right/image_rect_color/theora/parameter_updates
+/narrow_stereo_textured/right/image_rect_color/zdepth
+/navigation/cmd_vel
+/navigation/cmd_vel/raw
+/network/connected
+/odom_teleop
+/particlecloud
+/power_board/state
+/power_monitor/parameter_descriptions
+/power_monitor/parameter_updates
+/power_state
+/pr1040/app_list
+/pr1040/application/app_status
+/pr1040/bond0/receive
+/pr1040/bond0/receive_kbps
+/pr1040/bond0/receive_mbps
+/pr1040/bond0/transmit
+/pr1040/bond0/transmit_kbps
+/pr1040/bond0/transmit_mbps
+/pr1040/lan0/receive
+/pr1040/lan0/receive_kbps
+/pr1040/lan0/receive_mbps
+/pr1040/lan0/transmit
+/pr1040/lan0/transmit_kbps
+/pr1040/lan0/transmit_mbps
+/pr1040/lan1/receive
+/pr1040/lan1/receive_kbps
+/pr1040/lan1/receive_mbps
+/pr1040/lan1/transmit
+/pr1040/lan1/transmit_kbps
+/pr1040/lan1/transmit_mbps
+/pr1040/lan2/receive
+/pr1040/lan2/receive_kbps
+/pr1040/lan2/receive_mbps
+/pr1040/lan2/transmit
+/pr1040/lan2/transmit_kbps
+/pr1040/lan2/transmit_mbps
+/pr1040/lan3/receive
+/pr1040/lan3/receive_kbps
+/pr1040/lan3/receive_mbps
+/pr1040/lan3/transmit
+/pr1040/lan3/transmit_kbps
+/pr1040/lan3/transmit_mbps
+/pr1040/lo/receive
+/pr1040/lo/receive_kbps
+/pr1040/lo/receive_mbps
+/pr1040/lo/transmit
+/pr1040/lo/transmit_kbps
+/pr1040/lo/transmit_mbps
+/pr1040/nonlocal/receive
+/pr1040/nonlocal/receive_kbps
+/pr1040/nonlocal/receive_mbps
+/pr1040/nonlocal/transmit
+/pr1040/nonlocal/transmit_kbps
+/pr1040/nonlocal/transmit_mbps
+/pr1040/wan0/receive
+/pr1040/wan0/receive_kbps
+/pr1040/wan0/receive_mbps
+/pr1040/wan0/transmit
+/pr1040/wan0/transmit_kbps
+/pr1040/wan0/transmit_mbps
+/pr2_ethercat/motors_halted
+/pr2_move_base/cancel
+/pr2_move_base/feedback
+/pr2_move_base/goal
+/pr2_move_base/result
+/pr2_move_base/status
+/pr2twit_from_tablet
+/pressure/l_gripper_motor
+/pressure/r_gripper_motor
+/projector_controller/falling_edge_timestamps
+/projector_controller/rising_edge_timestamps
+/projector_trigger/off_time
+/projector_trigger/on_time
+/projector_trigger/waveform
+/prosilica_inhibit_projector_controller/waveform
+/r_arm_controller/command
+/r_arm_controller/follow_joint_trajectory/cancel
+/r_arm_controller/follow_joint_trajectory/feedback
+/r_arm_controller/follow_joint_trajectory/goal
+/r_arm_controller/follow_joint_trajectory/result
+/r_arm_controller/follow_joint_trajectory/status
+/r_arm_controller/gains/r_elbow_flex_joint/parameter_descriptions
+/r_arm_controller/gains/r_elbow_flex_joint/parameter_updates
+/r_arm_controller/gains/r_forearm_roll_joint/parameter_descriptions
+/r_arm_controller/gains/r_forearm_roll_joint/parameter_updates
+/r_arm_controller/gains/r_shoulder_lift_joint/parameter_descriptions
+/r_arm_controller/gains/r_shoulder_lift_joint/parameter_updates
+/r_arm_controller/gains/r_shoulder_pan_joint/parameter_descriptions
+/r_arm_controller/gains/r_shoulder_pan_joint/parameter_updates
+/r_arm_controller/gains/r_upper_arm_roll_joint/parameter_descriptions
+/r_arm_controller/gains/r_upper_arm_roll_joint/parameter_updates
+/r_arm_controller/gains/r_wrist_flex_joint/parameter_descriptions
+/r_arm_controller/gains/r_wrist_flex_joint/parameter_updates
+/r_arm_controller/gains/r_wrist_roll_joint/parameter_descriptions
+/r_arm_controller/gains/r_wrist_roll_joint/parameter_updates
+/r_arm_controller/joint_trajectory_action/cancel
+/r_arm_controller/joint_trajectory_action/feedback
+/r_arm_controller/joint_trajectory_action/goal
+/r_arm_controller/joint_trajectory_action/result
+/r_arm_controller/joint_trajectory_action/status
+/r_arm_controller/state
+/r_arm_controller_loose/command
+/r_arm_controller_loose/state
+/r_forearm_cam/camera_info
+/r_forearm_cam/image_color
+/r_forearm_cam/image_color/compressed
+/r_forearm_cam/image_color/compressed/parameter_descriptions
+/r_forearm_cam/image_color/compressed/parameter_updates
+/r_forearm_cam/image_color/compressedDepth
+/r_forearm_cam/image_color/compressedDepth/parameter_descriptions
+/r_forearm_cam/image_color/compressedDepth/parameter_updates
+/r_forearm_cam/image_color/theora
+/r_forearm_cam/image_color/theora/parameter_descriptions
+/r_forearm_cam/image_color/theora/parameter_updates
+/r_forearm_cam/image_color/zdepth
+/r_forearm_cam/image_mono
+/r_forearm_cam/image_mono/compressed
+/r_forearm_cam/image_mono/compressed/parameter_descriptions
+/r_forearm_cam/image_mono/compressed/parameter_updates
+/r_forearm_cam/image_mono/compressedDepth
+/r_forearm_cam/image_mono/compressedDepth/parameter_descriptions
+/r_forearm_cam/image_mono/compressedDepth/parameter_updates
+/r_forearm_cam/image_mono/theora
+/r_forearm_cam/image_mono/theora/parameter_descriptions
+/r_forearm_cam/image_mono/theora/parameter_updates
+/r_forearm_cam/image_mono/zdepth
+/r_forearm_cam/image_proc_debayer/parameter_descriptions
+/r_forearm_cam/image_proc_debayer/parameter_updates
+/r_forearm_cam/image_proc_rectify_color/parameter_descriptions
+/r_forearm_cam/image_proc_rectify_color/parameter_updates
+/r_forearm_cam/image_proc_rectify_mono/parameter_descriptions
+/r_forearm_cam/image_proc_rectify_mono/parameter_updates
+/r_forearm_cam/image_raw
+/r_forearm_cam/image_raw/compressed
+/r_forearm_cam/image_raw/compressed/parameter_descriptions
+/r_forearm_cam/image_raw/compressed/parameter_updates
+/r_forearm_cam/image_raw/compressedDepth
+/r_forearm_cam/image_raw/compressedDepth/parameter_descriptions
+/r_forearm_cam/image_raw/compressedDepth/parameter_updates
+/r_forearm_cam/image_raw/theora
+/r_forearm_cam/image_raw/theora/parameter_descriptions
+/r_forearm_cam/image_raw/theora/parameter_updates
+/r_forearm_cam/image_raw/zdepth
+/r_forearm_cam/image_rect
+/r_forearm_cam/image_rect/compressed
+/r_forearm_cam/image_rect/compressed/parameter_descriptions
+/r_forearm_cam/image_rect/compressed/parameter_updates
+/r_forearm_cam/image_rect/compressedDepth
+/r_forearm_cam/image_rect/compressedDepth/parameter_descriptions
+/r_forearm_cam/image_rect/compressedDepth/parameter_updates
+/r_forearm_cam/image_rect/theora
+/r_forearm_cam/image_rect/theora/parameter_descriptions
+/r_forearm_cam/image_rect/theora/parameter_updates
+/r_forearm_cam/image_rect/zdepth
+/r_forearm_cam/image_rect_color
+/r_forearm_cam/image_rect_color/compressed
+/r_forearm_cam/image_rect_color/compressed/parameter_descriptions
+/r_forearm_cam/image_rect_color/compressed/parameter_updates
+/r_forearm_cam/image_rect_color/compressedDepth
+/r_forearm_cam/image_rect_color/compressedDepth/parameter_descriptions
+/r_forearm_cam/image_rect_color/compressedDepth/parameter_updates
+/r_forearm_cam/image_rect_color/theora
+/r_forearm_cam/image_rect_color/theora/parameter_descriptions
+/r_forearm_cam/image_rect_color/theora/parameter_updates
+/r_forearm_cam/image_rect_color/zdepth
+/r_forearm_cam/parameter_descriptions
+/r_forearm_cam/parameter_updates
+/r_forearm_cam_trigger/waveform
+/r_gripper_controller/command
+/r_gripper_controller/gripper_action/cancel
+/r_gripper_controller/gripper_action/feedback
+/r_gripper_controller/gripper_action/goal
+/r_gripper_controller/gripper_action/result
+/r_gripper_controller/gripper_action/status
+/r_gripper_controller/pid/parameter_descriptions
+/r_gripper_controller/pid/parameter_updates
+/r_gripper_controller/state
+/r_gripper_sensor_controller/command
+/r_gripper_sensor_controller/contact_state
+/r_gripper_sensor_controller/event_detector
+/r_gripper_sensor_controller/event_detector/cancel
+/r_gripper_sensor_controller/event_detector/feedback
+/r_gripper_sensor_controller/event_detector/goal
+/r_gripper_sensor_controller/event_detector/result
+/r_gripper_sensor_controller/event_detector/status
+/r_gripper_sensor_controller/event_detector_state
+/r_gripper_sensor_controller/find_contact
+/r_gripper_sensor_controller/find_contact/cancel
+/r_gripper_sensor_controller/find_contact/feedback
+/r_gripper_sensor_controller/find_contact/goal
+/r_gripper_sensor_controller/find_contact/result
+/r_gripper_sensor_controller/find_contact/status
+/r_gripper_sensor_controller/force_servo
+/r_gripper_sensor_controller/force_servo/cancel
+/r_gripper_sensor_controller/force_servo/feedback
+/r_gripper_sensor_controller/force_servo/goal
+/r_gripper_sensor_controller/force_servo/result
+/r_gripper_sensor_controller/force_servo/status
+/r_gripper_sensor_controller/force_servo_state
+/r_gripper_sensor_controller/grab/cancel
+/r_gripper_sensor_controller/grab/feedback
+/r_gripper_sensor_controller/grab/goal
+/r_gripper_sensor_controller/grab/result
+/r_gripper_sensor_controller/grab/status
+/r_gripper_sensor_controller/gripper_action/cancel
+/r_gripper_sensor_controller/gripper_action/feedback
+/r_gripper_sensor_controller/gripper_action/goal
+/r_gripper_sensor_controller/gripper_action/result
+/r_gripper_sensor_controller/gripper_action/status
+/r_gripper_sensor_controller/release/cancel
+/r_gripper_sensor_controller/release/feedback
+/r_gripper_sensor_controller/release/goal
+/r_gripper_sensor_controller/release/result
+/r_gripper_sensor_controller/release/status
+/r_gripper_sensor_controller/slip_servo
+/r_gripper_sensor_controller/slip_servo/cancel
+/r_gripper_sensor_controller/slip_servo/feedback
+/r_gripper_sensor_controller/slip_servo/goal
+/r_gripper_sensor_controller/slip_servo/result
+/r_gripper_sensor_controller/slip_servo/status
+/r_gripper_sensor_controller/slip_servo_state
+/r_gripper_sensor_controller/state
+/right_endeffector/wrench
+/robot_interface_marker_array
+/robot_pose_ekf/odom_combined
+/robotsound
+/robotsound/cancel
+/robotsound/feedback
+/robotsound/goal
+/robotsound/result
+/robotsound/status
+/robotsound_jp
+/robotsound_jp/cancel
+/robotsound_jp/feedback
+/robotsound_jp/goal
+/robotsound_jp/result
+/robotsound_jp/status
+/rosout
+/rosout_agg
+/safe_teleop_base/local_costmap/costmap
+/safe_teleop_base/local_costmap/costmap_updates
+/safe_teleop_base/local_costmap/footprint
+/safe_teleop_base/local_costmap/inflation_layer/parameter_descriptions
+/safe_teleop_base/local_costmap/inflation_layer/parameter_updates
+/safe_teleop_base/local_costmap/obstacle_layer/parameter_descriptions
+/safe_teleop_base/local_costmap/obstacle_layer/parameter_updates
+/safe_teleop_base/local_costmap/parameter_descriptions
+/safe_teleop_base/local_costmap/parameter_updates
+/safe_teleop_base/local_plan
+/safe_teleop_base/user_plan
+/scene_marker_array
+/server_name/smach/container_status
+/server_name/smach/container_structure
+/smach_image_publisher/image
+/smach_image_publisher/image/compressed
+/smach_to_mail/parameter_descriptions
+/smach_to_mail/parameter_updates
+/sound_play/cancel
+/sound_play/feedback
+/sound_play/goal
+/sound_play/result
+/sound_play/status
+/speech_audio
+/speech_to_text
+/speech_to_text_google
+/speech_to_text_julius
+/speech_to_text_mux/selected
+/speech_to_text_other
+/spots_marker_array
+/teleop/cmd_vel
+/teleop/cmd_vel/safe
+/teleop/cmd_vel/unsafe
+/teleop/joy_vel
+/tf
+/tf2_buffer_server/cancel
+/tf2_buffer_server/feedback
+/tf2_buffer_server/goal
+/tf2_buffer_server/result
+/tf2_buffer_server/status
+/tf_static
+/tilt_hokuyo_node/parameter_descriptions
+/tilt_hokuyo_node/parameter_updates
+/tilt_laser_mux/selected
+/tilt_scan
+/tilt_scan_filtered
+/tilt_scan_filtered/navigation
+/tilt_scan_filtered/scan
+/tilt_scan_interpolated
+/tilt_scan_shadow_filtered
+/tilt_scan_throttled
+/tilt_shadow_filter/dark_shadows/parameter_descriptions
+/tilt_shadow_filter/dark_shadows/parameter_updates
+/tilt_shadow_filter/shadows/parameter_descriptions
+/tilt_shadow_filter/shadows/parameter_updates
+/torso_controller/command
+/torso_controller/command_deadman
+/torso_controller/command_dummy
+/torso_controller/follow_joint_trajectory/cancel
+/torso_controller/follow_joint_trajectory/feedback
+/torso_controller/follow_joint_trajectory/goal
+/torso_controller/follow_joint_trajectory/result
+/torso_controller/follow_joint_trajectory/status
+/torso_controller/gains/torso_lift_joint/parameter_descriptions
+/torso_controller/gains/torso_lift_joint/parameter_updates
+/torso_controller/joint_trajectory_action/cancel
+/torso_controller/joint_trajectory_action/feedback
+/torso_controller/joint_trajectory_action/goal
+/torso_controller/joint_trajectory_action/result
+/torso_controller/joint_trajectory_action/status
+/torso_controller/mux/selected
+/torso_controller/position_joint_action/cancel
+/torso_controller/position_joint_action/feedback
+/torso_controller/position_joint_action/goal
+/torso_controller/position_joint_action/result
+/torso_controller/position_joint_action/status
+/torso_controller/state
+/torso_lift_imu/data
+/torso_lift_imu/is_calibrated
+/tuck_arms/cancel
+/tuck_arms/feedback
+/tuck_arms/goal
+/tuck_arms/result
+/tuck_arms/status
+/tweet
+/tweet_client_tablet/parameter_descriptions
+/tweet_client_tablet/parameter_updates
+/tweet_client_uptime/parameter_descriptions
+/tweet_client_uptime/parameter_updates
+/tweet_client_warning/parameter_descriptions
+/tweet_client_warning/parameter_updates
+/tweet_client_worktime/parameter_descriptions
+/tweet_client_worktime/parameter_updates
+/tweet_compressed_image_mux/selected
+/tweet_image
+/tweet_image/compressed
+/tweet_image_mux/selected
+/tweet_image_server/parameter_descriptions
+/tweet_image_server/parameter_updates
+/tweet_image_server/tweet/cancel
+/tweet_image_server/tweet/feedback
+/tweet_image_server/tweet/goal
+/tweet_image_server/tweet/result
+/tweet_image_server/tweet/status
+/unsafe_vel_mux/selected
+/vel_type_mux/selected
+/visualization/battery/value0
+/visualization/battery/value1
+/visualization/battery/value2
+/visualization/battery/value3
+/voice_text/parameter_descriptions
+/voice_text/parameter_updates
+/wide_stereo/disparity
+/wide_stereo/left/camera_info
+/wide_stereo/left/image_color
+/wide_stereo/left/image_color/compressed
+/wide_stereo/left/image_color/compressed/parameter_descriptions
+/wide_stereo/left/image_color/compressed/parameter_updates
+/wide_stereo/left/image_color/compressedDepth
+/wide_stereo/left/image_color/compressedDepth/parameter_descriptions
+/wide_stereo/left/image_color/compressedDepth/parameter_updates
+/wide_stereo/left/image_color/theora
+/wide_stereo/left/image_color/theora/parameter_descriptions
+/wide_stereo/left/image_color/theora/parameter_updates
+/wide_stereo/left/image_color/zdepth
+/wide_stereo/left/image_mono
+/wide_stereo/left/image_mono/compressed
+/wide_stereo/left/image_mono/compressed/parameter_descriptions
+/wide_stereo/left/image_mono/compressed/parameter_updates
+/wide_stereo/left/image_mono/compressedDepth
+/wide_stereo/left/image_mono/compressedDepth/parameter_descriptions
+/wide_stereo/left/image_mono/compressedDepth/parameter_updates
+/wide_stereo/left/image_mono/theora
+/wide_stereo/left/image_mono/theora/parameter_descriptions
+/wide_stereo/left/image_mono/theora/parameter_updates
+/wide_stereo/left/image_mono/zdepth
+/wide_stereo/left/image_raw
+/wide_stereo/left/image_raw/compressed
+/wide_stereo/left/image_raw/compressed/parameter_descriptions
+/wide_stereo/left/image_raw/compressed/parameter_updates
+/wide_stereo/left/image_raw/compressedDepth
+/wide_stereo/left/image_raw/compressedDepth/parameter_descriptions
+/wide_stereo/left/image_raw/compressedDepth/parameter_updates
+/wide_stereo/left/image_raw/theora
+/wide_stereo/left/image_raw/theora/parameter_descriptions
+/wide_stereo/left/image_raw/theora/parameter_updates
+/wide_stereo/left/image_raw/zdepth
+/wide_stereo/left/image_rect
+/wide_stereo/left/image_rect/compressed
+/wide_stereo/left/image_rect/compressed/parameter_descriptions
+/wide_stereo/left/image_rect/compressed/parameter_updates
+/wide_stereo/left/image_rect/compressedDepth
+/wide_stereo/left/image_rect/compressedDepth/parameter_descriptions
+/wide_stereo/left/image_rect/compressedDepth/parameter_updates
+/wide_stereo/left/image_rect/theora
+/wide_stereo/left/image_rect/theora/parameter_descriptions
+/wide_stereo/left/image_rect/theora/parameter_updates
+/wide_stereo/left/image_rect/zdepth
+/wide_stereo/left/image_rect_color
+/wide_stereo/left/image_rect_color/compressed
+/wide_stereo/left/image_rect_color/compressed/parameter_descriptions
+/wide_stereo/left/image_rect_color/compressed/parameter_updates
+/wide_stereo/left/image_rect_color/compressedDepth
+/wide_stereo/left/image_rect_color/compressedDepth/parameter_descriptions
+/wide_stereo/left/image_rect_color/compressedDepth/parameter_updates
+/wide_stereo/left/image_rect_color/theora
+/wide_stereo/left/image_rect_color/theora/parameter_descriptions
+/wide_stereo/left/image_rect_color/theora/parameter_updates
+/wide_stereo/left/image_rect_color/zdepth
+/wide_stereo/points2
+/wide_stereo/right/camera_info
+/wide_stereo/right/image_color
+/wide_stereo/right/image_color/compressed
+/wide_stereo/right/image_color/compressed/parameter_descriptions
+/wide_stereo/right/image_color/compressed/parameter_updates
+/wide_stereo/right/image_color/compressedDepth
+/wide_stereo/right/image_color/compressedDepth/parameter_descriptions
+/wide_stereo/right/image_color/compressedDepth/parameter_updates
+/wide_stereo/right/image_color/theora
+/wide_stereo/right/image_color/theora/parameter_descriptions
+/wide_stereo/right/image_color/theora/parameter_updates
+/wide_stereo/right/image_color/zdepth
+/wide_stereo/right/image_mono
+/wide_stereo/right/image_mono/compressed
+/wide_stereo/right/image_mono/compressed/parameter_descriptions
+/wide_stereo/right/image_mono/compressed/parameter_updates
+/wide_stereo/right/image_mono/compressedDepth
+/wide_stereo/right/image_mono/compressedDepth/parameter_descriptions
+/wide_stereo/right/image_mono/compressedDepth/parameter_updates
+/wide_stereo/right/image_mono/theora
+/wide_stereo/right/image_mono/theora/parameter_descriptions
+/wide_stereo/right/image_mono/theora/parameter_updates
+/wide_stereo/right/image_mono/zdepth
+/wide_stereo/right/image_raw
+/wide_stereo/right/image_raw/compressed
+/wide_stereo/right/image_raw/compressed/parameter_descriptions
+/wide_stereo/right/image_raw/compressed/parameter_updates
+/wide_stereo/right/image_raw/compressedDepth
+/wide_stereo/right/image_raw/compressedDepth/parameter_descriptions
+/wide_stereo/right/image_raw/compressedDepth/parameter_updates
+/wide_stereo/right/image_raw/theora
+/wide_stereo/right/image_raw/theora/parameter_descriptions
+/wide_stereo/right/image_raw/theora/parameter_updates
+/wide_stereo/right/image_raw/zdepth
+/wide_stereo/right/image_rect
+/wide_stereo/right/image_rect/compressed
+/wide_stereo/right/image_rect/compressed/parameter_descriptions
+/wide_stereo/right/image_rect/compressed/parameter_updates
+/wide_stereo/right/image_rect/compressedDepth
+/wide_stereo/right/image_rect/compressedDepth/parameter_descriptions
+/wide_stereo/right/image_rect/compressedDepth/parameter_updates
+/wide_stereo/right/image_rect/theora
+/wide_stereo/right/image_rect/theora/parameter_descriptions
+/wide_stereo/right/image_rect/theora/parameter_updates
+/wide_stereo/right/image_rect/zdepth
+/wide_stereo/right/image_rect_color
+/wide_stereo/right/image_rect_color/compressed
+/wide_stereo/right/image_rect_color/compressed/parameter_descriptions
+/wide_stereo/right/image_rect_color/compressed/parameter_updates
+/wide_stereo/right/image_rect_color/compressedDepth
+/wide_stereo/right/image_rect_color/compressedDepth/parameter_descriptions
+/wide_stereo/right/image_rect_color/compressedDepth/parameter_updates
+/wide_stereo/right/image_rect_color/theora
+/wide_stereo/right/image_rect_color/theora/parameter_descriptions
+/wide_stereo/right/image_rect_color/theora/parameter_updates
+/wide_stereo/right/image_rect_color/zdepth
+/wide_stereo/wide_stereo_proc/parameter_descriptions
+/wide_stereo/wide_stereo_proc/parameter_updates
+/wide_stereo/wide_stereo_proc_debayer_left/parameter_descriptions
+/wide_stereo/wide_stereo_proc_debayer_left/parameter_updates
+/wide_stereo/wide_stereo_proc_debayer_right/parameter_descriptions
+/wide_stereo/wide_stereo_proc_debayer_right/parameter_updates
+/wide_stereo/wide_stereo_proc_rectify_color_left/parameter_descriptions
+/wide_stereo/wide_stereo_proc_rectify_color_left/parameter_updates
+/wide_stereo/wide_stereo_proc_rectify_color_right/parameter_descriptions
+/wide_stereo/wide_stereo_proc_rectify_color_right/parameter_updates
+/wide_stereo/wide_stereo_proc_rectify_mono_left/parameter_descriptions
+/wide_stereo/wide_stereo_proc_rectify_mono_left/parameter_updates
+/wide_stereo/wide_stereo_proc_rectify_mono_right/parameter_descriptions
+/wide_stereo/wide_stereo_proc_rectify_mono_right/parameter_updates
+/wide_stereo_both/parameter_descriptions
+/wide_stereo_both/parameter_updates
+/wide_stereo_left/parameter_descriptions
+/wide_stereo_left/parameter_updates
+/wide_stereo_right/parameter_descriptions
+/wide_stereo_right/parameter_updates
+[http://pr1040:11311][133.11.216.23] mech-user@ki00119:~/semi_ws/src$ rostopic echo cmd_vel
+WARNING: topic [/cmd_vel] does not appear to be published yet
+WARNING: topic [/cmd_vel] does not appear to be published yet  C-c C-c[http://pr1040:11311][133.11.216.23] mech-user@ki00119:~/semi_ws/src$ rostopic echo /cmd_vel
+WARNING: topic [/cmd_vel] does not appear to be published yet
+WARNING: topic [/cmd_vel] does not appear to be published yet  C-c C-c[http://pr1040:11311][133.11.216.23] mech-user@ki00119:~/semi_ws/src$ rostopic echo /teleop/cmd_vel
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.08775347471237183
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.08775347471237183
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.12523576021194457
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.12523576021194457
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.11585824489593506
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.1064807415008545
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.09710323810577393
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.09710323810577393
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.7156579494476318
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.7156579494476318
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.6594206333160401
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.38766720294952395
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.0
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.06897072196006775
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.06897072196006775
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.6031833648681642
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.6031833648681642
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: -0.0
+  y: -0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: -0.8
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+linear: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+angular: 
+  x: 0.0
+  y: 0.0
+  z: 0.0
+---
+  C-c C-c[http://pr1040:11311][133.11.216.23] mech-user@ki00119:~/semi_ws/src$ roseus
+configuring by "/opt/ros/noetic/share/euslisp/jskeus/eus//lib/eusrt.l"
+;; readmacro ;; object ;; packsym ;; common ;; constants ;; stream ;; string ;; loader ;; pprint ;; process ;; hashtab ;; array ;; mathtran ;; eusdebug ;; eusforeign ;; extnum ;; coordinates ;; tty ;; history ;; toplevel ;; trans ;; comp ;; builtins ;; par ;; intersection ;; geoclasses ;; geopack ;; geobody ;; primt ;; compose ;; polygon ;; viewing ;; viewport ;; viewsurface ;; hid ;; shadow ;; bodyrel ;; dda ;; helpsub ;; eushelp ;; xforeign ;; Xdecl ;; Xgraphics ;; Xcolor ;; Xeus ;; Xevent ;; Xpanel ;; Xitem ;; Xtext ;; Xmenu ;; Xscroll ;; Xcanvas ;; Xtop ;; Xapplwin 
+connected to Xserver DISPLAY=:0
+X events are being asynchronously monitored.
+;; pixword ;; RGBHLS ;; convolve ;; piximage ;; pbmfile ;; image_correlation ;; oglforeign ;; gldecl ;; glconst ;; glforeign ;; gluconst ;; gluforeign ;; glxconst ;; glxforeign ;; eglforeign ;; eglfunc ;; glutil ;; gltexture ;; glprim ;; gleus ;; glview ;; toiv-undefined ;; fstringdouble irtmath irtutil irtc irtgeoc irtgraph gnuplotlib ___time ___pgsql irtgeo euspqp pqp irtscene irtmodel irtdyna irtrobot irtsensor irtbvh irtcollada irtstl irtwrl irtpointcloud eusbullet bullet irtcollision irtx eusjpeg euspng png irtimage irtglrgb 
+;; extending gcstack 0x55e5a09ab680[16374] --> 0x55e5a0e3bc90[32748] top=3d4b
+irtgl irtglc irtviewer 
+EusLisp 9.29( 1.2.5) for Linux64 created on ip-10-0-1-5(Tue Jun 20 10:34:21 PST 2023)
+roseus ;; loading roseus("1.7.5") on euslisp((9.29 ip-10-0-1-5 Tue Jun 20 10:34:21 PST 2023  1.2.5))
+eustf roseus_c_util 1.irteusgl$ (load "first_motion.l")
+;; (make-irtviewer) executed
+t
+2.irteusgl$ 
+(require "package://pr2eus/pr2-interface.l")  ;;import pr2 package
+
+nil
+2.irteusgl$ ;; roseus_resume is disabled.
+:|PACKAGE://PR2EUS/PR2-INTERFACE.L|
+3.irteusgl$ nil
+4.irteusgl$ nil
+4.irteusgl$ pr2-init
+
+;; extending gcstack 0x55e5a0e3bc90[32738] --> 0x55e5a57c6540[65476] top=7d95
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+nil
+5.irteusgl$ (send *ri* :angle-vector (send *pr2* :angle-vector))
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.34142) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-123.607) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-23.16) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.512) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.38629) violate max-angle(-5.72958)
+#f(182.874 3.88879 68.4486 104.412 -81.4114 -98.4558 -5.72958 -4.6688 0.452866 63.2517 -79.7933 -121.542 -100.615 -105.832 12.949 5.53153 -21.2682)
+6.irteusgl$ (load "first_motion.l")
+t
+7.irteusgl$ (send *ri* :angle-vector (send *pr2* :angle-vector))
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-21.2682) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3b38608 head_tilt_joint> :joint-angle(-22.158) violate min-angle(-21.2682)
+;; #<rotational-joint #X55e5a3e0bc68 r_elbow_flex_joint> :joint-angle(-122.47) violate min-angle(-121.542)
+;; #<rotational-joint #X55e5a3d31878 l_wrist_flex_joint> :joint-angle(-5.72782) violate max-angle(-5.72958)
+#f(300.0 60.0 10.0 120.0 -120.0 20.0 -30.0 0.0 -60.0 -20.0 -120.0 -120.0 0.0 -40.0 0.0 0.0 0.0)
+8.irteusgl$ (send *ri* :wait-interpolation)
+[ INFO] [1729665278.625315427]: wait-interpolation debug: start
+[ERROR] [1729665278.658195900]: joint trajectory status: (4 . actionlib_msgs::goalstatus::*aborted*)
+
+[ERROR] [1729665278.658251240]: error_code: (-5 . GOAL_TOLERANCE_VIOLATED)
+
+[ INFO] [1729665278.662522301]: wait-interpolation debug: end
+(nil nil nil nil)
+9.irteusgl$ (load "first_motion.l")
+[ INFO] [1729665371.924329834]: wait-interpolation debug: start
+[ERROR] [1729665391.152011698]: joint trajectory status: (4 . actionlib_msgs::goalstatus::*aborted*)
+
+[ERROR] [1729665391.152091968]: error_code: (-5 . GOAL_TOLERANCE_VIOLATED)
+
+[ INFO] [1729665391.152622378]: wait-interpolation debug: end
+Call Stack (max depth: 20):
+  0: at (send *irtv0)
+  1: at (apply #'ros::load-org-for-ros ros::fullname args)
+  2: at (apply #'ros::load-org-for-ros ros::fullname args)
+  3: at (let ((ros::fullname fname)) (when (and (stringp fname) (substringp "package://" fname)) (setq ros::fullname (ros::resolve-ros-path fname)) (when ros::*compile-message* (let* ((ros::urlname (url-pathname fname)) (package-name (send ros::urlname :host)) (ros::path-name (format nil "~A_~A" package-name (substitute 95 47 (concatenate string (subseq (send ros::urlname :directory-string) 1) (send ros::urlname :name))))) (ros::old-module (find ros::path-name *loaded-modules* :key #'lisp::load-module-file-name :test #'equal))) (unless ros::old-module (let* ((ros::ppath (unix:getenv "CMAKE_PREFIX_PATH")) (dir (format nil "~A/share/roseus/ros/~A" (subseq ros::ppath 0 (position 58 ros::ppath)) package-name))) (unless (probe-file dir) (unix:mkdir dir)) (compiler:compile-file-if-src-newer ros::fullname (format nil "~A/~A" dir ros::path-name)) (return-from load (load (format nil "~A/~A.so" dir ros::path-name) :entry (format nil "___~A" ros::path-name)))))))) (if (null ros::fullname) (error "file ~s not found" fname)) (apply #'ros::load-org-for-ros ros::fullname args))
+  4: at (load "first_motion.l")
+  5: at #<compiled-code #X55e5a0a64e08>
+/opt/ros/noetic/share/euslisp/jskeus/eus/Linux64/bin/irteusgl 0 error: unbound variable *irtv0 in (send *irtv0)
+10.E1-irteusgl$ reset
+11.irteusgl$ (load "first_motion.l")
+[ INFO] [1729665412.405603378]: wait-interpolation debug: start
+[ INFO] [1729665413.445186124]: wait-interpolation debug: end
+[ INFO] [1729665413.457923364]: wait-interpolation debug: start
+[ INFO] [1729665414.496236238]: wait-interpolation debug: end
+t
+12.irteusgl$ (send *ri* :stop-grasp :arms)
+(t t)
+13.irteusgl$ (load "first_motion.l")
+[ INFO] [1729665532.834773457]: wait-interpolation debug: start
+[ INFO] [1729665533.934082201]: wait-interpolation debug: end
+[ INFO] [1729665533.953203205]: wait-interpolation debug: start
+[ INFO] [1729665535.016466058]: wait-interpolation debug: end
+[ WARN] [1729665535.057218743]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a61e8ec0> received wrong goal
+[ WARN] [1729665535.057659665]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a61cb358> received wrong goal
+[ WARN] [1729665535.058899420]: [torso_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a6125890> received wrong goal
+[ WARN] [1729665535.061647748]: [head_traj_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a683cdb0> received wrong goal
+[ WARN] [1729665535.061957258]: [head_traj_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a68c53c8> received wrong goal
+[ WARN] [1729665535.062237995]: [head_traj_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a5fc0fa0> received wrong goal
+[ INFO] [1729665537.552695448]: wait-interpolation debug: start
+[ INFO] [1729665537.553253665]: wait-interpolation debug: end
+[ INFO] [1729665537.564546634]: wait-interpolation debug: start
+[ INFO] [1729665538.724101798]: wait-interpolation debug: end
+[ INFO] [1729665538.737843726]: wait-interpolation debug: start
+[ WARN] [1729665538.821487506]: [torso_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a7728260> received wrong goal
+[ WARN] [1729665538.822414806]: [torso_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a7734228> received wrong goal
+[ WARN] [1729665538.828988142]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a77a7120> received wrong goal
+[ WARN] [1729665538.829903044]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a77c66f8> received wrong goal
+[ INFO] [1729665539.849467686]: wait-interpolation debug: end
+[ INFO] [1729665539.861754963]: wait-interpolation debug: start
+[ INFO] [1729665540.953058540]: wait-interpolation debug: end
+[ INFO] [1729665540.969119606]: wait-interpolation debug: start
+[ INFO] [1729665542.035728532]: wait-interpolation debug: end
+[ INFO] [1729665542.045338513]: wait-interpolation debug: start
+[ INFO] [1729665543.169270450]: wait-interpolation debug: end
+[ INFO] [1729665543.182459409]: wait-interpolation debug: start
+[ WARN] [1729665543.244370062]: [head_traj_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a3669c68> received wrong goal
+[ WARN] [1729665543.245664202]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a36a9c08> received wrong goal
+[ WARN] [1729665543.250024477]: [torso_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a3684048> received wrong goal
+[ WARN] [1729665543.259581768]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a36dc4d8> received wrong goal
+[ INFO] [1729665544.229971396]: wait-interpolation debug: end
+[ INFO] [1729665544.240476576]: wait-interpolation debug: start
+[ WARN] [1729665544.258518085]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a7276ec0> received wrong goal
+[ WARN] [1729665544.260639341]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a7292fa0> received wrong goal
+[ INFO] [1729665545.290826686]: wait-interpolation debug: end
+[ INFO] [1729665545.300205633]: wait-interpolation debug: start
+[ INFO] [1729665546.343070104]: wait-interpolation debug: end
+[ INFO] [1729665547.401782224]: wait-interpolation debug: start
+[ INFO] [1729665548.449819092]: wait-interpolation debug: end
+[ INFO] [1729665548.471123723]: wait-interpolation debug: start
+[ INFO] [1729665549.540332440]: wait-interpolation debug: end
+[ INFO] [1729665549.558752173]: wait-interpolation debug: start
+[ INFO] [1729665550.593625320]: wait-interpolation debug: end
+[ WARN] [1729665550.618664274]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a3c3dc30> received wrong goal
+[ WARN] [1729665550.619075040]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a403d288> received wrong goal
+[ INFO] [1729665550.620444971]: wait-interpolation debug: start
+[ INFO] [1729665551.662678868]: wait-interpolation debug: end
+[ INFO] [1729665551.674839178]: wait-interpolation debug: start
+[ WARN] [1729665551.690175755]: [l_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a3e11ed8> received wrong goal
+[ WARN] [1729665551.690608557]: [r_arm_controller/follow_joint_trajectory] feedback-cb #<control_msgs::followjointtrajectoryactionfeedback #X55e5a3df9908> received wrong goal
+[ INFO] [1729665552.819662941]: wait-interpolation debug: end
+[ INFO] [1729665552.849406243]: wait-interpolation debug: start
+[ERROR] [1729665564.452784076]: joint trajectory status: (4 . actionlib_msgs::goalstatus::*aborted*)
+
+[ERROR] [1729665564.452839911]: error_code: (-5 . GOAL_TOLERANCE_VIOLATED)
+
+[ INFO] [1729665564.454964335]: wait-interpolation debug: end
+[ INFO] [1729665567.835068546]: wait-interpolation debug: start
+[ERROR] [1729665575.595436467]: joint trajectory status: (4 . actionlib_msgs::goalstatus::*aborted*)
+
+[ERROR] [1729665575.595495803]: error_code: (-5 . GOAL_TOLERANCE_VIOLATED)
+
+[ INFO] [1729665575.597102187]: wait-interpolation debug: end
+t
+14.irteusgl$ 
+
+
+
+mech-user@ki00119:~/semi_ws/src$ git clone https://github.com/jsk-ros-pkg/jsk_robot 
+Cloning into 'jsk_robot'...
+remote: Enumerating objects: 38978, done.
+remote: Counting objects: 100% (5743/5743), done.
+remote: Compressing objects: 100% (1842/1842), done.
+remote: Total 38978 (delta 4058), reused 5421 (delta 3884), pack-reused 33235 (from 1)
+Receiving objects: 100% (38978/38978), 179.66 MiB | 24.21 MiB/s, done.
+Resolving deltas: 100% (25707/25707), done.
+mech-user@ki00119:~/semi_ws/src$ ls
+jsk_robot
+mech-user@ki00119:~/semi_ws/src$ ls
+jsk_robot
+mech-user@ki00119:~/semi_ws/src$ rm -fr jsk_robot/
+mech-user@ki00119:~/semi_ws/src$ cd ..
+mech-user@ki00119:~/semi_ws$ git clone https://github.com/jsk-ros-pkg/jsk_demos -b jsk_2024_semi
+Cloning into 'jsk_demos'...
+fatal: Remote branch jsk_2024_semi not found in upstream origin
+mech-user@ki00119:~/semi_ws$ git clone https://github.com/jsk-ros-pkg/jsk_demos 
+Cloning into 'jsk_demos'...
+remote: Enumerating objects: 32410, done.
+remote: Counting objects: 100% (6/6), done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 32410 (delta 0), reused 5 (delta 0), pack-reused 32404 (from 1)
+Receiving objects: 100% (32410/32410), 177.20 MiB | 23.39 MiB/s, done.
+Resolving deltas: 100% (23469/23469), done.
+cd j	mech-user@ki00119:~/semi_ws$ cd jsk_demos/
+mech-user@ki00119:~/semi_ws/jsk_demos$ ls
+2010_05_pr2_workshop          jsk_2013_04_pr2_610        jsk_demo_common
+README.md                     jsk_2013_05_pr2_tatu       jsk_maps
+detect_cans_in_fridge_201202  jsk_2014_06_pr2_drcbox     jsk_semantic_maps
+diabolo_pr2_201806            jsk_2015_06_hrp_drc        rwt_teleop
+elevator_move_base_pr2        jsk_2017_10_semi           welcome_to_jsk_fetch
+interactive_behavior_201409   jsk_2019_10_semi
+jsk_2011_07_pr2_semantic      jsk_2022_08_miraikan_demo
+mech-user@ki00119:~/semi_ws/jsk_demos$ git checkout jsk_2024_10_semi 
+Branch 'jsk_2024_10_semi' set up to track remote branch 'jsk_2024_10_semi' from 'origin'.
+Switched to a new branch 'jsk_2024_10_semi'
+mech-user@ki00119:~/semi_ws/jsk_demos$ ls
+2010_05_pr2_workshop          jsk_2013_04_pr2_610        jsk_2024_10_semi
+README.md                     jsk_2013_05_pr2_tatu       jsk_demo_common
+detect_cans_in_fridge_201202  jsk_2014_06_pr2_drcbox     jsk_maps
+diabolo_pr2_201806            jsk_2015_06_hrp_drc        jsk_semantic_maps
+elevator_move_base_pr2        jsk_2017_10_semi           rwt_teleop
+interactive_behavior_201409   jsk_2019_10_semi           welcome_to_jsk_fetch
+jsk_2011_07_pr2_semantic      jsk_2022_08_miraikan_demo
+mech-user@ki00119:~/semi_ws/jsk_demos$ cd ../src/
+mech-user@ki00119:~/semi_ws/src$ ls
+mech-user@ki00119:~/semi_ws/src$ ln -sf ../jsk_demos/jsk_2024_10_semi/
+mech-user@ki00119:~/semi_ws/src$ ls
+jsk_2024_10_semi
+mech-user@ki00119:~/semi_ws/src$ cd jsk_2024_10_semi
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  README.md  package.xml
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ catkin b t-vi
+ca==> Expanding alias 'b' from 'catkin b t-vi' to 'catkin build t-vi'
+Initialized new catkin workspace in `/home/mech-user/semi_ws/jsk_demos/jsk_2024_10_semi`
+[build] Error: Unable to find source space `/home/mech-user/semi_ws/jsk_demos/jsk_2024_10_semi/src`
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ catkin bt -vi
+==> Expanding alias 'bt' from 'catkin bt -vi' to 'catkin b --this -vi'
+==> Expanding alias 'b' from 'catkin b --this -vi' to 'catkin build --this -vi'
+[build] Error: In order to use --this, the current directory must be part of a catkin package.
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ cd ../../
+mech-user@ki00119:~/semi_ws$ catkin b
+==> Expanding alias 'b' from 'catkin b' to 'catkin build'
+Initialized new catkin workspace in `/home/mech-user/semi_ws`
+------------------------------------------------------------
+Profile:                     default
+Extending:             [env] /opt/ros/noetic
+Workspace:                   /home/mech-user/semi_ws
+------------------------------------------------------------
+Build Space:        [exists] /home/mech-user/semi_ws/build
+Devel Space:        [exists] /home/mech-user/semi_ws/devel
+Install Space:      [unused] /home/mech-user/semi_ws/install
+Log Space:         [missing] /home/mech-user/semi_ws/logs
+Source Space:       [exists] /home/mech-user/semi_ws/src
+DESTDIR:            [unused] None
+------------------------------------------------------------
+Devel Space Layout:          linked
+Install Space Layout:        None
+------------------------------------------------------------
+Additional CMake Args:       None
+Additional Make Args:        None
+Additional catkin Make Args: None
+Internal Make Job Server:    True
+Cache Job Environments:      False
+------------------------------------------------------------
+Buildlisted Packages:        None
+Skiplisted Packages:         None
+------------------------------------------------------------
+Workspace configuration appears valid.
+
+NOTE: Forcing CMake to run for each package.
+------------------------------------------------------------
+[build] Found 1 packages in 0.0 seconds.                                       
+[build] Updating package table.                                                
+Starting  >>> catkin_tools_prebuild                                            
+Finished  <<< catkin_tools_prebuild                [ 2.2 seconds ]             
+Starting  >>> jsk_2024_10_semi                                                 
+Finished  <<< jsk_2024_10_semi                     [ 1.8 seconds ]             
+[build] Summary: All 2 packages succeeded!                                     
+[build]   Ignored:   None.                                                     
+[build]   Warnings:  None.                                                     
+[build]   Abandoned: None.                                                     
+[build]   Failed:    None.                                                     
+[build] Runtime: 4.1 seconds total.                                            
+[build] Note: Workspace packages have changed, please re-source setup files to use them.
+mech-user@ki00119:~/semi_ws$ source devel/setup.bash 
+mech-user@ki00119:~/semi_ws$ roscd jsk_2024_10_semi/
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  README.md  package.xml
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote -v
+origin	https://github.com/jsk-ros-pkg/jsk_demos (fetch)
+origin	https://github.com/jsk-ros-pkg/jsk_demos (push)
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ cp ~/semi_ws.bak/
+.catkin_tools/       devel/               src/
+.git/                homework241016.webm  task.txt
+README.md            homework_uml.png     
+build/               logs/                
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ cp ~/semi_ws.bak/src/
+demo.l            first_motion.l~   homework241016.l  
+first_motion.l    hampen.mov        homework_uml.act  
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ cp ~/semi_ws.bak/src/* .
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~  homework241016.l  package.xml
+README.md       first_motion.l  hampen.mov       homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git diff
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~  homework241016.l  package.xml
+README.md       first_motion.l  hampen.mov       homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git add --all
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git commit -m"add 1023"
+[jsk_2024_10_semi 295d7a47] add 1023
+ 9 files changed, 496 insertions(+)
+ create mode 100644 jsk_2024_10_semi/.catkin_tools/CATKIN_IGNORE
+ create mode 100644 jsk_2024_10_semi/.catkin_tools/README
+ create mode 100644 jsk_2024_10_semi/.catkin_tools/VERSION
+ create mode 100644 jsk_2024_10_semi/.catkin_tools/profiles/profiles.yaml
+ create mode 100644 jsk_2024_10_semi/demo.l
+ create mode 100644 jsk_2024_10_semi/first_motion.l
+ create mode 100644 jsk_2024_10_semi/hampen.mov
+ create mode 100644 jsk_2024_10_semi/homework241016.l
+ create mode 100644 jsk_2024_10_semi/homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git push
+Username for 'https://github.com': ^C
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ rm -fr .catkin_tools/
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git rm  .catkin_tools/
+fatal: not removing '.catkin_tools/' recursively without -r
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git rm -r .catkin_tools/
+rm 'jsk_2024_10_semi/.catkin_tools/CATKIN_IGNORE'
+rm 'jsk_2024_10_semi/.catkin_tools/README'
+rm 'jsk_2024_10_semi/.catkin_tools/VERSION'
+rm 'jsk_2024_10_semi/.catkin_tools/profiles/profiles.yaml'
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git commit --amend
+[jsk_2024_10_semi a0d98162] add 1023
+ Date: Wed Oct 23 15:56:46 2024 +0900
+ 5 files changed, 481 insertions(+)
+ create mode 100644 jsk_2024_10_semi/demo.l
+ create mode 100644 jsk_2024_10_semi/first_motion.l
+ create mode 100644 jsk_2024_10_semi/hampen.mov
+ create mode 100644 jsk_2024_10_semi/homework241016.l
+ create mode 100644 jsk_2024_10_semi/homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~  homework241016.l  package.xml
+README.md       first_motion.l  hampen.mov       homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls -al 
+total 195140
+drwxrwxr-x  2 mech-user mech-user      4096 10月 23 15:57 .
+drwxrwxr-x 24 mech-user mech-user      4096 10月 23 15:55 ..
+-rw-rw-r--  1 mech-user mech-user       206 10月 23 15:55 CMakeLists.txt
+-rw-rw-r--  1 mech-user mech-user        21 10月 23 15:55 README.md
+-rw-rw-r--  1 mech-user mech-user       184 10月 23 15:55 demo.l
+-rw-rw-r--  1 mech-user mech-user      8480 10月 23 15:55 first_motion.l
+-rw-rw-r--  1 mech-user mech-user       449 10月 23 15:55 first_motion.l~
+-rw-rw-r--  1 mech-user mech-user 199762796 10月 23 15:55 hampen.mov
+-rw-rw-r--  1 mech-user mech-user      6555 10月 23 15:55 homework241016.l
+-rw-rw-r--  1 mech-user mech-user       843 10月 23 15:55 homework_uml.act
+-rw-rw-r--  1 mech-user mech-user       438 10月 23 15:55 package.xml
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git push
+Username for 'https://github.com': ^C
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~  homework241016.l  package.xml
+README.md       first_motion.l  hampen.mov       homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote add Michi-Tsubaki https://github.com//Michi-Tsubaki/jsk_demos.git
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git push Michi-Tsubaki jsk_2024_10_semi 
+Username for 'https://github.com': ^C
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote -v
+Michi-Tsubaki	https://github.com//Michi-Tsubaki/jsk_demos.git (fetch)
+Michi-Tsubaki	https://github.com//Michi-Tsubaki/jsk_demos.git (push)
+origin	https://github.com/jsk-ros-pkg/jsk_demos (fetch)
+origin	https://github.com/jsk-ros-pkg/jsk_demos (push)
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote add Michi-Tsubaki git@github.com:Michi-Tsubaki/jsk_demos.git
+fatal: remote Michi-Tsubaki already exists.
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote del Michi-Tsubaki
+error: Unknown subcommand: del
+usage: git remote [-v | --verbose]
+   or: git remote add [-t <branch>] [-m <master>] [-f] [--tags | --no-tags] [--mirror=<fetch|push>] <name> <url>
+   or: git remote rename <old> <new>
+   or: git remote remove <name>
+   or: git remote set-head <name> (-a | --auto | -d | --delete | <branch>)
+   or: git remote [-v | --verbose] show [-n] <name>
+   or: git remote prune [-n | --dry-run] <name>
+   or: git remote [-v | --verbose] update [-p | --prune] [(<group> | <remote>)...]
+   or: git remote set-branches [--add] <name> <branch>...
+   or: git remote get-url [--push] [--all] <name>
+   or: git remote set-url [--push] <name> <newurl> [<oldurl>]
+   or: git remote set-url --add <name> <newurl>
+   or: git remote set-url --delete <name> <url>
+
+    -v, --verbose         be verbose; must be placed before a subcommand
+
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote remove Michi-Tsubaki
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git remote add Michi-Tsubaki git@github.com:Michi-Tsubaki/jsk_demos.git
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git push Michi-Tsubaki jsk_2024_10_semi 
+Enumerating objects: 10, done.
+Counting objects: 100% (10/10), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (8/8), 190.28 MiB | 3.34 MiB/s, done.
+Total 8 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas: 100% (2/2), completed with 1 local object.
+remote: error: Trace: 9a75dffa0e412693f5af2d6fce134396be0f6820799246e55dcd8d745f26056c
+remote: error: See https://gh.io/lfs for more information.
+remote: error: File jsk_2024_10_semi/hampen.mov is 190.51 MB; this exceeds GitHub's file size limit of 100.00 MB
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+To github.com:Michi-Tsubaki/jsk_demos.git
+ ! [remote rejected]   jsk_2024_10_semi -> jsk_2024_10_semi (pre-receive hook declined)
+error: failed to push some refs to 'git@github.com:Michi-Tsubaki/jsk_demos.git'
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~  homework241016.l  package.xml
+README.md       first_motion.l  hampen.mov       homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ cp hampen.mov ..
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git rm hampen.mov 
+rm 'jsk_2024_10_semi/hampen.mov'
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git commit --amend
+[jsk_2024_10_semi d0dedc45] add 1023
+ Date: Wed Oct 23 15:56:46 2024 +0900
+ 4 files changed, 481 insertions(+)
+ create mode 100644 jsk_2024_10_semi/demo.l
+ create mode 100644 jsk_2024_10_semi/first_motion.l
+ create mode 100644 jsk_2024_10_semi/homework241016.l
+ create mode 100644 jsk_2024_10_semi/homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ git push Michi-Tsubaki jsk_2024_10_semi 
+Enumerating objects: 9, done.
+Counting objects: 100% (9/9), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (7/7), 2.23 KiB | 2.23 MiB/s, done.
+Total 7 (delta 2), reused 0 (delta 0)
+remote: Resolving deltas: 100% (2/2), completed with 1 local object.
+To github.com:Michi-Tsubaki/jsk_demos.git
+   a6024b89..d0dedc45  jsk_2024_10_semi -> jsk_2024_10_semi
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ ls
+CMakeLists.txt  demo.l          first_motion.l~   homework_uml.act
+README.md       first_motion.l  homework241016.l  package.xml
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ emacs homework.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ emacs homework_uml.act
+^Z
+[1]+  Stopped                 emacs homework_uml.act
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ emacs memo1023.txt
+mech-user@ki00119:~/semi_ws/src/jsk_2024_10_semi$ fg
+emacs homework_uml.act

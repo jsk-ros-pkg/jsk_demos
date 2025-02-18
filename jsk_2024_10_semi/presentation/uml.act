@@ -1,0 +1,74 @@
+@startuml
+|医者(PR2)|
+   start
+  :「手術開始」を宣言(speak);
+  :針を受け取りに行く(IK);
+  :「針をください」と言う(speak);
+
+|看護師|
+  :針をPR2に渡す;
+  :「どうぞ」と言う;
+
+|医者(PR2)|
+repeat 
+     :指を開いて針を待つ(start-grasp);
+repeat while (「どうぞ」という音声入力(speech_to_text)を受けるまで)
+
+|医者の左腕(PR2 larm)|
+:指を閉じて針を受け取る(start-grasp);
+
+|医者(PR2)|
+
+repeat 
+:「傷口を探しています」と言う(speak);
+     :HSIフィルタで赤色を抽出する;
+     :Euclidean Clusteringしてバウンディングボックスをつける;
+     :傷口の座標を取得する;
+repeat while (傷口を見つけるまで繰り返し，待機)
+
+:傷口の位置に縫合する針の経路を生成する;
+
+repeat 
+
+|医者の右腕(PR2 rarm)|
+
+:経路の最終地点に移動する(IK);
+:指を開いて待機する(stop-grasp);
+
+
+|医者の左腕(PR2 larm)|
+:経路の最初の地点に移動する(IK);
+:経路に従って縫い進める(angle-vector-sequence);
+:経路の最終地点で停止する;
+
+|医者の右腕(PR2 rarm)|
+:指を閉じて針を受け取る(start-grasp);
+|医者の左腕(PR2 larm)|
+:指を開いて針を離す(stop-grasp);
+
+|医者の右腕(PR2 rarm)|
+:腕を右に引いて余分な針を傷口から引き出す(move-pos);
+
+|医者の左腕(PR2 larm)|
+:針の受け渡しポイントに腕を動かす(IK);
+
+|医者の右腕(PR2 rarm)|
+:針の受け渡しポイントに腕を動かす(IK);
+
+|医者の左腕(PR2 larm)|
+:指を閉じて針を受け取る(start-grasp);
+
+|医者の右腕(PR2 rarm)|
+:指を開いて針を離す(stop-grasp);
+
+|医者(PR2)|
+:経路を5mmずらして生成する;
+
+
+repeat while (5針縫って傷口が閉じるまで続ける)
+
+|医者(PR2)|
+:「手術終了」と宣言する(speak);
+
+end
+@enduml
