@@ -59,6 +59,10 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
 
+  <exec_depend>kxr_controller</exec_depend>
+  <exec_depend>kxr_models</exec_depend>
+  <exec_depend>joy</exec_depend>
+  <exec_depend>teleop_twist_joy</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
