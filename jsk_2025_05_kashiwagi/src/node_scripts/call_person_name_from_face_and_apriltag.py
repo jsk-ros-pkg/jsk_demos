@@ -15,7 +15,7 @@ class NameCaller:
     def __init__(self):
         # パッケージパス取得
         rospack = rospkg.RosPack()
-        self.pkg_path = rospack.get_path('call_person_name')
+        self.pkg_path = rospack.get_path('jsk_2025_05_kashiwagi')
 
         # ファイルパス
         self.data_file = os.path.join(self.pkg_path, 'src', 'config', 'last_seen.json')

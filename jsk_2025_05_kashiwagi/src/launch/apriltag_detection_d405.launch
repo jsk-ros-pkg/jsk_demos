@@ -16,8 +16,8 @@
 
         <param name="publish_tag_detections_image" type="bool" value="true" />
         <param name="queue_size" type="int" value="$(arg queue_size)" />
-        <rosparam command="load" file="$(find call_person_name)/src/config/settings.yaml" />
-        <rosparam command="load" file="$(find call_person_name)/src/config/tags.yaml" />
+        <rosparam command="load" file="$(find jsk_2025_05_kashiwagi)/src/config/settings.yaml" />
+        <rosparam command="load" file="$(find jsk_2025_05_kashiwagi)/src/config/tags.yaml" />
       </node>
     </group>
   </group>
