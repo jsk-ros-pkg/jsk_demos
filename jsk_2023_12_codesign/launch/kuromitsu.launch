@@ -1,0 +1,15 @@
+<launch>
+
+  <arg name="urdf_path" default="$(find kxr_models)/urdf/kuromitsu.urdf" />
+  <arg name="servo_config_path" value="$(find kxr_models)/config/kuromitsu_servo_config.yaml" />
+
+  <include file="$(find kxr_controller)/launch/kxr_controller.launch" >
+    <arg name="urdf_path" value="$(arg urdf_path)" />
+    <arg name="servo_config_path" value="$(arg servo_config_path)" />
+  </include>
+
+  <include file="$(find kxr_controller)/launch/diff_drive_controller.launch" />
+
+  <!-- <include file="$(find kxr_controller)/launch/joy.launch" /> -->
+
+</launch>
