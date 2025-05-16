@@ -14,6 +14,7 @@ class ResponseSpeaker:
 
     def say_text(self, msg):
         text = msg.data
+        text = text.replace("\n", "")
         rospy.loginfo(f"話す内容: {text}")
         self.sound_client.say(text, voice='ちび式じい-ノーマル')
 
