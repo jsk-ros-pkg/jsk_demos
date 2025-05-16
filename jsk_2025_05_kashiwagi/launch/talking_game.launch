@@ -1,0 +1,24 @@
+<launch>
+  <!-- RealSense RGBD カメラ -->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+
+  <!-- voicevox音声合成 -->
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+    <arg name="use_docker" value="true"/>
+    <arg name="host" value="20.243.205.82"/>
+  </include>
+
+  <!-- zbar_ros - QRコード読み取り -->
+  <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader_node" output="screen">
+    <remap from="image" to="/camera/color/image_raw" />
+  </node>
+
+  <!-- 質問生成ノード -->
+  <node pkg="jsk_2025_05_kashiwagi" type="question_generator.py" name="question_generator" output="screen" />
+
+  <!-- GPT応答生成ノード -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="response_generator" output="screen" />
+
+  <!-- 音声出力ノード -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" />
+</launch>
