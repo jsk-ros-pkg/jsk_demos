@@ -1,23 +1,40 @@
 <launch>
   <!-- Define the robot name argument -->
   <arg name="robot_name" default="kashiwagi" />
+  <arg name="debug" default="false"/>
   
   <!-- Launch serial_node for the right eye -->
-  <node pkg="rosserial_python" name="serial_node_1" type="serial_node.py">
+  <node
+      pkg="rosserial_python"
+      type="serial_node.py"
+      name="eye_display_right"
+      output="screen"
+      >
     <param name="~port" value="/dev/ttyACM-righteye"/>
     <param name="~baud" value="57600"/>
+    <param name="~mode_right" value="true"/>
+    <param name="~direction" value="4"/>
+    <rosparam command="load" ns="eye_asset" file="$(find eye_display)/launch/$(arg robot_name).yaml" />
   </node>
 
-  <!-- Launch serial_node for the left eye -->
-  <node pkg="rosserial_python" name="serial_node_2" type="serial_node.py">
+  <!-- Launch serial_node for the right eye -->
+  <node
+      pkg="rosserial_python"
+      type="serial_node.py"
+      name="eye_display_left"
+      output="screen"
+      >
     <param name="~port" value="/dev/ttyACM-lefteye"/>
     <param name="~baud" value="57600"/>
+    <param name="~mode_right" value="false"/>
+    <param name="~direction" value="4"/>
+    <rosparam command="load" ns="eye_asset" file="$(find eye_display)/launch/$(arg robot_name).yaml" />
   </node>
   
   <!-- Launch serial_node for the ume if robot_name is "kashiwagi" -->
   <group ns="ume">
     <group if="$(eval robot_name == 'kashiwagi')">
-      <node pkg="rosserial_python" name="serial_node_3" type="serial_node.py">
+      <node pkg="rosserial_python" name="led_ume" type="serial_node.py">
   	<param name="~port" value="/dev/ttyUSB-ume"/>
   	<param name="~baud" value="57600"/>
       </node>
@@ -26,9 +43,18 @@
 
   <!-- Launch serial_node only if robot_name is "kashiwagi" -->
   <group ns="cheek">
-    <node pkg="rosserial_python" name="serial_node_4" type="serial_node.py">
+    <node pkg="rosserial_python" name="led_cheek" type="serial_node.py">
       <param name="~port" value="/dev/ttyUSB-cheek"/>
       <param name="~baud" value="57600"/>
     </node>
+  </group>
+
+  <group if="$(arg debug)">
+    <node
+        pkg="rosservice"
+        type="rosservice"
+        name="set_debug_mode"
+        args="call --wait /eye_display/set_logger_level rosout DEBUG"
+        />
   </group>
 </launch>
