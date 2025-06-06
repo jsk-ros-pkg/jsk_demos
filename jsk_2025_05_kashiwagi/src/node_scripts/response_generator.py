@@ -1,51 +1,118 @@
 #!/usr/bin/env python3
-import os
 import rospy
 from std_msgs.msg import String
-from openai import AzureOpenAI
+from std_msgs.msg import Float32
+from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
+from geometry_msgs.msg import Point
+import csv
+import os
+import time
 
 class ResponseGenerator:
     def __init__(self):
-        rospy.init_node('response_generator_node', anonymous=True)
+        rospy.init_node("response_generator")
 
-        self.client = AzureOpenAI(
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_KEY"),
-            api_version="2024-08-01-preview"
-        )
+        self.tsv_path = os.path.join(os.path.dirname(__file__), "talking_game.tsv")
 
-        self.system_prompt = {
-            "role": "system",
-            "content": "あなたは「柏木さん」というキャラクターです。一人称は「ぼく」です。性格は方向音痴で好奇心旺盛。以下のようなバックグラウンドストーリーを持ちます：「方向音痴で好奇心旺盛なため、学校に迷い込んできてしまい、そこを保護されて、学校の用務員として働いている。時々掃除をサボって、生徒のふりをしようとする。」見た目は鳩がモチーフになっており、サイズ感は50cm程度です。羽が柏の葉っぱの形になっており、頭に梅のはなの飾りがついているのが特徴的です。話し方はゆっくりのんびり話す感じで、あまり饒舌ではありません。また、丁寧語ではなく、タメ語で話します。また、自然な話し方になるように多めに一文ごとにタメや言いよどみ、間を設けてください。"
-        }
+        self.last_qr_distance = float('nan')
+        self.qr_distance_threshold = 0.10
 
-        self.reply_pub = rospy.Publisher("/gpt_reply", String, queue_size=10)
-        rospy.Subscriber("/input_text", String, self.callback)
+        self.recent_ids = {} # id: timestamp
+        self.cooldown_sec = 60 # ignore the same id for cooldown_sec [seconds]
 
-        rospy.loginfo("GPTSubscriber ノードが起動しました。/input_text を購読中...")
+        # Read talking_game.tsv from file path
+        self.qa_map = {}
+        try:
+            with open(self.tsv_path, encoding='utf-8') as f:
+                reader = csv.DictReader(f, delimiter='\t')
+                for row in reader:
+                    self.qa_map[row['id']] = {
+                        'question': row['question'],
+                        'response': row['response']
+                    }
+            rospy.loginfo(f"Succeeded to load tsv file: {len(self.qa_map)}")
+        except Exception as e:
+            rospy.logerr(f"Failed to load tsv file: {e}")
+            return
+
+        self.pub_response = rospy.Publisher("/talking_game_response", String, queue_size=10)
+        self.pub_right_eye_look_at = rospy.Publisher("/eye_display_right/look_at", Point, queue_size=10)
+        self.pub_left_eye_look_at = rospy.Publisher("/eye_display_left/look_at", Point, queue_size=10)
+        
+        self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+        rospy.Subscriber("/qr_distance", Float32, self.depth_update_callback)
+        rospy.Subscriber("/qr_data", String, self.response_callback)
+
+        rospy.loginfo("Launching Response Generator node ....")
         rospy.spin()
 
-    def callback(self, msg):
-        user_input = msg.data
-        rospy.loginfo(f"受信: {user_input}")
+    def look_downside(self):
+        right_gaze_point = Point()
+        right_gaze_point.x = -5
+        right_gaze_point.y = 10
+        right_gaze_point.z = 0
+        
+        left_gaze_point = Point()
+        left_gaze_point.x = 5
+        left_gaze_point.y = 10
+        left_gaze_point.z = 0
+        
+        self.pub_right_eye_look_at.publish(right_gaze_point)
+        self.pub_left_eye_look_at.publish(left_gaze_point)
 
-        response = self.client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL"),
-            messages=[
-                self.system_prompt,
-                {"role": "user", "content": user_input}
-            ],
-            max_tokens=300,
-            temperature=0.7,
-            top_p=0.95,
-            frequency_penalty=0,
-            presence_penalty=0,
-            stream=False
-        )
+    def depth_update_callback(self, msg):
+        self.last_qr_distance = msg.data
+        
+    def response_callback(self, msg):
+        qr_text = msg.data.strip()
+        rospy.loginfo(f"QR data: {qr_text}")
 
-        reply = response.choices[0].message.content.strip()
-        rospy.loginfo(f"GPT応答: {reply}")
-        self.reply_pub.publish(reply)
+        # check the distance between robot and qr code
+        if self.last_qr_distance > self.qr_distance_threshold:
+            rospy.logwarn("QR code is far from robot")
+            return
+
+        else:
+            # check if the qr code data is digit and its range
+            if not qr_text.isdigit():
+                rospy.logwarn("QR code data is not number")
+                return
+            number = int(qr_text)
+            if not (1 <= number <= 100):
+                rospy.logwarn("QR code data is number but out of range")
+                return
+
+            # check if the qr code is scanned within certain time
+            now = time.time()
+            if qr_text in self.recent_ids:
+                elapsed_time = now - self.recent_ids[qr_text]
+                if elapsed_time < self.cooldown_sec:
+                    rospy.loginfo(f"this qr code is skipped because scanned {elapsed_time:.1f} ago")
+                    return
+
+            # change kashiwagi state to "talking_game:speaking_turn"
+            try:
+                req_state = "talking_game:speaking_turn"
+                resp = self.set_state_srv(req_state)
+                if resp.success:
+                    rospy.loginfo(f"State updated: {resp.message}")
+                else:
+                    rospy.logwarn(f"State update failed: {resp.message}")
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Service call failed: {e}")
+
+            self.recent_ids[qr_text] = now
+            
+            # Find corresponding response from tsv file
+            if qr_text in self.qa_map:
+                question = self.qa_map[qr_text]['question']
+                response = self.qa_map[qr_text]['response']
+                rospy.loginfo(f"corresponding question: {question}")
+                rospy.loginfo(f"corresponding response: {response}")
+                self.look_downside()
+                self.pub_response.publish(response)
+            else:
+                rospy.logwarn(f"Cannot find corresponding question and response in tsv file: {qr_text}")
 
 if __name__ == "__main__":
     try:

@@ -1,24 +1,30 @@
 <launch>
-  <!-- RealSense RGBD カメラ -->
+  <!-- RealSense RGBD camera -->
   <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
 
-  <!-- voicevox音声合成 -->
+  <!-- voicevox with docker -->
   <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
     <arg name="use_docker" value="true"/>
     <arg name="host" value="20.243.205.82"/>
   </include>
 
-  <!-- zbar_ros - QRコード読み取り -->
-  <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader_node" output="screen">
-    <remap from="image" to="/camera/color/image_raw" />
-  </node>
+  <!-- QR code reader -->
+  <node pkg="jsk_2025_05_kashiwagi" type="qr_code_reader.py" name="qr_code_reader" output="screen" />
+  <!-- QR code depth reader -->
+  <node pkg="jsk_2025_05_kashiwagi" type="qr_code_depth_reader.py" name="qr_code_depth_reader" output="screen" />
+  
+  <!-- response generator  -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="question_generator" output="screen" />
 
-  <!-- 質問生成ノード -->
-  <node pkg="jsk_2025_05_kashiwagi" type="question_generator.py" name="question_generator" output="screen" />
-
-  <!-- GPT応答生成ノード -->
-  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="response_generator" output="screen" />
-
-  <!-- 音声出力ノード -->
+  <!-- response speaker -->
   <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" />
+
+  <!-- state manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_manager.py" name="kashiwagi_state_manager" output="screen" />
+
+  <!-- motion manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_motion_manager.py" name="kashiwagi_motion_manager" output="screen" />
+
+  <!-- led ume manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_led_manager.py" name="kashiwagi_led_manager" output="screen" />
 </launch>
