@@ -28,6 +28,12 @@ def look_downside_mode():
 def thinking_mode():
     print("thinking_mode")
 
+def look_at_direction(neck_yaw_angle):
+    av = ri.angle_vector()
+    av[0] = neck_yaw_angle
+    ri.angle_vector(av, 0.4)
+    ri.wait_interpolation()
+
 def speaking_mode():
     larm_roll_angles = [-0.8, -0.4]
     rarm_roll_angles = [0.8, 0.4]
