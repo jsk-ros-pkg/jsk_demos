@@ -19,6 +19,7 @@ class ResponseGenerator:
 
         self.recent_ids = {} # id: timestamp
         self.cooldown_sec = 60 # ignore the same id for cooldown_sec [seconds]
+        self.cur_state = "unknown"
 
         # Read talking_game.tsv from file path
         self.qa_map = {}
@@ -36,15 +37,19 @@ class ResponseGenerator:
             return
 
         self.pub_response = rospy.Publisher("/talking_game_response", String, queue_size=10)
-        self.pub_right_eye_look_at = rospy.Publisher("/eye_display_right/look_at", Point, queue_size=10)
-        self.pub_left_eye_look_at = rospy.Publisher("/eye_display_left/look_at", Point, queue_size=10)
+        #self.pub_right_eye_look_at = rospy.Publisher("/eye_display_right/look_at", Point, queue_size=10)
+        #self.pub_left_eye_look_at = rospy.Publisher("/eye_display_left/look_at", Point, queue_size=10)
         
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         rospy.Subscriber("/qr_distance", Float32, self.depth_update_callback)
         rospy.Subscriber("/qr_data", String, self.response_callback)
-
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        
         rospy.loginfo("Launching Response Generator node ....")
         rospy.spin()
+
+    def state_callback(self, msg):
+        self.cur_state = msg.data
 
     def look_downside(self):
         right_gaze_point = Point()
@@ -109,7 +114,7 @@ class ResponseGenerator:
                 response = self.qa_map[qr_text]['response']
                 rospy.loginfo(f"corresponding question: {question}")
                 rospy.loginfo(f"corresponding response: {response}")
-                self.look_downside()
+                #self.look_downside()
                 self.pub_response.publish(response)
             else:
                 rospy.logwarn(f"Cannot find corresponding question and response in tsv file: {qr_text}")

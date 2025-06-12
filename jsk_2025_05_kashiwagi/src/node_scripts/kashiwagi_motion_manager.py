@@ -29,9 +29,15 @@ class MotionManager:
             if self.current_kashiwagi_state == "talking_game:speaking_turn":
                 kashiwagi_utils.speaking_mode()  # 繰り返し実行される
             elif self.current_kashiwagi_state == "talking_game:listening_turn":
-                # kashiwagi_utils.breath_mode()
-                print(self.neck_yaw_angle)
                 kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "daily:normal":
+                kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "daily:waking_up":
+                kashiwagi_utils.init_pose()
+            elif self.current_kashiwagi_state == "daily:happy":
+                kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "idle":
+                kashiwagi_utils.breath_mode()
             self.rate.sleep()
 
 if __name__ == '__main__':

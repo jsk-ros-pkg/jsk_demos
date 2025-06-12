@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+import rospy
+from std_msgs.msg import String
+from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
+
+class StateAutoResetter:
+    def __init__(self):
+        rospy.init_node("kashiwagi_state_resetter")
+
+        self.target_states = ["daily:happy", "daily:waking_up"]
+        self.timeout_duration = rospy.Duration(5.0)  # 5秒
+
+        self.cur_state = "unknown"
+        self.state_enter_time = rospy.Time.now()
+
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+
+        self.timer = rospy.Timer(rospy.Duration(1.0), self.check_state_timeout)
+
+        rospy.loginfo("Launching State AutoResetter node ....")
+        rospy.spin()
+
+    def state_callback(self, msg):
+        new_state = msg.data
+        if new_state != self.cur_state:
+            rospy.loginfo(f"State changed: {self.cur_state} → {new_state}")
+            self.cur_state = new_state
+            self.state_enter_time = rospy.Time.now()
+
+    def check_state_timeout(self, event):
+        if self.cur_state in self.target_states:
+            elapsed = rospy.Time.now() - self.state_enter_time
+            if elapsed >= self.timeout_duration:
+                rospy.loginfo(f"State '{self.cur_state}' timed out after {elapsed.to_sec()}s. Resetting to 'daily:normal'.")
+                try:
+                    resp = self.set_state_srv("daily:normal")
+                    if resp.success:
+                        rospy.loginfo(f"State reset successful: {resp.message}")
+                    else:
+                        rospy.logwarn(f"State reset failed: {resp.message}")
+                except rospy.ServiceException as e:
+                    rospy.logerr(f"Failed to call service: {e}")
+
+if __name__ == "__main__":
+    try:
+        StateAutoResetter()
+    except rospy.ROSInterruptException:
+        pass

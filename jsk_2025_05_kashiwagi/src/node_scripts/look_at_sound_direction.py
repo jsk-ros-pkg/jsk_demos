@@ -31,7 +31,6 @@ class VoiceTriggerWithMajority:
     def volume_callback(self, msg):
         vol = msg.data
         self.volume_history.append(vol)
-        print(self.latest_direction, self.volume_history[-1])
 
         if len(self.volume_history) < self.buffer_size:
             rospy.loginfo(f"データ不足（{len(self.volume_history)}件） → スキップ")
@@ -57,17 +56,21 @@ class VoiceTriggerWithMajority:
                 rospy.loginfo(f"I heard voice but cannot detect its direction")
             else:
                 rospy.loginfo(f"I heard voice. volume:({spike_count}/10)-> direction: {self.latest_direction}")
-                if 0 <= self.latest_direction < 90:
-                    neck_yaw_angle = 0.5
-                elif -90 < self.latest_direction < 0:
-                    neck_yaw_angle = -0.5
-                elif (90 <= self.latest_direction <= 180) or (-180 <= self.latest_direction <= -90):
-                    neck_yaw_angle = self.latest_direction / 180 + (-1) * (self.latest_direction) / (abs(self.latest_direction))
-                #kashiwagi_utils.look_at_direction(neck_yaw_angle)
+                cur_neck_yaw_angle = kashiwagi_utils.ri.angle_vector()[0]
+                if self.latest_direction > 0:
+                    new_neck_yaw_angle = (-1) * self.latest_direction / 180 + 1 + cur_neck_yaw_angle
+                elif self.latest_direction <= 0:
+                    new_neck_yaw_angle = (-1) * self.latest_direction / 180 - 1 + cur_neck_yaw_angle
+                    
+                if new_neck_yaw_angle <= 0:
+                    new_neck_yaw_angle = max(-0.5, new_neck_yaw_angle)
+                else:
+                    new_neck_yaw_angle = min(0.5, new_neck_yaw_angle)
+                rospy.loginfo(f"new neck angle is {new_neck_yaw_angle}")
                 pub_msg = Float32()
-                pub_msg.data = neck_yaw_angle
+                pub_msg.data = new_neck_yaw_angle
                 self.neck_pub.publish(pub_msg)
-                rospy.loginfo(f"publishing at {neck_yaw_angle}")
+                rospy.loginfo(f"publishing at {new_neck_yaw_angle}")
         else:
             rospy.logdebug(f"音量 {vol}（平均 {avg:.1f}） → スパイク: {is_spike}, スパイク履歴: {spike_count}/10")
 
