@@ -26,7 +26,7 @@ class Listener:
         req_state = None
         if self.cur_kashiwagi_state == "idle" and spoken_word == "おはよう":
             req_state = "daily:waking_up"
-        elif self.cur_kashiwagi_state == "daily_normal" and spoken_word == "柏木さん":
+        elif self.cur_kashiwagi_state == "daily:normal" and spoken_word == "柏木さん":
             req_state = "daily:happy"
         elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word == "遊" or spoken_word =="遊ぼ" or spoken_word =="遊ぼう"):
             req_state  = "talking_game:listening_turn"
