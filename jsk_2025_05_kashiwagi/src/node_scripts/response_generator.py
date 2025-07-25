@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Float32
+from std_msgs.msg import String, Float32
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from geometry_msgs.msg import Point
+from openai import AzureOpenAI
 import csv
+import json
 import os
 import time
 
@@ -12,16 +13,18 @@ class ResponseGenerator:
     def __init__(self):
         rospy.init_node("response_generator")
 
-        self.tsv_path = os.path.join(os.path.dirname(__file__), "talking_game.tsv")
+        # file path settings
+        base_dir = os.path.dirname(__file__)
+        self.tsv_path = os.path.join(base_dir, "talking_game.tsv")
+        self.record_path = os.path.join(base_dir, "response_record.json")
 
         self.last_qr_distance = float('nan')
         self.qr_distance_threshold = 0.10
-
-        self.recent_ids = {} # id: timestamp
-        self.cooldown_sec = 60 # ignore the same id for cooldown_sec [seconds]
+        self.recent_ids = {}  # id: timestamp
+        self.cooldown_sec = 60
         self.cur_state = "unknown"
 
-        # Read talking_game.tsv from file path
+        # read tsv file with predefined answers
         self.qa_map = {}
         try:
             with open(self.tsv_path, encoding='utf-8') as f:
@@ -31,93 +34,151 @@ class ResponseGenerator:
                         'question': row['question'],
                         'response': row['response']
                     }
-            rospy.loginfo(f"Succeeded to load tsv file: {len(self.qa_map)}")
+            rospy.loginfo(f"succeeded in reading tsv: {len(self.qa_map)}")
         except Exception as e:
-            rospy.logerr(f"Failed to load tsv file: {e}")
+            rospy.logerr(f"failed to read tsv: {e}")
             return
 
+        # read answers in the past
+        self.recorded_responses = self.load_response_record()
+
+        # Azure OpenAI settings
+        self.client = AzureOpenAI(
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_KEY"),
+            api_version="2024-08-01-preview"
+        )
+
+        self.system_prompt = {
+            "role": "system",
+            "content": (
+                "あなたは「柏木さん」というキャラクターです。一人称は「ぼく」。方向音痴で好奇心旺盛。"
+                "見た目は鳩で、柏の葉の羽と梅の飾りが特徴。用務員として学校で働いている。"
+                "話し方はゆっくりのんびりで、タメ語。丁寧語は使わず、言いよどみや間を含む自然な話し方をしてください。"
+                "過去の回答や参考回答と矛盾がないように答えてください。"
+            )
+        }
+
         self.pub_response = rospy.Publisher("/talking_game_response", String, queue_size=10)
-        #self.pub_right_eye_look_at = rospy.Publisher("/eye_display_right/look_at", Point, queue_size=10)
-        #self.pub_left_eye_look_at = rospy.Publisher("/eye_display_left/look_at", Point, queue_size=10)
-        
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+
         rospy.Subscriber("/qr_distance", Float32, self.depth_update_callback)
         rospy.Subscriber("/qr_data", String, self.response_callback)
         rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
-        
-        rospy.loginfo("Launching Response Generator node ....")
+
+        rospy.loginfo("Response Generator starting nodes...")
         rospy.spin()
+
+    def load_response_record(self):
+        if os.path.exists(self.record_path):
+            try:
+                with open(self.record_path, encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                rospy.logerr(f"failed to read response_record.json: {e}")
+        return {}
+
+    def save_response_record(self, qr_id, gpt_response):
+        now = int(time.time())
+        if qr_id not in self.recorded_responses:
+            self.recorded_responses[qr_id] = []
+        self.recorded_responses[qr_id].append({
+            "timestamp": now,
+            "response": gpt_response
+        })
+
+        try:
+            with open(self.record_path, mode='w', encoding='utf-8') as f:
+                json.dump(self.recorded_responses, f, ensure_ascii=False, indent=2)
+            rospy.loginfo(f"record in response_record.json {qr_id} → {gpt_response}")
+        except Exception as e:
+            rospy.logerr(f"failed to write in response_record.json: {e}")
 
     def state_callback(self, msg):
         self.cur_state = msg.data
 
-    def look_downside(self):
-        right_gaze_point = Point()
-        right_gaze_point.x = -5
-        right_gaze_point.y = 10
-        right_gaze_point.z = 0
-        
-        left_gaze_point = Point()
-        left_gaze_point.x = 5
-        left_gaze_point.y = 10
-        left_gaze_point.z = 0
-        
-        self.pub_right_eye_look_at.publish(right_gaze_point)
-        self.pub_left_eye_look_at.publish(left_gaze_point)
-
     def depth_update_callback(self, msg):
         self.last_qr_distance = msg.data
-        
+
     def response_callback(self, msg):
         qr_text = msg.data.strip()
-        rospy.loginfo(f"QR data: {qr_text}")
+        rospy.loginfo(f": {qr_text}")
 
-        # check the distance between robot and qr code
         if self.last_qr_distance > self.qr_distance_threshold:
             rospy.logwarn("QR code is far from robot")
             return
 
-        else:
-            # check if the qr code data is digit and its range
-            if not qr_text.isdigit():
-                rospy.logwarn("QR code data is not number")
-                return
-            number = int(qr_text)
-            if not (1 <= number <= 100):
-                rospy.logwarn("QR code data is number but out of range")
-                return
+        if not qr_text.isdigit():
+            rospy.logwarn("QR code data is not number")
+            return
 
-            # check if the qr code is scanned within certain time
-            now = time.time()
+        number = int(qr_text)
+        if not (1 <= number <= 100):
+            rospy.logwarn("QR code data is number but out of range")
+            return
+
+        # check if the qr code is scanned within certain time
+        now = time.time()
             if qr_text in self.recent_ids:
                 elapsed_time = now - self.recent_ids[qr_text]
                 if elapsed_time < self.cooldown_sec:
                     rospy.loginfo(f"this qr code is skipped because scanned {elapsed_time:.1f} ago")
                     return
 
-            # change kashiwagi state to "talking_game:speaking_turn"
-            try:
-                req_state = "talking_game:speaking_turn"
-                resp = self.set_state_srv(req_state)
-                if resp.success:
-                    rospy.loginfo(f"State updated: {resp.message}")
-                else:
-                    rospy.logwarn(f"State update failed: {resp.message}")
-            except rospy.ServiceException as e:
-                rospy.logerr(f"Service call failed: {e}")
-
-            self.recent_ids[qr_text] = now
-            
-            # Find corresponding response from tsv file
-            if qr_text in self.qa_map:
-                question = self.qa_map[qr_text]['question']
-                response = self.qa_map[qr_text]['response']
-                rospy.loginfo(f"corresponding question: {question}")
-                rospy.loginfo(f"corresponding response: {response}")
-                #self.look_downside()
-                self.pub_response.publish(response)
+        # change kashiwagi state to "talking_game:speaking_turn"
+        try:
+            resp = self.set_state_srv("talking_game:speaking_turn")
+            if resp.success:
+                rospy.loginfo(f"state updated: {resp.message}")
             else:
-                rospy.logwarn(f"Cannot find corresponding question and response in tsv file: {qr_text}")
+                rospy.logwarn(f"no state update: {resp.message}")
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Service call failed:e {e}")
+            return
+
+        self.recent_ids[qr_text] = now
+
+        # 質問と参考回答、履歴からプロンプトを作成
+        if qr_text in self.qa_map:
+            question = self.qa_map[qr_text]['question']
+            reference = self.qa_map[qr_text]['response']
+            history_list = self.recorded_responses.get(qr_text, [])
+
+            history_text = ""
+            for i, item in enumerate(history_list[-3:]):  # 直近3件のみプロンプトに含める
+                history_text += f"【過去の回答{i+1}】{item['response']}\n"
+
+            prompt = f"""以下の質問に、柏木さんとして自然な形でタメ語で答えてください。
+            - 話し方はゆっくりのんびりで、言いよどみや間を自然に入れてください。
+            - 以下の「参考回答」および「過去の回答」と矛盾がないようにしてください。
+            【質問】{question}
+            【参考回答】{reference}
+            {history_text}
+            """
+
+            try:
+                response = self.client.chat.completions.create(
+                    model=os.getenv("AZURE_OPENAI_MODEL"),
+                    messages=[
+                        self.system_prompt,
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=300,
+                    temperature=0.7,
+                    top_p=0.95,
+                    frequency_penalty=0,
+                    presence_penalty=0,
+                    stream=False
+                )
+                reply = response.choices[0].message.content.strip()
+                rospy.loginfo(f"generated response: {reply}")
+                self.pub_response.publish(reply)
+                self.save_response_record(qr_text, reply)
+
+            except Exception as e:
+                rospy.logerr(f"failed to generate response with GPT: {e}")
+        else:
+            rospy.logwarn(f"Cannot find corresponding question and response in tsv file: {qr_text}")
 
 if __name__ == "__main__":
     try:
