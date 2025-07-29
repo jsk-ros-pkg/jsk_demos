@@ -8,11 +8,9 @@ class NameListenerNode:
     def __init__(self):
         rospy.init_node("name_listener_node")
 
-        # SoundClient 初期化
         self.sound_client = SoundClient(sound_action='sound_play', sound_topic='sound_play')
-        rospy.sleep(1)  # 音声ノードの準備待ち
+        rospy.sleep(1)  
 
-        # /speech_to_text トピックの購読
         self.sub = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.callback)
 
         rospy.loginfo("名前を待っています...")
