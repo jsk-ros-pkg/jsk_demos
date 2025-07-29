@@ -31,6 +31,7 @@ def audio_callback(msg):
 
 def listener():
     rospy.init_node('audio_volume_calculator')
+    rospy.sleep(1.0)
     
     # 音量をパブリッシュするためのパブリッシャを作成
     global volume_publisher

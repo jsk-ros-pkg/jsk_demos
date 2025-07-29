@@ -5,6 +5,7 @@ from std_msgs.msg import String
 class QuestionGenerator:
     def __init__(self):
         rospy.init_node('question_generator')
+        rospy.sleep(1.0)
 
         self.pub = rospy.Publisher('/input_text', String, queue_size=10)
         rospy.Subscriber('/barcode', String, self.callback)

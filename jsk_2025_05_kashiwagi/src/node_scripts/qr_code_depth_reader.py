@@ -11,6 +11,7 @@ import math
 class QRDepthReader:
     def __init__(self):
         rospy.init_node("qr_depth_reader")
+        rospy.sleep(1.0)
         self.bridge = CvBridge()
         self.latest_px = None
         self.last_seen_time = None

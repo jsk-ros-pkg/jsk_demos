@@ -6,6 +6,7 @@ from kashiwagi_module_utils import Modules
 class LedManager:
     def __init__(self):
         rospy.init_node("kashiwagi_ume_led_manager")
+        rospy.sleep(1.0)
         self.current_state = "unknown"
         self.prev_state = "unknown"
         self.modules = Modules()

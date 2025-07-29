@@ -6,6 +6,7 @@ from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 class StateAutoResetter:
     def __init__(self):
         rospy.init_node("kashiwagi_state_resetter")
+        rospy.sleep(1)
 
         self.target_states = ["daily:happy", "daily:waking_up"]
         self.timeout_duration = rospy.Duration(5.0)  # 5秒

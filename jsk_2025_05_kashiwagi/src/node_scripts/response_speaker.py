@@ -9,6 +9,7 @@ from std_msgs.msg import String
 class ResponseSpeakerWithAction:
     def __init__(self):
         rospy.init_node('response_speaker_action_node')
+        rospy.sleep(1)
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         rospy.loginfo("Waiting for sound_play action server...")
         self.client.wait_for_server()

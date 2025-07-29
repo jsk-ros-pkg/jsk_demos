@@ -7,6 +7,7 @@ from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 class Listener:
     def __init__(self):
         rospy.init_node("kashiwagi_listener")
+        rospy.sleep(1.0)
 
         self.cur_kashiwagi_state = "unknown"
 

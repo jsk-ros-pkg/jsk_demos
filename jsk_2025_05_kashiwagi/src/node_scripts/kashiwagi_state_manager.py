@@ -6,6 +6,7 @@ from jsk_2025_05_kashiwagi.srv import SetKashiwagiState, SetKashiwagiStateRespon
 class StateManagerNode:
     def __init__(self):
         rospy.init_node("state_manager_node")
+        rospy.sleep(1.0)
 
         self.state = "idle"
         self.pub = rospy.Publisher("/kashiwagi_state", String, queue_size=10)

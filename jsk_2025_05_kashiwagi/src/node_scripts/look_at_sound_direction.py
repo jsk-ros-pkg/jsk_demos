@@ -6,7 +6,6 @@ import kashiwagi_utils
 
 class VoiceTriggerWithMajority:
     def __init__(self):
-        #rospy.init_node("voice_trigger_with_majority")
         # パラメータ設定
         self.buffer_size = 60
         self.trigger_margin = 5  # 平均より+10でスパイクと判定

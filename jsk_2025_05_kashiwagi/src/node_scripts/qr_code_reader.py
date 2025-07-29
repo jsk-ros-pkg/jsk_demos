@@ -10,6 +10,7 @@ from pyzbar.pyzbar import decode
 class QRReader:
     def __init__(self):
         rospy.init_node('qr_reader')
+        rospy.sleep(1.0)
         self.current_kashiwagi_state = "unknown"
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber('/camera/color/image_raw', Image, self.image_callback)

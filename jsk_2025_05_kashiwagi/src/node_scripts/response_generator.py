@@ -12,6 +12,7 @@ import time
 class ResponseGenerator:
     def __init__(self):
         rospy.init_node("response_generator")
+        rospy.sleep(1)
 
         # file path settings
         base_dir = os.path.dirname(__file__)
@@ -119,11 +120,11 @@ class ResponseGenerator:
 
         # check if the qr code is scanned within certain time
         now = time.time()
-            if qr_text in self.recent_ids:
-                elapsed_time = now - self.recent_ids[qr_text]
-                if elapsed_time < self.cooldown_sec:
-                    rospy.loginfo(f"this qr code is skipped because scanned {elapsed_time:.1f} ago")
-                    return
+        if qr_text in self.recent_ids:
+            elapsed_time = now - self.recent_ids[qr_text]
+            if elapsed_time < self.cooldown_sec:
+                rospy.loginfo(f"this qr code is skipped because scanned {elapsed_time:.1f} ago")
+                return
 
         # change kashiwagi state to "talking_game:speaking_turn"
         try:
