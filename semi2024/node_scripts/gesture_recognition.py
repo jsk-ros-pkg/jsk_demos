@@ -377,7 +377,7 @@ class FingerGestureEstimation(ConnectionBasedTransport):
         self.sub.unregister()
 
     def callback(self, img_msg):
-        if abs((rospy.Time.now() - img_msg.header.stamp).to_sec()) > 0.1:
+        if abs((rospy.Time.now() - img_msg.header.stamp).to_sec()) > 0.5:
             return
 
         image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
