@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="namespace" default="robot_a" />
+  <arg name="namespace" default="" />
   <arg name="model_path" default="$(find semi2024)/models/keypoint_classifier.tflite" />
   <arg name="label_csv" default="$(find semi2024)/models/keypoint_classifier_label.csv" />
 
