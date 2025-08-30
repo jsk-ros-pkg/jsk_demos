@@ -190,7 +190,7 @@ def reset_robot_pose(duration=2.0):
 if __name__ == '__main__':
     while not rospy.is_shutdown():
         ri.servo_off()
-        speak_jp("いっしょにあそぶ？", volume=sound_volume ,wait=True) # ゲーム開始の挨拶
+        speak_jp("いっしょに遊ぶ？遊ぶ場合は僕の関節を動かしてね", volume=sound_volume ,wait=True) # ゲーム開始の挨拶
         previous_angle = ri.angle_vector()
         while not rospy.is_shutdown():
             current_angle = ri.angle_vector()
