@@ -11,7 +11,7 @@ from skrobot.model import RobotModel
 from jsk_recognition_msgs.msg import ClassificationResult
 from skrobot.utils.urdf import no_mesh_load_mode
 
-sound_volume = 0.001
+sound_volume = 0.5
 
 
 # --- ROSトピックから新しいラベルを待ち受ける関数 ---
