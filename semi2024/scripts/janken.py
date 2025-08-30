@@ -184,6 +184,7 @@ def reset_robot_pose(duration=2.0):
     """ロボットをノーマルポーズに戻します。"""
     robot_model.angle_vector(normal_pose)
     robot_model.rarm_module2_joint1.joint_angle(1.57)
+    robot_model.larm_module2_joint1.joint_angle(-1.57)
     move_robot(robot_model.angle_vector(), duration)
 
 # --- メインゲームループ ---
@@ -255,6 +256,8 @@ if __name__ == '__main__':
                     # ロボットがじゃんけんに勝ったので、ロボットが指す側を演じる
                     robot_pointing_direction = random.choice(atchimuki_directions)
                     robot_pointing_pose = atchimuki_robot_pointing_map[robot_pointing_direction]
+                    robot_model.angle_vector(robot_pointing_pose)
+                    robot_model.rarm_module2_joint1.joint_angle(1.57)
                     move_robot(robot_pointing_pose, 1.0) # ロボットが指を差す
 
                 elif janken_round_result == "human_win":
