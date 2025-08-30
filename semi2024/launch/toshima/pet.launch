@@ -1,0 +1,12 @@
+<launch>
+
+  <include file="$(find semi2024)/launch/d405_light.launch">
+  </include>
+
+  <include file="$(find jedy_bringup)/launch/jedy_bringup.launch">
+  </include>
+
+  <include file="$(find semi2024)/launch/toshima/jedy_sample_hsi_color_filter.launch" >
+  </include>
+
+</launch>
