@@ -7,6 +7,7 @@
   </include>
 
   <include file="$(find semi2024)/launch/toshima/jedy_sample_hsi_color_filter.launch" >
+    <arg name="gui" value="false" />
   </include>
 
 </launch>
