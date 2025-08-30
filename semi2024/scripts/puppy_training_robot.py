@@ -8,6 +8,7 @@ import os
 from skrobot.model import RobotModel
 import time
 from jsk_recognition_msgs.msg import BoundingBoxArray
+from skrobot.utils.urdf import no_mesh_load_mode
 
 # グローバル変数
 found_dog_flag = False
@@ -23,7 +24,8 @@ rospy.init_node("kxr_interface", anonymous=True)
 namespace = ''
 robot_description = namespace + "/robot_description"
 robot_model = RobotModel()
-robot_model.load_urdf_from_robot_description(robot_description)
+with no_mesh_load_mode():
+    robot_model.load_urdf_from_robot_description(robot_description)
 ri = KXRROSRobotInterface(
     robot_model, namespace=namespace, controller_timeout=10.0
 )
