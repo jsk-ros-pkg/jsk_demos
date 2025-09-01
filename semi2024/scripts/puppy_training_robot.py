@@ -27,7 +27,7 @@ robot_model = RobotModel()
 with no_mesh_load_mode():
     robot_model.load_urdf_from_robot_description(robot_description)
 ri = KXRROSRobotInterface(
-    robot_model, namespace=namespace, controller_timeout=10.0
+    robot_model, namespace=namespace, controller_timeout=100.0
 )
 ri.servo_on()
 viewer = PyrenderViewer(resolution=(640, 480))
