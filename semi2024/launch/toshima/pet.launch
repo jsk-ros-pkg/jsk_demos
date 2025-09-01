@@ -10,4 +10,8 @@
     <arg name="gui" value="false" />
   </include>
 
+  <node name="pet_training"
+        pkg="semi2024" type="puppy_training_robot.py" output="screen">
+  </node>
+
 </launch>
