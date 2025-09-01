@@ -180,6 +180,14 @@ def check_dog_duration(event):
 
 if __name__ == '__main__':
     #rospy.init_node('box_filter_node_external_timer')
+    robot_model.angle_vector(ri.angle_vector())
+    for _ in range(3):
+        robot_model.head_module1_joint1.joint_angle(0.0)
+        ri.angle_vector(robot_model.angle_vector(),0.5)
+        ri.wait_interpolation()
+        robot_model.head_module1_joint1.joint_angle(np.deg2rad(-40))
+        ri.angle_vector(robot_model.angle_vector(),0.5)
+        ri.wait_interpolation()
     bf = BoxFilter()
     rospy.Timer(rospy.Duration(1.0), check_dog_duration)
     rospy.spin()
