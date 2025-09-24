@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
+import sys
+
 import rospy
 import actionlib
+import std_msgs.msg
 from sensor_msgs.msg import CompressedImage
 import os
 from importlib import import_module
@@ -29,6 +33,11 @@ chat_completion = None
 images = [np.array(cv2.imencode('.jpg',  np.zeros((120,160,3), np.uint8))[1]).tostring()]
 answers = []
 
+vqa_model = 'gpt-4o-mini'
+chat_model = 'gpt-4o-mini'
+vqa_temperature = 0.5
+chat_temperature = 0.3
+
 def vqa(question, images, temperature = 0.0, max_tokens = 300, debug = False):
     global chat_completion
 
@@ -38,7 +47,7 @@ def vqa(question, images, temperature = 0.0, max_tokens = 300, debug = False):
         cv2.waitKey(100)
 
     image_urls = [{'type': 'image_url', 'image_url' : {'url': 'data:image/jpeg;base64,'+base64.b64encode(image).decode('utf-8')}} for image in images]
-    req = ChatCompletionsRequest(model = 'gpt-4-vision-preview',
+    req = ChatCompletionsRequest(model = vqa_model,
                                  messages = json.dumps([{"role": "user",
                                                          "content": [ {"type": "text", "text": question} ]
                                                          + image_urls }]),
@@ -105,16 +114,16 @@ def cb(msg):
             images = images[1:]
 
         try:
-            answer = vqa(question, [msg.data], temperature = 1.0)
+            answer = vqa(question, [msg.data], temperature = vqa_temperature)
             if answer == 'NO':
                 raise Exception('Invalid image')
             rospy.loginfo("- {}".format(answer))
             for a in answers:
                 rospy.loginfo(" .. {}".format(a))
-            req = ChatCompletionsRequest(model="gpt-3.5-turbo",
+            req = ChatCompletionsRequest(model = chat_model,
                                          messages = json.dumps([{"role": "system", "content": "You can compare whether your sentenses describe the same scene and returns with 'YES' or 'NO'"},
                                                                 {"role": "user", "content": "Return 'YES' if given text '{}' is similar to one of the following list '{}', otherwise return 'NO'".format(answer, answers)}
-                                        ]))
+                                         ]), temperature = chat_temperature)
             rospy.loginfo("Q: {}".format(req.messages[0:255]))
             ret = chat_completion(req)
             rospy.loginfo("A: {}".format(ret.content))
@@ -134,6 +143,10 @@ def cb(msg):
 
 if __name__ == '__main__':
     try:
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--file', type=str, dest='filename')
+        args = parser.parse_args(rospy.myargv()[1:])
+
         rospy.init_node('store_image_description', anonymous=True)
         debug_msg = StringStamped(header=Header(stamp=rospy.Time.now()))
         rospy.loginfo("wait for '/openai/chat_completions'")
@@ -143,6 +156,24 @@ if __name__ == '__main__':
         result_pub = rospy.Publisher("~result", VQATaskActionResult, queue_size=1)
         image_pub = rospy.Publisher("~result/image/compressed", CompressedImage, queue_size=1)
         mongodb_event_sub = rospy.Subscriber('/publish_trigger_mongodb_event', rospy.AnyMsg, debug_cb, queue_size=1)
+
+        # debug mode
+        print(args.filename)
+        if args.filename:
+            try:
+                image = cv2.imread(args.filename)
+                ret, buffer = cv2.imencode('.jpg', image)
+                msg = CompressedImage()
+                msg.header = std_msgs.msg.Header()
+                msg.header.stamp = rospy.Time.now()
+                msg.format = "jpeg"
+                msg.data = np.array(buffer).tobytes()
+                debug_msg.data = 'debug'
+                cb(msg)
+            except Exception as e:
+                rospy.logerr('could not find image file ({})'.format(e))
+            sys.exit(0)
+
         rospy.Subscriber('image', CompressedImage, cb, queue_size=1)
         rospy.loginfo("start subscribing {}".format(rospy.resolve_name('image')))
         rospy.spin()

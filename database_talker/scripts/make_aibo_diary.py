@@ -148,6 +148,8 @@ if __name__ == '__main__':
     parser.add_argument('--test-diary', '--test', action='store_true')
     parser.add_argument('--test-response', type=str, default=None)
     parser.add_argument('--prompt-type', default='basic', choices=['basic','personality'])
+    today_string=datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    parser.add_argument('--date', default=today_string, help="use {} or {}".format(today_string, datetime.datetime.today().strftime('%Y-%m-%d')))
 
     args = parser.parse_args(rospy.myargv()[1:])
 
@@ -156,7 +158,16 @@ if __name__ == '__main__':
     logger = logging.getLogger('rosout')
     logger.setLevel(rospy.impl.rosout._rospy_to_logging_levels[rospy.DEBUG])
 
-    ml = MessageListener(wait_for_chat_server=not (args.test_diary or args.test_response), prompt_type=args.prompt_type)
+    try:
+        start_date = datetime.datetime.strptime(args.date, '%Y-%m-%d')
+    except:
+        try:
+            start_date = datetime.datetime.strptime(args.date, '%Y-%m-%d %H:%M:%S')
+        except:
+            rospy.logerr("Invalid date format")
+            sys.exit(1)
+
+    ml = MessageListener(start_date=start_date, wait_for_chat_server=not (args.test_diary or args.test_response), prompt_type=args.prompt_type)
     if args.test_diary:
         ret = ml.make_diary()
         if 'filename' in ret:

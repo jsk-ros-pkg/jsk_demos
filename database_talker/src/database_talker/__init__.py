@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# chat parameters
+chat_model = 'gpt-4o-mini'
+chat_temperature = 0.5
+
 import rospy
 import logging
 
@@ -26,6 +30,7 @@ import sys
 import tempfile
 # import time
 import traceback
+import textwrap
 
 IsHeadless = False
 if 'DISPLAY' not in os.environ:
@@ -56,7 +61,7 @@ from mongodb_store_msgs.srv import MongoQueryMsg, MongoQueryMsgRequest, MongoQue
 # from jsk_recognition_msgs.msg import ClassificationTaskAction, ClassificationTaskGoal
 # from jsk_recognition_msgs.msg import VQATaskAction, VQATaskGoal
 
-from openai_ros.srv import Completion, CompletionResponse
+from openai_ros.srv import ChatCompletions, ChatCompletionsRequest
 
 # https://stackoverflow.com/questions/196345/how-to-check-if-a-string-in-python-is-in-ascii
 def is_ascii(s):
@@ -103,9 +108,9 @@ class DatabaseTalkerBase(object):
 
         # # https://github.com/k-okada/openai_ros
         # # this requres apt install python3.7 python3.7-venv
-        rospy.loginfo("wait for '/openai/get_response'")
-        rospy.wait_for_service('/openai/get_response')
-        self.completion = rospy.ServiceProxy('/openai/get_response', Completion)
+        rospy.loginfo("wait for '/openai/chat_completions'")
+        rospy.wait_for_service('/openai/chat_completions')
+        self.chat_completion = rospy.ServiceProxy('/openai/chat_completions', ChatCompletions)
 
         # ## integration of dialogflow <-> google_chat_ros was performed by google_chat_ros/script/helper.py
         # rospy.loginfo("wait for '/dialogflow_client/text_action'")
@@ -655,30 +660,32 @@ class DatabaseTalkerBase(object):
             result = None
             while loop < 3 and result is None:
                 try:
-                    result = self.completion(prompt=prompt,temperature=0)
+                    result = self.openai_completion(prompt=prompt,temperature=0)
                 except rospy.ServiceException as e:
                     rospy.logerr("Service call failed: %s"%e)
                     result = None
                 loop += 1
-            result.text = result.text.lstrip().encode('utf8')
+            result.content = result.content.lstrip().encode('utf8')
             rospy.loginfo("prompt = {}".format(prompt))
             rospy.loginfo("result = {}".format(result))
             # pubish as card
             filename = tempfile.mktemp(suffix=".jpg", dir=rospkg.get_ros_home())
             self.write_image_with_annotation(filename, best_result, prompt)
-            return {'text': result.text, 'filename': filename}
+            return {'text': result.content, 'filename': filename}
 
         except Exception as e:
             raise ValueError("Query failed {} {}".format(e, traceback.format_exc()))
 
 
-    def openai_completion(self, prompt, temperature=0):
+    def openai_completion(self, prompt, model=chat_model, temperature=chat_temperature):
         loop = 0
         result = None
         while loop < 5 and result is None:
             try:
-                result = self.completion(prompt=prompt,temperature=temperature)
-                if result.text == '':
+                result = self.chat_completion(ChatCompletionsRequest(
+                    messages = json.dumps([{"role": "user", "content": [ {"type": "text", "text": prompt} ]}]),
+                    model=model,temperature=temperature))
+                if result.content == '':
                     rospy.logwarn(result)
                     rospy.logwarn("result text is too short, retry completion")
                     rospy.sleep(2)
@@ -690,25 +697,29 @@ class DatabaseTalkerBase(object):
             loop += 1
         if result is None:
             raise Exception('[ERROR] openni_completion failed to complete {}'.format(prompt))
-        result.text = result.text.lstrip()
+        result.content = result.content.lstrip()
         rospy.logdebug("prompt = {}".format(prompt))
         rospy.logdebug("result = {}".format(result))
-        return result.text
+        return result.content
 
     def write_image_with_annotation(self, filename, best_result, prompt):
         image = bridge.compressed_imgmsg_to_cv2(best_result['image'])
-        _, width, _ = image.shape
+        height, width, _ = image.shape
         scale = width/640.0
         if 'label' in best_result and 'similarities' in best_result:
             cv2.putText(image, "{} ({:.2f}) {}".format(best_result['label'], best_result['similarities'], best_result['timestamp'].strftime('%Y-%m-%d %H:%M:%S')),
                         (10,int(20*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (255,255,255), 8, 1)
             cv2.putText(image, "{} ({:.2f}) {}".format(best_result['label'], best_result['similarities'], best_result['timestamp'].strftime('%Y-%m-%d %H:%M:%S')),
                         (10,int(20*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (0,0,0), 2, 1)
-        string_width = 70
-        for i in range(0, len(prompt), string_width):  # https://stackoverflow.com/questions/13673060/split-string-into-strings-by-length
-            text = prompt[i:i+string_width]
-            cv2.putText(image, text, (10,int(43*scale)+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (255,255,255), 4, 1)
-            cv2.putText(image, text, (10,int(43*scale)+int(i/string_width*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.5*scale, (0,0,0), 1, 1)
+        string_width = 58
+        line_no = 0
+        for text in textwrap.wrap(prompt, string_width):  # https://stackoverflow.com/a/32122312
+            cv2.putText(image, text, (10,int(30*scale)+int(line_no*scale*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6*scale, (255,255,255), 4, 1)
+            cv2.putText(image, text, (10,int(30*scale)+int(line_no*scale*20)), cv2.FONT_HERSHEY_SIMPLEX, 0.6*scale, (0,0,0), 1, 1)
+            line_no += 1
+        timestamp = best_result['timestamp'].strftime('%b %d %H:%M')
+        cv2.putText(image, timestamp, (int(width-145*scale),int(height-10*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.6*scale, (255,255,255), 4, 1)
+        cv2.putText(image, timestamp, (int(width-145*scale),int(height-10*scale)), cv2.FONT_HERSHEY_SIMPLEX, 0.6*scale, (0,0,0), 1, 1)
         cv2.imwrite(filename, image)
         rospy.logwarn("save images to {}".format(filename))
 
@@ -832,10 +843,10 @@ class DatabaseTalkerBase(object):
         if filename:
             goal.cards = [Card(sections=[Section(widgets=[WidgetMarkup(image=Image(localpath=filename))])])]
         goal.space = space
-        rospy.logwarn("send {} to {}".format(goal.text, goal.space))
+        rospy.logwarn("send {} to {}".format(filename or goal.text, goal.space))
         ret = self.chat_ros_ac.send_goal_and_wait(goal, execute_timeout=rospy.Duration(0.10))
         result = self.chat_ros_ac.get_result()
-        if not result.done:
+        if not (result and result.done):
             rospy.logerr("publish_google_chat_card: failed to send message, send_goal_and_wait({}), result.done({})".format(ret, result.done))
             return False
         return True
@@ -879,20 +890,16 @@ class DatabaseTalkerBase(object):
 
         try:
             language = 'English' if is_ascii(text) else 'Japanese'
+            # check if text contains 'date'
+            try:
+                date_string = self.openai_completion('If "{}" contains date information, please return with "%Y-%m-%d" format. Note today is {}'.format(text if language is 'English' else self.openai_completion('Translate the following sentences to English\n\n{}'.format(text)), self.start_date.strftime('%Y-%m-%d %H:%M:%S')))
+                self.start_date =  datetime.datetime.strptime(re.search(r'\d\d\d\d-\d\d-\d\d', date_string)[0], '%Y-%m-%d')
+                # remove cache #### FIXME
+                self.use_activities_cache = False
+            except Exception as e:
+                rospy.logwarn("No date information included in '{}' ({})".format(text, e))
             if any(x in text for x in ['diary', '日記']):
                 self.publish_google_chat_card("Sure!", space)
-                # check if text contains 'date'
-                try:
-                    if not language is 'English':
-                        date_text = self.openai_completion('Translate the following sentences to English\n\n{}'.format(text))
-                        
-                    date_string = self.openai_completion('If "{}" contains date information, please return with "%Y-%m-%d" format. Note today is {}'.format(text if language is 'English' else self.openai_completion('Translate the following sentences to English\n\n{}'.format(text)), self.start_date.strftime('%Y-%m-%d %H:%M:%S')))
-                    self.start_date =  datetime.datetime.strptime(re.search(r'\d\d\d\d-\d\d-\d\d', date_string)[0], '%Y-%m-%d')
-                    # remove cache #### FIXME
-                    self.use_activities_cache = False
-                except Exception as e:
-                    rospy.logwarn("No date information included in '{}' ({})".format(text, e))
-
                 ret = self.make_diary(language)
                 if 'filename' in ret:
                     # upload text first, then upload images
@@ -925,7 +932,7 @@ class DatabaseTalkerBase(object):
         self.cb(msg)
         ret = self.chat_ros_ac.wait_for_result(rospy.Duration(5.0))
         result = self.chat_ros_ac.get_result()
-        rospy.logwarn("action_cb: set_succeeded, wait_for_result({}), result.done({})".format(ret, result.done))
+        rospy.logwarn("action_cb: set_succeeded, wait_for_result({}), result.done({})".format(ret, result.done if result else '--'))
         if ret and result.done:
             self.sas.set_succeeded(SendMessageResult(done=True))
         else:
