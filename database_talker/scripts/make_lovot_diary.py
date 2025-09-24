@@ -76,6 +76,11 @@ class LovotDatabaseTalker(DatabaseTalkerBase):
         ##
         return diary_activities_raw ##  (timestamp, event)
 
+    def make_diary(self, *args, **kwargs):
+        # lovot need to use yesterday's data, because data retrieval from Lovot is only supported on daily basis, so we must replacate them on the next day
+        self.start_date = self.start_date - datetime.timedelta(days=1)
+        return super(LovotDatabaseTalker, self).make_diary(*args, **kwargs)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -100,7 +105,7 @@ if __name__ == '__main__':
             rospy.logerr("Invalid date format")
             sys.exit(1)
 
-    ml = LovotDatabaseTalker(start_date=start_date, wait_for_chat_server=not args.test, use_activities_cache=not args.test, prompt_type=args.prompt_type)
+    ml = LovotDatabaseTalker(start_date=start_date, wait_for_chat_server=not args.test, prompt_type=args.prompt_type)
     if args.test:
         ret = ml.make_diary()
         if 'filename' in ret:

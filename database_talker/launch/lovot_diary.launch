@@ -1,0 +1,37 @@
+<launch>
+  <arg name="start_lovot_driver" value="false" />
+  <arg name="start_camera_driver" default="false" />
+  <arg name="camera_device" default="/dev/video0" />
+
+  <include file="$(find lovot_driver)/launch/lovot_driver.launch" if="$(arg start_lovot_driver)" />
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" if="$(arg start_camera_driver)" respawn="true">
+    <param name="video_device" value="$(arg camera_device)" />
+    <param name="image_width" value="320" />
+    <param name="image_height" value="240" />
+    <param name="pixel_format" value="yuyv" />
+    <param name="color_format" value="yuv422p" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="framrenate" value="10"/>
+  </node>
+
+  <include file="$(find database_talker)/launch/include/database_talker.launch" >
+    <arg name="google_credentials_json" value="$(find database_talker)/auth/jsk-lovot-f2a011bf1060.json" />
+    <arg name="google_credentials_project_id" value="jsk-lovot" />
+    <arg name="start_periodic_mongodb_trigger" default="false" />
+    <arg name="start_mongodb_record_nodelet_manager" default="false" />
+    <arg name="start_mongodb" default="false" />
+  </include>
+
+  <!-- start_periodic_mongodb_trigger -->
+  <node pkg="rostopic" type="rostopic" name="periodic_mongodb_trigger"
+        launch-prefix="bash -c 'set -x; while [ 1 ]; do ${@:0:$#-2} &quot;${@: -3}&quot; ; sleep 1000; done;' "
+        args="pub -s -1 /publish_trigger_mongodb_event lovot_driver/StringStamped &quot;{header: auto}&quot;" />
+  <!-- republish compressed/throttled image data only when /publish_trigger_mongodb_event is published -->
+  <!-- relay /lovot_driver/trigger -> /publish_trigger_mongodb_event to store /usb_cam/image_raw-->
+  <node name="relay_lovot_trigger_to_mongodb_trigger"
+	pkg="topic_tools" type="relay"
+	args="/lovot_driver/hungry_status /publish_trigger_mongodb_event" />
+
+</launch>

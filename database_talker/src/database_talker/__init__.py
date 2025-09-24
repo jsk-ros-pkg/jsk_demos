@@ -168,7 +168,17 @@ class DatabaseTalkerBase(object):
             (datetime.datetime.today() - datetime.datetime.fromtimestamp(os.path.getmtime(self.pickle_file))).seconds < 1 * 60 * 60):  # seconds -> hours
             rospy.loginfo('Loading cached activities data {}'.format(datetime.datetime.fromtimestamp(os.path.getmtime(self.pickle_file))))
             with open(self.pickle_file, 'rb') as f:
-                return pickle.load(f)
+                activities = pickle.load(f)
+                # check if activitis start from self.start_date
+                if len(activities) > 0 and len(activities[0]) > 0 and \
+                   len(activities[0][0]) > 0 and activities[0][0][1].get('timestamp') :
+                    timestamp = datetime.datetime.fromtimestamp(activities[0][0][1]['timestamp']//1000000000, JST)
+                    rospy.loginfo('        ... cached data is starting from {}'.format(timestamp))
+                    if abs((timestamp - datetime.datetime.combine(self.start_date, datetime.datetime.min.time(), tzinfo=JST)).total_seconds()) < 86400 : # 24 hours
+                        rospy.loginfo('        ... using cached activities for {}'.format(self.start_date))
+                        return activities
+                    else:
+                        rospy.logwarn("Cached file({}) is different from start_date({}), loading from mongoDB".format(timestamp, self.start_date))
 
         activities = []
         today = self.start_date  ## for debug ... ->  - datetime.timedelta(hours=24)
@@ -888,6 +898,8 @@ class DatabaseTalkerBase(object):
             rospy.logerr("Unknown message type {} on {}".format(msg._type, datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S')))
             return False
 
+        # when callbacked, update start_date to today
+        self.start_date=datetime.date.today()
         try:
             language = 'English' if is_ascii(text) else 'Japanese'
             # check if text contains 'date'

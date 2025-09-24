@@ -5,6 +5,9 @@
   <arg name="gdrive_credentials_yaml" default="$(find database_talker)/auth/pydrive_settings.yaml" />
   <arg name="start_periodic_mongodb_trigger" default="true" />
 
+  <arg name="start_mongodb_record_nodelet_manager" default="true" />
+  <arg name="start_mongodb" default="true" />
+
   <include file="$(find jsk_robot_startup)/launch/lifelog.launch" >
     <arg name="logger_save_rgb" value="false" />
     <arg name="logger_save_action" value="false" />
@@ -15,6 +18,8 @@
     <arg name="logger_save_video_to_scene" value="false" /> <!-- to reduce CPU load we use /aibo_driver/trigger -->
     <arg name="image" value="/usb_cam/image_raw" />
     <arg name="logger_save_throttled_image" value="false" />
+    <arg name="start_mongodb_record_nodelet_manager" value="$(arg start_mongodb_record_nodelet_manager)" />
+    <arg name="start_mongodb" value="$(arg start_mongodb)" />
   </include>
   <group ns="lifelog">
     <include file="$(find jsk_robot_startup)/lifelog/lifelog_rgb_image.launch" >
