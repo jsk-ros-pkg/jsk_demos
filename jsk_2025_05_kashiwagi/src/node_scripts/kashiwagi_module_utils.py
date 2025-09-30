@@ -37,7 +37,7 @@ class Modules:
             self.cheek_led_rgb
         )
 
-    def ume_led(self, r, g, b, brightness=10, mode=1, blink=3, duration=1, rainbow_hue=1):
+    def ume_led(self, r, g, b, brightness=20, mode=1, blink=3, duration=1, rainbow_hue=1):
         self._publish_led(
             r, g, b, brightness, mode, blink, duration, rainbow_hue,
             self.ume_led_blink_pub,
