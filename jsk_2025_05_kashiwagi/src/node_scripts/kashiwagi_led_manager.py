@@ -13,8 +13,8 @@ class LedManager:
 
         self.led_color_map = {
             "idle": (40, 255, 40),
-            "talking_game:listening_turn": (255, 255, 40),
-            "talking_game:speaking_turn": (255, 135, 135),
+            "talking_game:listening_turn": (255, 222, 40),
+            "talking_game:speaking_turn": (255, 100, 135),
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
