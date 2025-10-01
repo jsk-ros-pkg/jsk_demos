@@ -8,7 +8,7 @@ class LedManager:
         rospy.init_node("kashiwagi_ume_led_manager")
         rospy.sleep(1.0)
         self.current_state = "unknown"
-        self.prev_state = "unknown"
+        #self.prev_state = "unknown"
         self.modules = Modules()
 
         self.led_color_map = {
@@ -23,11 +23,11 @@ class LedManager:
 
     def state_callback(self, msg):
         new_state = msg.data
-        if new_state == self.current_state:
-            return
+        #if new_state == self.current_state:
+        #    return
 
-        rospy.loginfo(f"LED state changed: {self.current_state} → {new_state}")
-        self.prev_state = self.current_state
+        #rospy.loginfo(f"LED state changed: {self.current_state} → {new_state}")
+        #self.prev_state = self.current_state
         self.current_state = new_state
 
         color = self.led_color_map.get(self.current_state)
