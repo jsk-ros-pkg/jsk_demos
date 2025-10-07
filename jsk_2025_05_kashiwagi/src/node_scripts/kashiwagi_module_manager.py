@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import rospy
+65;6003;1cimport rospy
 from std_msgs.msg import String
 from kashiwagi_module_utils import Modules
 
@@ -40,12 +40,10 @@ class ModuleManager:
 
     def state_callback(self, msg):
         new_state = msg.data
-        if new_state == self.current_state:
-            return
-
-        rospy.loginfo(f"Kashiwagi State Changed: {self.current_state} → {new_state}")
-        self.prev_state = self.current_state
-        self.current_state = new_state
+        if new_state != self.current_state:
+            rospy.loginfo(f"Kashiwagi State Changed: {self.current_state} → {new_state}")
+            self.prev_state = self.current_state
+            self.current_state = new_state
 
         # Ume LED control
         ume_color = self.ume_led_color_map.get(self.current_state)
