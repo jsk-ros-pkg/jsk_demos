@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-65;6003;1cimport rospy
+import rospy
 from std_msgs.msg import String
 from kashiwagi_module_utils import Modules
 
