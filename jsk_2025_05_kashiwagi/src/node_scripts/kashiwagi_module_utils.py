@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import rospy
-from std_msgs.msg import String, UInt16, ColorRGBA
+from std_msgs.msg import String, UInt16, ColorRGBA, Float32
 
 class Modules:
     def __init__(self):
@@ -10,14 +10,14 @@ class Modules:
 
         # Cheek LED publishers
         self.cheek_led_blink_pub = rospy.Publisher("/cheek/led_blink_time", UInt16, queue_size=1)
-        self.cheek_led_duration = rospy.Publisher("/cheek/led_duration", UInt16, queue_size=1)
+        self.cheek_led_duration = rospy.Publisher("/cheek/led_duration", Float32, queue_size=1)
         self.cheek_led_mode = rospy.Publisher("/cheek/led_mode", UInt16, queue_size=1)
         self.cheek_led_rainbow_delta_hue = rospy.Publisher("/cheek/led_rainbow_delta_hue", UInt16, queue_size=1)
         self.cheek_led_rgb = rospy.Publisher("/cheek/led_rgb", ColorRGBA, queue_size=1)
 
         # Ume LED publishers
         self.ume_led_blink_pub = rospy.Publisher("/ume/led_blink_time", UInt16, queue_size=1)
-        self.ume_led_duration = rospy.Publisher("/ume/led_duration", UInt16, queue_size=1)
+        self.ume_led_duration = rospy.Publisher("/ume/led_duration", Float32, queue_size=1)
         self.ume_led_mode = rospy.Publisher("/ume/led_mode", UInt16, queue_size=1)
         self.ume_led_rainbow_delta_hue = rospy.Publisher("/ume/led_rainbow_delta_hue", UInt16, queue_size=1)
         self.ume_led_rgb = rospy.Publisher("/ume/led_rgb", ColorRGBA, queue_size=1)
