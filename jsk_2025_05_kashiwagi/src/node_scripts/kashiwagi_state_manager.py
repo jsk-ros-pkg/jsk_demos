@@ -15,7 +15,7 @@ class StateManagerNode:
         self.srv = rospy.Service("/set_kashiwagi_state", SetKashiwagiState, self.handle_set_state)
 
         # 周期的に状態をbroadcast（例：1Hz）
-        rospy.Timer(rospy.Duration(1.0), self.broadcast_state)
+        self.timer = rospy.Timer(rospy.Duration(1.0), self.broadcast_state)
 
         rospy.loginfo("State Manager Node launched.")
         rospy.spin()

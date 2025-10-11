@@ -51,7 +51,7 @@ class Modules:
                      blink_pub, duration_pub, mode_pub, hue_pub, rgb_pub):
         color = ColorRGBA(r=r, g=g, b=b, a=brightness)
         blink_pub.publish(UInt16(blink))
-        duration_pub.publish(UInt16(duration))
+        duration_pub.publish(Float32(duration))
         mode_pub.publish(UInt16(mode))
         hue_pub.publish(UInt16(rainbow_hue))
         rgb_pub.publish(color)

@@ -27,11 +27,14 @@ class ModuleManager:
 
         self.eye_map = {
             "idle": "sleepy",
+            "talking_game:starting": "happy",
             "talking_game:listening_turn": "blink",
             "talking_game:speaking_turn": "normal",
+            "talking_game:happy": "happy",
             "daily:waking_up": "surprised",
             "daily:normal": "normal",
             "daily:happy": "happy",
+            "daily:goodbye": "happy",
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)

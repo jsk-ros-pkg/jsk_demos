@@ -50,18 +50,29 @@ class Listener:
         if self.cur_kashiwagi_state == "idle" and spoken_word == "おはよう":
             req_state = "daily:waking_up"
             self.say_text("おはよう")
-        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word == "さようなら" or spoken_word == "またね"):
+        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word in ["さようなら", "またね"]):
+            ### TODO ###
             self.say_text("またねー")
-        elif (self.cur_kashiwagi_state == "daily:normal" or self.cur_kashiwagi_state == "talking_game:listening_turn" ) and (spoken_word == "柏木さん" or spoken_word == "柏" or spoken_word == "柏木" or spoken_word == "こんにちは"):
+            req_state = "daily:goodbye"
+        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word in ["柏木さん", "柏", "柏木"]):
+            self.say_text("呼んだ？")
             req_state = "daily:happy"
-            if spoken_word == "こんにちは":
-                self.say_text("こんにちは")
-            else:
-                self.say_text("呼んだ？")
-        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word == "遊" or spoken_word =="遊ぼ" or spoken_word =="遊ぼう"):
-            req_state  = "talking_game:listening_turn"
+        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word in ["こんにちは"]):
+            self.say_text("こんにちは")
+            req_state = "daily:happy"
+        elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word in ["遊", "遊ぼ", "遊ぼう"]):
+            ### TODO ### 
+            req_state  = "talking_game:starting"
             self.say_text("いいよー")
-        elif (self.cur_kashiwagi_state == "talking_game:listening_turn" or self.cur_kashiwagi_state == "talking_game:speaking_turn") and (spoken_word == "おわり" or spoken_word == "終わり"):
+
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and (spoken_word in ["柏木さん", "柏", "柏木"]):
+            self.say_text("呼んだ？")
+            req_state = "talking_game:happy"
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and (spoken_word in ["こんにちは"]):
+            self.say_text("こんにちは")
+            req_state = "talking_game:happy"
+
+        elif self.cur_kashiwagi_state in ["talking_game:listening_turn", "talking_game:speaking_turn"] and (spoken_word in ["おわり", "終わり"]):
             req_state = "daily:happy"
             self.say_text("楽しかったね")
         elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word == "おやすみ"):
@@ -70,16 +81,16 @@ class Listener:
 
         if req_state != None:
             try:
-                resp = self.set_state_srv(req_state)
-                if resp.success:
-                    rospy.loginfo(f"State updated: {resp.message}")
-                else:
-                    rospy.logwarn(f"State update failed: {resp.message}")
+              resp = self.set_state_srv(req_state)
+              if resp.success:
+                rospy.loginfo(f"State updated: {resp.message}")
+              else:
+                rospy.logwarn(f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
-                rospy.logerr(f"Service call failed: {e}")
+              rospy.logerr(f"Service call failed: {e}")
 
 if __name__ == "__main__":
     try:
-        Listener()
+              Listener()
     except rospy.ROSInterruptException:
         pass

@@ -36,6 +36,8 @@ class MotionManager:
                 kashiwagi_utils.init_pose()
             elif self.current_kashiwagi_state == "daily:happy":
                 kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "daily:goodbye":
+                kashiwagi_utils.goodbye()
             elif self.current_kashiwagi_state == "idle":
                 kashiwagi_utils.breath_mode()
             self.rate.sleep()

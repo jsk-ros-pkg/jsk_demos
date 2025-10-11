@@ -44,6 +44,13 @@ def breath_mode_and_look_at_direction(neck_yaw_angle):
         ri.angle_vector(av, 0.2)
         ri.wait_interpolation()
 
+def goodbye():
+    rarm_roll_angles = [-1.0, -0.3, 0.4, 0]
+    for i in range(len(rarm_roll_angles)):
+        av = [0, 0.04, 0, -0.7, 0, 0, 0, rarm_roll_angles[i], 0, 0]
+        ri.angle_vector(av, 0.2)
+        ri.wait_interpolation()
+
 def speaking_mode():
     larm_roll_angles = [-0.8, -0.4]
     rarm_roll_angles = [0.8, 0.4]

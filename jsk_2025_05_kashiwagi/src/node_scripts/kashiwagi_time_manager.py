@@ -8,7 +8,7 @@ class StateAutoResetter:
         rospy.init_node("kashiwagi_state_resetter")
         rospy.sleep(1)
 
-        self.target_states = ["daily:happy", "daily:waking_up"]
+        self.target_states = ["daily:happy", "daily:waking_up", "daily:goodbye", "talking_game:starting", "talking_game:happy"]
         self.timeout_duration = rospy.Duration(5.0)  # 5秒
 
         self.cur_state = "unknown"
@@ -31,11 +31,16 @@ class StateAutoResetter:
 
     def check_state_timeout(self, event):
         if self.cur_state in self.target_states:
+            if self.cur_state in ["daily:happy", "daily:waking_up", "daily:goodbye"]:
+                req_state = "daily:normal"
+            elif self.cur_state in ["talking_game:starting", "talking_game:happy"]:
+                req_state = "talking_game:listening_turn"
+
             elapsed = rospy.Time.now() - self.state_enter_time
             if elapsed >= self.timeout_duration:
                 rospy.loginfo(f"State '{self.cur_state}' timed out after {elapsed.to_sec()}s. Resetting to 'daily:normal'.")
                 try:
-                    resp = self.set_state_srv("daily:normal")
+                    resp = self.set_state_srv(req_state)
                     if resp.success:
                         rospy.loginfo(f"State reset successful: {resp.message}")
                     else:
