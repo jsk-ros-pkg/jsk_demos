@@ -47,7 +47,7 @@ class Listener:
         rospy.loginfo(msg.transcript[0])
         spoken_word = msg.transcript[0]
         req_state = None
-        if self.cur_kashiwagi_state == "idle" and spoken_word == "おはよう":
+        if self.cur_kashiwagi_state == "idle" and (spoken_word in ["おはよう", "起きて", "おきて", "掟"]):
             req_state = "daily:waking_up"
             self.say_text("おはよう")
         elif self.cur_kashiwagi_state == "daily:normal" and (spoken_word in ["さようなら", "またね"]):

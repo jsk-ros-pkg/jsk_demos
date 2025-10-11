@@ -128,7 +128,8 @@ class ResponseGenerator:
 
         # change kashiwagi state to "talking_game:speaking_turn"
         try:
-            resp = self.set_state_srv("talking_game:speaking_turn")
+            resp = self.set_state_srv("talking_game:thinking_turn")
+            # resp = self.set_state_srv("talking_game:speaking_turn")
             if resp.success:
                 rospy.loginfo(f"state updated: {resp.message}")
             else:
