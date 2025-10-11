@@ -14,10 +14,24 @@ class ResponseSpeakerWithAction:
         rospy.loginfo("Waiting for sound_play action server...")
         self.client.wait_for_server()
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+        self.is_speaking = False
         rospy.loginfo("Connected to sound_play action server.")
         rospy.Subscriber("/talking_game_response", String, self.say_text)
         rospy.spin()
 
+    def _done_cb(self, state, result):
+        rospy.loginfo("Speech finished!")
+        self.is_speaking = False
+        try:
+            resp = self.set_state_srv("talking_game:listening_turn")
+            rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Service call failed: {e}")
+
+    def _feedback_cb(self, state):
+        self.is_speaking = True
+        rospy.loginfo("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-------------")
+        
     def say_text(self, msg):
         text = msg.data.replace("\n", "")
         rospy.loginfo(f"Talking contents: {text}")
@@ -30,17 +44,18 @@ class ResponseSpeakerWithAction:
         goal.sound_request.volume = 1.0
 
         # 音声再生を送信
-        self.client.send_goal(goal)
-
-        # フィードバック中に何かしたいならここにコールバック追加できる（省略可）
-
+        self.client.send_goal(goal,
+                              done_cb=self._done_cb,
+                              feedback_cb=self._feedback_cb)
+        
         # 表情アニメーションを喋ってる間だけ繰り返す（wait_for_result中）
         rate = rospy.Rate(10)
         while not self.client.wait_for_result(timeout=rospy.Duration(0.1)):
-            # kashiwagi_motion_eye_expressions.speaking_mode()
+            if self.is_speaking == False:
+                self.client.playWave("kashiwagi_hmm.wav")
             rate.sleep()
 
-        rospy.loginfo("Speech finished!")
+        # rospy.loginfo("Speech finished!")
         # change kashiwagi state to "talking_game:listening_turn"
         try:
             req_state = "talking_game:listening_turn"
