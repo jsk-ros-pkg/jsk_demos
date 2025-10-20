@@ -2,49 +2,19 @@
   <!-- Define the robot name argument -->
   <arg name="robot_name" default="kashiwagi" />
   <arg name="debug" default="false"/>
-  
-  <!-- Launch serial_node for the right eye -->
-  <node
-      pkg="rosserial_python"
-      type="serial_node.py"
-      name="eye_display_right"
-      output="screen"
-      >
-    <param name="~port" value="/dev/ttyACM-righteye"/>
-    <param name="~baud" value="57600"/>
-    <param name="~mode_right" value="true"/>
-    <param name="~direction" value="4"/>
-    <rosparam command="load" ns="eye_asset" file="$(find eye_display)/launch/$(arg robot_name).yaml" />
-  </node>
 
-  <!-- Launch serial_node for the right eye -->
-  <node
-      pkg="rosserial_python"
-      type="serial_node.py"
-      name="eye_display_left"
-      output="screen"
-      >
-    <param name="~port" value="/dev/ttyACM-lefteye"/>
-    <param name="~baud" value="57600"/>
-    <param name="~mode_right" value="false"/>
-    <param name="~direction" value="4"/>
-    <rosparam command="load" ns="eye_asset" file="$(find eye_display)/launch/$(arg robot_name).yaml" />
-  </node>
+  <!-- Launch serial_node for dual eyes -->
+  <include file="$(find eye_display)/launch/kashiwagi_dual.launch">
+    <arg name="port_right" value="/dev/ttyACM-righteye" />
+    <arg name="port_left" value="/dev/ttyACM-lefteye" />
+    <arg name="baud" value="57600" />
+    <arg name="debug" value="true" />
+  </include>
   
   <!-- Launch serial_node for the ume if robot_name is "kashiwagi" -->
-  <group ns="ume">
-    <group if="$(eval robot_name == 'kashiwagi')">
-      <node pkg="rosserial_python" name="led_ume" type="serial_node.py">
-  	<param name="~port" value="/dev/ttyUSB-ume"/>
-  	<param name="~baud" value="57600"/>
-      </node>
-    </group>
-  </group>
-
-  <!-- Launch serial_node only if robot_name is "kashiwagi" -->
-  <group ns="cheek">
-    <node pkg="rosserial_python" name="led_cheek" type="serial_node.py">
-      <param name="~port" value="/dev/ttyUSB-cheek"/>
+  <group if="$(eval robot_name == 'kashiwagi')">
+    <node pkg="rosserial_python" name="led_ume" type="serial_node.py">
+      <param name="~port" value="/dev/ttyUSB-ume"/>
       <param name="~baud" value="57600"/>
     </node>
   </group>

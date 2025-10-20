@@ -5,8 +5,8 @@ from std_msgs.msg import String, UInt16, ColorRGBA, Float32
 class Modules:
     def __init__(self):
         # Eye publishers（左右で変数分け）
-        self.eye_pub_left = rospy.Publisher("/eye_display_left/eye_status", String, queue_size=10)
-        self.eye_pub_right = rospy.Publisher("/eye_display_right/eye_status", String, queue_size=10)
+        self.eye_pub_left = rospy.Publisher("/left/eye_display/eye_status", String, queue_size=10)
+        self.eye_pub_right = rospy.Publisher("/right/eye_display/eye_status", String, queue_size=10)
 
         # Cheek LED publishers
         self.cheek_led_blink_pub = rospy.Publisher("/cheek/led_blink_time", UInt16, queue_size=1)
