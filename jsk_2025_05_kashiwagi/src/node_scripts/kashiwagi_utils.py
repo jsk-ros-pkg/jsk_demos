@@ -32,7 +32,7 @@ def thinking_mode():
     rarm_pitch_angles = [-0.7, -0.7, -0.7, -0.8, -0.9, -1.0, -1.2, -1.2, -1.2, -1.0, -0.9, -0.8]
 
     for i in range(12):
-        av = [neck_pitch_angles[i], neck_pitch_angles[i], larm_pitch_angles[i], -1.2, 0, 0, rarm_pitch_angles[i], 1.2, 0, 0]
+        av = [neck_pitch_angles[i], neck_yaw_angles[i], larm_pitch_angles[i], -1.2, 0, 0, rarm_pitch_angles[i], 1.2, 0, 0]
         ri.angle_vector(av, 0.2)
         ri.wait_interpolation()
 

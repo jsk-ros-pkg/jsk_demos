@@ -44,6 +44,9 @@
   <!-- listener -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_listener.py" name="kashiwagi_listener" output="screen" />
 
+  <!-- speaker -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_speaker.py" name="kashiwagi_speaker" output="screen" />
+
   <!-- time manager -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_manager.py" name="kashiwagi_time_manager" output="screen" />
   
