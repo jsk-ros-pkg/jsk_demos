@@ -15,6 +15,14 @@
     <arg name="device" value="uac_demo"/>
   </include>
 
+
+  <node name="is_speaking"
+        pkg="sound_play" type="is_speaking.py" >
+    <remap from="~robotsound" to="/robotsound_jp/status" />
+    <remap from="~output/is_speaking" to="is_speaking" />
+  </node>
+
+
   <!-- QR code reader -->
   <node pkg="jsk_2025_05_kashiwagi" type="qr_code_reader.py" name="qr_code_reader" output="screen" />
   <!-- QR code depth reader -->

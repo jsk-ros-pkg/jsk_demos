@@ -1,0 +1,127 @@
+<launch>
+
+  <arg name="raw_audio_topic" default="/audio" doc="Name of audio topic captured from respeaker." />
+  <arg name="dummy_audio_topic" default="/dummy_audio" doc="Dummy audio. no Audio" />
+  <arg name="audio_topic" default="/input_audio" doc="Selected audio topic" />
+  <arg name="audio_info_topic" default="/audio_info" doc="Selected audio info topic" />  
+  <arg name="language" default="ja-JP"/>
+  <arg name="self_cancellation" default="false"/>  
+
+  <!-- respeaker -->
+  <node name="respeaker_node"
+	pkg="respeaker_ros" type="respeaker_node.py"
+        respawn="true" respawn_delay="10" >
+    <rosparam>
+      sample_duration: 0.03
+    </rosparam>
+  </node>
+
+  <node name="webrtcvad_ros"
+        pkg="webrtcvad_ros" type="webrtcvad_ros.py"
+        output="screen" >
+    <rosparam>
+      aggressiveness: 1
+    </rosparam>
+    <remap from="audio_data" to="$(arg audio_topic)" />
+    <remap from="audio_info" to="$(arg audio_info_topic)" />
+  </node>
+  
+  <node name="speech_to_text" pkg="respeaker_ros" type="speech_to_text.py"
+        output="screen">
+    <remap from="audio" to="webrtcvad_ros/speech_audio"  />    
+    <rosparam subst_value="true">
+      language: $(arg language)
+      self_cancellation: $(arg self_cancellation)
+      tts_tolerance: 0.5
+    </rosparam>
+  </node>
+  
+  <!-- voicevox with docker -->
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+    <arg name="use_docker" value="true"/>
+    <arg name="host" value="20.243.128.11"/>
+    <!-- <arg name="device" value="plughw:2,0"/> -->
+    <arg name="device" value="uac_demo"/>
+  </include>
+
+  <node name="is_speaking"
+        pkg="sound_play" type="is_speaking.py" >
+    <remap from="~robotsound" to="/robotsound_jp/status" />
+    <remap from="~output/is_speaking" to="is_speaking" />
+  </node>
+
+  <node name="input_audio_mux"
+  	pkg="topic_tools" type="mux"
+        respawn="true"
+	args="$(arg audio_topic) $(arg raw_audio_topic) $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+  </node>
+
+  <node name="input_audio_selector"
+	pkg="riberry_startup" type="mux_selector.py"
+	respawn="true"
+	args="/is_speaking 'm.data is False' $(arg raw_audio_topic) /is_speaking 'm.data is True' $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+    <param name="default_select" value="$(arg dummy_audio_topic)" />
+    <param name="wait" value="true" />
+  </node>
+
+  <!-- RealSense RGBD camera -->
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
+
+  <!-- <!-\- respeaker -\-> -->
+  <!-- <include file="$(find respeaker_ros)/launch/sample_respeaker.launch"> -->
+  <!--   <arg name="language" value="ja-JP"/> -->
+  <!-- </include> -->
+
+  <!-- <!-\- voicevox with docker -\-> -->
+  <!-- <include file="$(find voicevox)/launch/voicevox_texttospeech.launch"> -->
+  <!--   <arg name="use_docker" value="true"/> -->
+  <!--   <arg name="host" value="20.243.128.11"/> -->
+  <!--   <!-\- <arg name="device" value="plughw:0,0"/> -\-> -->
+  <!--   <arg name="device" value="uac_demo"/> -->
+  <!-- </include> -->
+
+  <!-- <node name="is_speaking" -->
+  <!--       pkg="sound_play" type="is_speaking.py" > -->
+  <!--   <remap from="~robotsound" to="/robotsound_jp/status" /> -->
+  <!--   <remap from="~output/is_speaking" to="is_speaking" /> -->
+  <!-- </node> -->
+
+
+  <!-- QR code reader -->
+  <node pkg="jsk_2025_05_kashiwagi" type="qr_code_reader.py" name="qr_code_reader" output="screen" />
+  <!-- QR code depth reader -->
+  <node pkg="jsk_2025_05_kashiwagi" type="qr_code_depth_reader.py" name="qr_code_depth_reader" output="screen" />
+  
+  <!-- response generator  -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="question_generator" output="screen" />
+
+  <!-- response speaker -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" />
+
+  <!-- state manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_manager.py" name="kashiwagi_state_manager" output="screen" />
+
+  <!-- motion manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_motion_manager.py" name="kashiwagi_motion_manager" output="screen" />
+
+  <!-- module manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_module_manager.py" name="kashiwagi_module_manager" output="screen" />
+  
+  <!-- look at direction  -->
+  <node pkg="jsk_2025_05_kashiwagi" type="look_at_sound_direction.py" name="look_at_sound_direction" output="screen" />
+
+  <!-- audio volume publisher  -->
+  <node pkg="jsk_2025_05_kashiwagi" type="audio_volume_publisher.py" name="audio_volume_publisher" output="screen" />
+
+  <!-- listener -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_listener.py" name="kashiwagi_listener" output="screen" />
+
+  <!-- speaker -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_speaker.py" name="kashiwagi_speaker" output="screen" />
+
+  <!-- time manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_manager.py" name="kashiwagi_time_manager" output="screen" />
+
+</launch>

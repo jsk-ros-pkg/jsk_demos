@@ -36,7 +36,6 @@ class ResponseSpeakerWithAction:
                 rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
-        rospy.loginfo("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-------------")
         self.is_speaking = True
         
     def say_text(self, msg):
@@ -48,6 +47,7 @@ class ResponseSpeakerWithAction:
         goal.sound_request.command = SoundRequest.PLAY_ONCE
         goal.sound_request.arg = text
         goal.sound_request.arg2 = "ちび式じい-ノーマル"
+        # goal.sound_request.arg2 = "ずんだもん-ノーマル"
         goal.sound_request.volume = 1.0
 
         # 音声再生を送信

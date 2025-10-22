@@ -17,6 +17,7 @@ class ModuleManager:
             "talking_game:listening_turn": (255, 255, 40),
             "talking_game:speaking_turn": (0, 225, 78),
             "talking_game:thinking_turn": (255, 110, 243),
+            "talking_game:happy": (255, 110, 243),
             "daily:waking_up":  (255, 130, 255),
             "daily:normal":  (255, 130, 255),
             "daily:happy":  (255, 110, 243),
@@ -25,6 +26,7 @@ class ModuleManager:
         self.cheek_led_color_map = {
             "talking_game:starting": (225, 110, 243),
             "talking_game:speaking_turn": (255, 130, 255),
+            "talking_game:happy": (255, 110, 243),
             "daily:waking_up":  (255, 130, 255),
             "daily:happy":  (255, 110, 243),
         }
