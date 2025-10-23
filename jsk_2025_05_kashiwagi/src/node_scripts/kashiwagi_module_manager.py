@@ -21,6 +21,8 @@ class ModuleManager:
             "daily:waking_up":  (255, 130, 255),
             "daily:normal":  (255, 130, 255),
             "daily:happy":  (255, 110, 243),
+            "daily:goodbye":  (255, 110, 243),
+            "daily:introduction":  (255, 35, 140),
         }
 
         self.cheek_led_color_map = {
@@ -29,6 +31,8 @@ class ModuleManager:
             "talking_game:happy": (255, 110, 243),
             "daily:waking_up":  (255, 130, 255),
             "daily:happy":  (255, 110, 243),
+            "daily:goodbye":  (255, 110, 243),
+            "daily:introduction":  (255, 35, 140),
         }
 
         self.eye_map = {

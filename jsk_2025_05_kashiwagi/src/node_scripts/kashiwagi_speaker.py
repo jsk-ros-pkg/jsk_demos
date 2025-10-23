@@ -33,7 +33,7 @@ class KashiwagiSpeaker:
         self.current_kashiwagi_state = msg.data
         if self.current_kashiwagi_state == "talking_game:thinking_turn":
             if self.is_thinking == False:
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/src/node_scripts/kashiwagi_hmm.wav"
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
                 self.play_wav(wav_file)
                 self.is_thinking = True
         else:

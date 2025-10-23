@@ -28,6 +28,8 @@ class MotionManager:
             print(self.neck_yaw_angle)
             if self.current_kashiwagi_state == "talking_game:speaking_turn":
                 kashiwagi_utils.speaking_mode()  # 繰り返し実行される
+            elif self.current_kashiwagi_state == "daily:introduction":
+                kashiwagi_utils.speaking_mode()
             elif self.current_kashiwagi_state == "talking_game:listening_turn":
                 kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
             elif self.current_kashiwagi_state == "talking_game:thinking_turn":
