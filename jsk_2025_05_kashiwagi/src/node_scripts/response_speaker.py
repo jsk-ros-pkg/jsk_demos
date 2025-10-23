@@ -37,7 +37,7 @@ class ResponseSpeakerWithAction:
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
         self.is_speaking = True
-        
+    
     def say_text(self, msg):
         text = msg.data.replace("\n", "")
         rospy.loginfo(f"Talking contents: {text}")
