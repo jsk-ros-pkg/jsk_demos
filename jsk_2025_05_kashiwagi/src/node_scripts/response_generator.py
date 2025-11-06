@@ -156,8 +156,11 @@ class ResponseGenerator:
             【質問】{question}
             【参考回答】{reference}
             {history_text}
-            - 参考回答や過去の回答を参照していることを回答中で言わないでください。
-            - 「ふれあい」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください
+            - 参考回答や過去の回答を参照しているという事実は回答中で言わないでください。
+            - 「ふれあい」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください。ただし回答に無理にそれらの単語を入れる必要はありません。
+            - 「澤田」「さわだ」の敬称は必ず「さん」でお願いします。
+            - 「鳩」という言葉については「ハト」と書くようにしてください。
+            - 文章を途中で終わらせないでください。
             """
             print(prompt)
 
@@ -169,12 +172,13 @@ class ResponseGenerator:
                         {"role": "user", "content": prompt}
                     ],
                     max_tokens=300,
-                    temperature=0.7,
-                    top_p=0.95,
+                    temperature=0.5,
+                    top_p=0.5,
                     frequency_penalty=0,
                     presence_penalty=0,
                     stream=False
                 )
+                print(response.choices[0].message.content)
                 reply = response.choices[0].message.content.strip()
                 rospy.loginfo(f"generated response: {reply}")
                 self.pub_response.publish(reply)

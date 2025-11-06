@@ -46,8 +46,8 @@ class ResponseSpeakerWithAction:
         goal.sound_request.sound = SoundRequest.SAY
         goal.sound_request.command = SoundRequest.PLAY_ONCE
         goal.sound_request.arg = text
-        goal.sound_request.arg2 = "ちび式じい-ノーマル"
-        # goal.sound_request.arg2 = "ずんだもん-ノーマル"
+        # goal.sound_request.arg2 = "ちび式じい-ノーマル"
+        goal.sound_request.arg2 = "ずんだもん-ノーマル"
         goal.sound_request.volume = 1.0
 
         # 音声再生を送信
