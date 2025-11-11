@@ -23,6 +23,8 @@ class ModuleManager:
             "daily:happy":  (255, 110, 243),
             "daily:goodbye":  (255, 110, 243),
             "daily:introduction":  (255, 35, 140),
+            "daily:singing":  (255, 35, 140),
+            "daily:move":  (0, 163, 255),
         }
 
         self.cheek_led_color_map = {
@@ -33,6 +35,8 @@ class ModuleManager:
             "daily:happy":  (255, 110, 243),
             "daily:goodbye":  (255, 110, 243),
             "daily:introduction":  (255, 35, 140),
+            "daily:singing":  (255, 35, 140),
+            "daily:move":  (255, 35, 140),
         }
 
         self.eye_map = {
@@ -45,6 +49,7 @@ class ModuleManager:
             "daily:normal": "normal",
             "daily:happy": "happy",
             "daily:goodbye": "happy",
+            "daily:move" : "normal"
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
