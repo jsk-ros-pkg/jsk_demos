@@ -14,7 +14,6 @@ import cv_bridge
 import numpy as np
 import rospy
 import sensor_msgs.msg
-from geometry_msgs.msg import Point
 from jsk_recognition_msgs.msg import ClassificationResult
 import std_msgs.msg
 
@@ -367,7 +366,6 @@ class FingerGestureEstimation(ConnectionBasedTransport):
         self.pub_img = self.advertise('~output', sensor_msgs.msg.Image, queue_size=1)
         self.pub_img_compressed = self.advertise('~output/compressed',
                                                  sensor_msgs.msg.CompressedImage, queue_size=1)
-        self.hand_pos_pub = self.advertise('~hand_position', Point, queue_size=1)
 
     def subscribe(self):
         self.sub = rospy.Subscriber(
@@ -385,7 +383,6 @@ class FingerGestureEstimation(ConnectionBasedTransport):
         image = self.bridge.imgmsg_to_cv2(img_msg, desired_encoding='bgr8')
         number = 0
         use_brect = True
-        hand_detected = False
 
         image = cv.flip(image, 1)  # ミラー表示
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
@@ -402,25 +399,8 @@ class FingerGestureEstimation(ConnectionBasedTransport):
                 # ハンドサイン分類
                 hand_sign_id = self.keypoint_classifier(pre_processed_landmark_list)
                 result_msg.label_names.append(self.keypoint_classifier_labels[hand_sign_id])
-            
-                # 手の重心を求める
-                cx = np.mean([p[0] for p in landmark_list])
-                cy = np.mean([p[1] for p in landmark_list])
 
-                # ROS Point メッセージでpublish
-                hand_point = Point()
-                hand_point.x = float(cx)
-                hand_point.y = float(cy)
-                hand_point.z = 0.0
-                self.hand_pos_pub.publish(hand_point)
-                hand_detected = True
         self.result_pub.publish(result_msg)
-        if not hand_detected:
-            hand_point = Point()
-            hand_point.x = float('nan')
-            hand_point.y = float('nan')
-            hand_point.z = float('nan')
-            self.hand_pos_pub.publish(hand_point)
 
         if self.pub_img.get_num_connections() > 0 or self.pub_img_compressed.get_num_connections() > 0:
             image.flags.writeable = True
@@ -440,7 +420,6 @@ class FingerGestureEstimation(ConnectionBasedTransport):
                         handedness,
                         self.keypoint_classifier_labels[hand_sign_id],
                     )
-                    landmark_list = calc_landmark_list(image, hand_landmarks)
 
         if self.pub_img.get_num_connections() > 0:
             # Draw the hand annotations on the image.

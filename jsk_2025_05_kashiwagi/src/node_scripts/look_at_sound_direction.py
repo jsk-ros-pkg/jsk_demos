@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import math
 from std_msgs.msg import Int32, Float32
 from collections import deque
 import kashiwagi_utils
@@ -20,6 +21,7 @@ class VoiceTriggerWithMajority:
         self.audio_volume_sub = rospy.Subscriber("/audio_volume", Float32, self.volume_callback)
         self.sound_direction_sub = rospy.Subscriber("/sound_direction", Int32, self.direction_callback)
         self.neck_pub = rospy.Publisher("/neck_yaw_angle", Float32, queue_size=10)
+        self.rotate_rad = rospy.Publisher("/rotate_rad", Float32, queue_size=10)
 
         rospy.loginfo("VoiceTriggerWithMajority ノード起動")
         rospy.spin()
@@ -53,14 +55,16 @@ class VoiceTriggerWithMajority:
             self.spike_votes.clear()  # 判定後はリセット
             if self.latest_direction == None:
                 rospy.loginfo(f"I heard voice but cannot detect its direction")
+                
             else:
                 rospy.loginfo(f"I heard voice. volume:({spike_count}/10)-> direction: {self.latest_direction}")
+
+                ############ 首の角度の計算 #################
                 cur_neck_yaw_angle = kashiwagi_utils.ri.angle_vector()[0]
                 if self.latest_direction > 0:
                     new_neck_yaw_angle = (-1) * self.latest_direction / 180 + 1 + cur_neck_yaw_angle
                 elif self.latest_direction <= 0:
                     new_neck_yaw_angle = (-1) * self.latest_direction / 180 - 1 + cur_neck_yaw_angle
-                    
                 if new_neck_yaw_angle <= 0:
                     new_neck_yaw_angle = max(-0.5, new_neck_yaw_angle)
                 else:
@@ -70,6 +74,22 @@ class VoiceTriggerWithMajority:
                 pub_msg.data = new_neck_yaw_angle
                 self.neck_pub.publish(pub_msg)
                 rospy.loginfo(f"publishing at {new_neck_yaw_angle}")
+
+                ############ 体の回転角度の計算 #############
+                if self.latest_direction > 0:
+                    direction_deg = self.latest_direction - 180
+                elif self.latest_direction <= 0:
+                    direction_deg = self.latest_direction + 180
+
+                direction_rad = math.radians(direction_deg)
+                print(direction_deg, "#############################################")
+                
+                
+                # rospy.loginfo(
+                #     f"I heard voice. volume:({spike_count}/{self.vote_threshold}) "
+                #     f"-> direction_deg: {direction_deg}, direction_rad: {direction_rad}"
+                # )
+
         else:
             rospy.logdebug(f"音量 {vol}（平均 {avg:.1f}） → スパイク: {is_spike}, スパイク履歴: {spike_count}/10")
 
