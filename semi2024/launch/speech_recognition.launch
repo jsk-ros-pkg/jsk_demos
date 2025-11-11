@@ -1,0 +1,84 @@
+<launch>
+
+  <arg name="raw_audio_topic" default="/audio" doc="Name of audio topic captured from microphone" />
+  <arg name="dummy_audio_topic" default="/dummy_audio" doc="Dummy audio" />
+  <arg name="audio_topic" default="/input_audio" doc="Name of audio topic captured from microphone" />
+  <arg name="depth" default="16" doc="Bit depth of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
+  <arg name="sample_rate" default="16000" doc="Frame rate of audio topic and microphone. '$ pactl list short sinks' to check your hardware"/>
+  <arg name="device" default="plughw:1,0" doc="Card and device number of microphone (e.g. hw:0,0). you can check card number and device number by '$ arecord -l', then uses hw:[card number],[device number]" />
+  <arg name="n_channel" default="2" doc="Number of channels of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
+  <arg name="sound_play_respawn" default="true" />
+
+  <!-- audio capture from microphone -->
+  <node name="audio_capture" pkg="audio_capture" type="audio_capture"
+        respawn="true">
+    <remap from="audio" to="$(arg raw_audio_topic)" />
+    <rosparam subst_value="true">
+      format: wave
+      channels: $(arg n_channel)
+      depth: $(arg depth)
+      sample_rate: $(arg sample_rate)
+    </rosparam>
+    <param name="device" value="$(arg device)" />
+  </node>
+
+  <node name="sound_play_jp"
+        pkg="sound_play" type="soundplay_node.py"
+        respawn="$(arg sound_play_respawn)"
+        output="screen" >
+    <remap from="robotsound" to="robotsound_jp"/>
+    <remap from="sound_play" to="robotsound_jp"/>
+    <env name="PATH" value="$(find semi2024)/bin:$(env PATH)" />
+    <env name="PYTHONIOENCODING" value="utf-8" />
+    <rosparam subst_value="true" >
+      device: $(arg device)
+    </rosparam>
+  </node>
+
+  <group ns="sound_play_jp" >
+    <node name="is_speaking"
+          pkg="sound_play" type="is_speaking.py"
+          respawn="true">
+      <remap from="~robotsound" to="/robotsound_jp/status" />
+      <remap from="~output/is_speaking" to="/is_speaking" />
+    </node>
+  </group>
+
+  <node name="input_audio_mux"
+        pkg="topic_tools" type="mux"
+        respawn="true"
+	    args="$(arg audio_topic) $(arg raw_audio_topic) $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+  </node>
+
+  <node name="input_audio_selector"
+        pkg="semi2024" type="mux_selector.py"
+	    respawn="true"
+	    args="/is_speaking 'm.data is False' $(arg raw_audio_topic) /is_speaking 'm.data is True' $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+    <param name="default_select" value="$(arg dummy_audio_topic)" />
+    <param name="wait" value="true" />
+  </node>
+
+  <include file="$(find ros_speech_recognition)/launch/speech_recognition.launch" >
+    <arg name="n_channel" value="$(arg n_channel)" />
+    <arg name="depth" value="$(arg depth)" />
+    <arg name="sample_rate" value="$(arg sample_rate)" />
+    <arg name="audio_topic" value="$(arg audio_topic)" />
+    <arg name="launch_sound_play" value="false" />
+    <arg name="launch_audio_capture" value="false" />
+    <arg name="voice_topic" value="speech_to_text" />
+    <arg name="device" value="$(arg device)" />
+    <arg name="language" value="ja-JP" />
+    <arg name="continuous" value="true" />
+  </include>
+
+  <node name="pi_hat_mic_doa"
+        pkg="semi2024" type="pi_hat_mic_doa.py" >
+    <remap from="/audio" to="$(arg audio_topic)" />
+    <rosparam>
+      enable_vital_check: false
+    </rosparam>
+  </node>
+
+</launch>

@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+
+import argparse
+import os
+import shutil
+import sys
+import warnings
+import hashlib
+
+
+def get_cache_dir():
+    """Return cache dir.
+
+    Returns
+    -------
+    cache_dir : str
+        cache directory.
+    """
+    ros_home = os.getenv('ROS_HOME', os.path.expanduser('~/.ros'))
+    pkg_ros_home = os.path.join(ros_home, 'gtts')
+    default_cache_dir = os.path.join(pkg_ros_home, 'cache')
+    cache_dir = os.environ.get(
+        'ROS_GOOGLE_TEXTTOSPEECH_CACHE_DIR',
+        default_cache_dir)
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+    return cache_dir
+
+
+def checksum_md5(filename, blocksize=8192):
+    """Calculate md5sum.
+
+    Parameters
+    ----------
+    filename : str or pathlib.Path
+        input filename.
+    blocksize : int
+        MD5 has 128-byte digest blocks (default: 8192 is 128x64).
+    Returns
+    -------
+    md5 : str
+        calculated md5sum.
+    """
+    filename = str(filename)
+    hash_factory = hashlib.md5()
+    with open(filename, 'rb') as f:
+        for chunk in iter(lambda: f.read(blocksize), b''):
+            hash_factory.update(chunk)
+    return hash_factory.hexdigest()
+
+
+def convert_to_str(x):
+    if isinstance(x, str):
+        pass
+    elif isinstance(x, bytes):
+        x = x.decode('utf-8')
+    else:
+        raise ValueError(
+            'Invalid input x type: {}'
+            .format(type(x)))
+    return x
+
+
+def request_synthesis(
+        sentence, output_path, lang='en'):
+    import pyopenjtalk
+    import numpy as np
+    from scipy.io import wavfile
+    sentence = convert_to_str(sentence)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        x, sr = pyopenjtalk.tts(sentence)
+        wavfile.write(str(output_path), sr, x.astype(np.int16))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-eval', '--evaluate')
+    parser.add_argument('-o', '--output')
+    parser.add_argument('text')
+    args = parser.parse_args()
+
+    with open(args.text, 'rb') as f:
+        speech_text = f.readline()
+
+    lang = args.evaluate.lstrip('(').rstrip(')')
+    if lang not in ['ja', 'en']:
+        lang = 'en'
+    cache_enabled = True
+    if cache_enabled:
+        cache_dir = get_cache_dir()
+        md5 = checksum_md5(args.text)
+        cache_filename = os.path.join(
+            cache_dir,
+            '--'.join([md5, lang])
+            + '.wav')
+        if os.path.exists(cache_filename):
+            print('[Text2Wave] Using cached sound file ({}) for {}'
+                  .format(cache_filename, speech_text.decode('utf-8')))
+            shutil.copy(cache_filename, args.output)
+            sys.exit(0)
+
+    request_synthesis(speech_text,
+                      args.output,
+                      lang)
+    if cache_enabled:
+        text_cache_filename = os.path.splitext(cache_filename)[0] + '.txt'
+        print('[Text2Wave] Cache saved to {}'.format(cache_filename))
+        shutil.copy(args.text, text_cache_filename)
+        shutil.copy(args.output, cache_filename)

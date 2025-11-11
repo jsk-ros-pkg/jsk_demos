@@ -1,0 +1,59 @@
+<launch>
+
+  <arg name="model_path" default="$(find semi2024)/trained_data/2024-05-16-drink-dataset_ncnn_model" />
+  <arg name="input_image" default="/camera/color/image_raw" />
+  <arg name="input_cloud" default="/camera/depth/color/points" />
+  <arg name="input_indices" default="/object_detection/output/cluster_indices" />
+  <arg name="input_classes" default="/object_detection/output/class" />
+  <arg name="manager" default="/camera/realsense2_camera_manager" />
+
+  <node name="object_detection"
+        pkg="semi2024" type="object_detection.py"
+        respawn="true"
+        output="screen" >
+    <remap from="~input" to="$(arg input_image)" />
+    <rosparam subst_value="true" >
+      model_path: $(arg model_path)
+    </rosparam>
+  </node>
+
+  <node name="fg_euclidean_clustering"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/EuclideanClustering $(arg manager)"
+        output="screen"
+        respawn="true"
+        clear_params="true">
+    <remap from="~input" to="$(arg input_cloud)"/>
+    <remap from="~input/cluster_indices" to="$(arg input_indices)"/>
+    <rosparam>
+      multi: true
+      tolerance: 0.03
+      min_size: 10
+      downsample_enable: false
+      approximate_sync: true
+      queue_size: 100
+      cluster_filter: 1
+    </rosparam>
+  </node>
+
+  <node name="fg_cluster_point_indices_decomposer"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
+        output="screen"
+        respawn="true"
+        clear_params="true">
+    <remap from="~input" to="$(arg input_cloud)"/>
+    <remap from="~target" to="fg_euclidean_clustering/output"/>
+    <remap from="~boxes" to="fg_segmentor/output/boxes"/>
+    <remap from="~centroid_pose_array" to="fg_segmentor/output/centroid"/>
+    <rosparam>
+      align_boxes: false
+      align_boxes_with_plane: false
+      force_to_flip_z_axis: false
+      use_pca: true
+      approximate_sync: true
+      queue_size: 100
+    </rosparam>
+  </node>
+
+</launch>
