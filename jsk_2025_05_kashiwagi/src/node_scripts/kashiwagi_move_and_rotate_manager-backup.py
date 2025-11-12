@@ -5,9 +5,8 @@ from jsk_recognition_msgs.msg import ClassificationResult
 from geometry_msgs.msg import Point
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from kashiwagi_move_and_rotate_utils import MoveAndRotate
-import math  # ← 追加
 
-class MoveAndRotateManager:
+class StateAutoResetter:
     def __init__(self):
         rospy.init_node("kashiwagi_move_and_rotate_manager")
         rospy.sleep(1)
@@ -19,20 +18,15 @@ class MoveAndRotateManager:
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
 
         self.latest_nearest_distance = float('nan')
-        self.stop_distance = 0.150 #[m]
+        self.stop_distance = 0.150 #[m] この距離で止まる
         self.under_stop_distance_counter = 0
-        self.max_under_stop_distance_counter = 5
+        self.max_under_stop_distance_counter = 3
         rospy.Subscriber("/nearest_distance", Float32, self.nearest_distance_callback, queue_size=1)
 
         self.latest_hand_pose = "no_hand"
         self.move_and_rotate = MoveAndRotate()
 
         self.nice_position_counter = 0
-
-        # --- 追加: 探索中の累積回転量 [rad] ---
-        self.search_rotation_accum = 0.0
-        self.full_turn_threshold = 4.0 * math.pi  # 1回転
-        # -------------------------------------
 
         rospy.loginfo("Launching Move and Rotate node ....")
         rospy.spin()
@@ -42,13 +36,6 @@ class MoveAndRotateManager:
         if new_state != self.cur_state:
             rospy.loginfo(f"State changed: {self.cur_state} → {new_state}")
             self.cur_state = new_state
-            # 探索開始/終了で累積回転をリセット
-            if new_state == "move:finding_person":
-                self.search_rotation_accum = 0.0
-                self.nice_position_counter = 0
-            else:
-                # 探索以外に入ったら念のためリセット
-                self.search_rotation_accum = 0.0
 
     def nearest_distance_callback(self, msg):
         self.latest_nearest_distance = msg.data
@@ -64,32 +51,12 @@ class MoveAndRotateManager:
         else:
             self.latest_hand_pose = "no_hand"
 
-    def _accumulate_rotation_and_check_lost(self, delta_rad, saw_person=False):
-        """探索中の回転量を加算し、1回転超で getting_lost へ遷移。"""
-        if self.cur_state != "move:finding_person":
-            return
-        # 人を見ていない時のみ「見失い」カウント（Paperを見ていたらリセットしても良い）
-        if not saw_person:
-            self.search_rotation_accum += abs(float(delta_rad))
-            rospy.logdebug(f"accum_rot={self.search_rotation_accum:.2f} / {self.full_turn_threshold:.2f}")
-            if self.search_rotation_accum >= self.full_turn_threshold:
-                try:
-                    req_state = "move:getting_lost"
-                    resp = self.set_state_srv(req_state)
-                    if resp.success:
-                        rospy.logwarn("Did a full turn without finding a person → move:getting_lost")
-                        self.search_rotation_accum = 0.0
-                    else:
-                        rospy.logwarn(f"State change to getting_lost failed: {resp.message}")
-                except rospy.ServiceException as e:
-                    rospy.logerr(f"Failed to call service: {e}")
-
     def rotate_callback(self, msg):
         print("###################", self.cur_state)
         if self.cur_state == "move:finding_person" or self.cur_state == "move:found_person":
             if self.latest_hand_pose == "Paper":
                 print("11111")
-                # 人を検出
+                # 手をふっている人がいる
                 if self.cur_state == "move:finding_person":
                     print("22222")
                     req_state = "move:found_person"
@@ -97,14 +64,12 @@ class MoveAndRotateManager:
                         resp = self.set_state_srv(req_state)
                         if resp.success:
                             rospy.loginfo(f"State reset successful: {resp.message}")
-                            # 見つけたので探索累積はリセット
-                            self.search_rotation_accum = 0.0
                         else:
                             rospy.logwarn(f"State reset failed: {resp.message}")
                     except rospy.ServiceException as e:
                         rospy.logerr(f"Failed to call service: {e}")
 
-                # 位置がちょうどよい
+                # 手をふっている人がちょうどいいポジションにいる
                 if 300 <= msg.x <= 500:
                     print("OK")
                     self.nice_position_counter += 1
@@ -120,44 +85,28 @@ class MoveAndRotateManager:
                                 rospy.logwarn(f"State reset failed: {resp.message}")
                         except rospy.ServiceException as e:
                             rospy.logerr(f"Failed to call service: {e}")
+                    else:
+                        pass
+
+                # 手をふっている人がいるけど、もうちょっと回転しないといけない
                 else:
-                    # もう少し回転が必要
                     if msg.x < 300:
-                        delta = -0.05
-                        self.move_and_rotate.rotate_target_radian(delta)
+                        self.move_and_rotate.rotate_target_radian(-0.05)
                         print("AAAAAAAAAA")
                         self.nice_position_counter = 0
-                        # found_person中はカウントしない。finding_person中でも「見えている」ので lost 判定に使わない
-                        self._accumulate_rotation_and_check_lost(delta, saw_person=True)
                     elif msg.x > 500:
-                        delta = 0.05
-                        self.move_and_rotate.rotate_target_radian(delta)
+                        self.move_and_rotate.rotate_target_radian(0.05)
                         print("BBBBBBBBBBBBBB")
                         self.nice_position_counter = 0
-                        self._accumulate_rotation_and_check_lost(delta, saw_person=True)
             else:
-                # 見えていないので探索回転
                 print(self.latest_hand_pose)
-                delta = -0.3
-                self.move_and_rotate.rotate_target_radian(delta)
+                self.move_and_rotate.rotate_target_radian(-0.3)
                 self.nice_position_counter = 0
                 print("CCCCCCCCCCCC")
-                if self.cur_state == "move:found_person":
-                    req_state = "move:finding_person"
-                    try:
-                        resp = self.set_state_srv(req_state)
-                        if resp.success:
-                            rospy.loginfo(f"State reset successful: {resp.message}")
-                        else:
-                            rospy.logwarn(f"State reset failed: {resp.message}")
-                    except rospy.ServiceException as e:
-                        rospy.logerr(f"Failed to call service: {e}")
-                self._accumulate_rotation_and_check_lost(delta, saw_person=False)
         else:
             pass
 
     def move_forward(self):
-        print("under stop distance counter", self.under_stop_distance_counter)
         while self.cur_state == "move:approaching_person":
             if self.under_stop_distance_counter < self.max_under_stop_distance_counter:
                 self.move_and_rotate.move_forward_target_velocity(0.01)
@@ -174,9 +123,10 @@ class MoveAndRotateManager:
                 rospy.logwarn(f"State reset failed: {resp.message}")
         except rospy.ServiceException as e:
             rospy.logerr(f"Failed to call service: {e}")
-
+        
+        
 if __name__ == "__main__":
     try:
-        MoveAndRotateManager()
+        StateAutoResetter()
     except rospy.ROSInterruptException:
         pass

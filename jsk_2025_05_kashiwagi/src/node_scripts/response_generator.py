@@ -181,6 +181,8 @@ class ResponseGenerator:
                 print(response.choices[0].message.content)
                 reply = response.choices[0].message.content.strip()
                 rospy.loginfo(f"generated response: {reply}")
+                with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
+                    f.write(reply)
                 self.pub_response.publish(reply)
                 self.save_response_record(qr_text, reply)
 

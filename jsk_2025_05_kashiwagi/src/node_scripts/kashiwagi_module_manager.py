@@ -25,7 +25,9 @@ class ModuleManager:
             "daily:introduction":  (255, 35, 140),
             "daily:singing":  (255, 35, 140),
             "move:finding_person":  (0, 163, 255),
-            "move:approaching_person":  (255, 35, 140),
+            "move:found_person": (0, 163, 255),
+            "move:approaching_person":  (0, 163, 255),
+            "move:getting_lost":  (0, 163, 255),
         }
 
         self.cheek_led_color_map = {
@@ -37,7 +39,7 @@ class ModuleManager:
             "daily:goodbye":  (255, 110, 243),
             "daily:introduction":  (255, 35, 140),
             "daily:singing":  (255, 35, 140),
-            "move:finding_person":  (255, 35, 140),
+            "move:found_person": (255, 35, 140),
             "move:approaching_person":  (255, 35, 140),
         }
 
@@ -52,7 +54,8 @@ class ModuleManager:
             "daily:happy": "happy",
             "daily:goodbye": "happy",
             "move:finding_person" : "normal",
-            "move:approaching_person" : "normal",
+            "move:approaching_person" : "expecting",
+            "move:getting_lost" : "troubled",
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)

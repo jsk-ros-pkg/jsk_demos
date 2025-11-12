@@ -2,8 +2,6 @@
 import rospy
 import actionlib
 import time
-import subprocess
-import os
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from sound_play.msg import SoundRequestAction, SoundRequestGoal, SoundRequest
 from sound_play.libsoundplay import SoundClient
@@ -19,10 +17,7 @@ class ResponseSpeakerWithAction:
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         self.is_speaking = False
         rospy.loginfo("Connected to sound_play action server.")
-        # rospy.Subscriber("/talking_game_response", String, self.say_text)
-        self.text_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt"
-        self.wav_file_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.wav"
-        rospy.Subscriber("/talking_game_response", String, self.generate_wav_and_play_sound_file)
+        rospy.Subscriber("/talking_game_response", String, self.say_text)
         rospy.spin()
 
     def _done_cb(self, state, result):
@@ -42,31 +37,7 @@ class ResponseSpeakerWithAction:
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
         self.is_speaking = True
-
-    def generate_wav_and_play_sound_file(self, msg):
-        cmd = ["rosrun", "voicevox", "text2wave", "-o", self.wav_file_path, self.text_path, "-eval", "(3)"]
-        rospy.loginfo("Running VoiceVox text2wave...")
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            rospy.logerr(f"VoiceVox error:\n{result.stderr}")
-            return
-        else:
-            rospy.loginfo("VoiceVox processing complete!")
-
-        if os.path.exists(self.wav_file_path):
-            goal = SoundRequestGoal()
-            goal.sound_request.sound = SoundRequest.PLAY_FILE  # ファイル再生モード
-            goal.sound_request.command = SoundRequest.PLAY_ONCE  # 一回だけ再生
-            goal.sound_request.arg = self.wav_file_path  # 再生する wav ファイルのパス
-            goal.sound_request.volume = 1.0     # 音量（0.0〜1.0）
-            self.client.send_goal(goal,
-                                  done_cb=self._done_cb,
-                                  feedback_cb=self._feedback_cb)
-            self.client.wait_for_result()
-            rospy.loginfo("Playback finished.")
-        else:
-            rospy.logerr("WAV file not found!")
-        
+    
     def say_text(self, msg):
         text = msg.data.replace("\n", "")
         rospy.loginfo(f"Talking contents: {text}")
@@ -75,6 +46,7 @@ class ResponseSpeakerWithAction:
         goal.sound_request.sound = SoundRequest.SAY
         goal.sound_request.command = SoundRequest.PLAY_ONCE
         goal.sound_request.arg = text
+        # goal.sound_request.arg2 = "ちび式じい-ノーマル"
         goal.sound_request.arg2 = "ずんだもん-ノーマル"
         goal.sound_request.volume = 1.0
 

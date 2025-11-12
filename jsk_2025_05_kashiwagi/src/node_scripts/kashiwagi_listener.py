@@ -116,10 +116,10 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_iiyo.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["宜しく", "よろしく", "お願い"]):
             self.during_speech_req_state = "daily:happy"
             self.after_speech_req_state = None
-            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yoroshiku.wav"
             
         elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["こんにちは", "こんにち"]):
             self.during_speech_req_state = "talking_game:happy"
@@ -135,11 +135,6 @@ class Listener:
             self.during_speech_req_state = "talking_game:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_ohayou.wav"
-
-        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇"]):
-            self.during_speech_req_state = "talking_game:happy"
-            self.after_speech_req_state = None
-            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
             
         elif self.cur_kashiwagi_state in ["talking_game:listening_turn", "talking_game:speaking_turn"] and self.is_mentioned(spoken_word, ["おわり", "終わり", "ありがとう"]):
             self.during_speech_req_state = "daily:happy"
@@ -151,10 +146,10 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_oyasumi.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て"]):
+        elif self.cur_kashiwagi_state in ["daily:normal", "move:getting_lost"] and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て", "家に"]):
             self.during_speech_req_state = None
             self.after_speech_req_state = "move:finding_person"
-            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_darekayonda.wav"
 
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["歌", "歌って"]):
             self.during_speech_req_state = "daily:singing"
@@ -165,6 +160,16 @@ class Listener:
                      "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_momotaro.mp3",
                      "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_hato.mp3"]
             self.sound_file = random.choice(songs)
+        
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+            self.during_speech_req_state = "talking_game:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+            self.during_speech_req_state = "daily:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
 
         else:
             self.during_speech_req_state = None
