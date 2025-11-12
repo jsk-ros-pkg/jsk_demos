@@ -5,7 +5,7 @@
   <arg name="audio_topic" default="/input_audio" doc="Selected audio topic" />
   <arg name="audio_info_topic" default="/audio_info" doc="Selected audio info topic" />  
   <arg name="language" default="ja-JP"/>
-  <arg name="self_cancellation" default="false"/>  
+  <arg name="self_cancellation" default="false"/>
 
   <!-- respeaker -->
   <node name="respeaker_node"
@@ -69,6 +69,13 @@
   <!-- RealSense RGBD camera -->
   <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" />
 
+  <!-- Hand Pose Estimation -->
+  <include file="$(find semi2024)/launch/hand_pose_estimation_d405.launch" />
+
+  <!-- Gesture Recognition -->
+  <include file="$(find semi2024)/launch/gesture_recognition.launch"/>
+
+
   <!-- <!-\- respeaker -\-> -->
   <!-- <include file="$(find respeaker_ros)/launch/sample_respeaker.launch"> -->
   <!--   <arg name="language" value="ja-JP"/> -->
@@ -123,5 +130,11 @@
 
   <!-- time manager -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_manager.py" name="kashiwagi_time_manager" output="screen" />
+
+  <!-- move and rotate manager -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_move_and_rotate_manager.py" name="kashiwagi_move_and_rotate_manager" output="screen" />
+
+  <!-- nearest depth publisher -->
+  <node pkg="jsk_2025_05_kashiwagi" type="nearest_depth_publisher.py" name="nearest_depth_publisher" output="screen" />
 
 </launch>

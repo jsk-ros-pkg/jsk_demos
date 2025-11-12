@@ -12,10 +12,16 @@ class StateAutoResetter:
         rospy.sleep(1)
         rospy.Subscriber('/gesture_recognition/result', ClassificationResult, self.hand_pose_update_callback, queue_size=1)
         rospy.Subscriber('/gesture_recognition/hand_position', Point, self.rotate_callback, queue_size=1)
-        self.cur_state = "move:finding_person"
+
+        self.cur_state = "unknown"
         rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
-        rospy.Subscriber("/kashiwagi_state", String, self.move_forward)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+
+        self.latest_nearest_distance = float('nan')
+        self.stop_distance = 0.150 #[m] この距離で止まる
+        self.under_stop_distance_counter = 0
+        self.max_under_stop_distance_counter = 5
+        rospy.Subscriber("/nearest_distance", Float32, self.nearest_distance_callback, queue_size=1)
 
         self.latest_hand_pose = "no_hand"
         self.move_and_rotate = MoveAndRotate()
@@ -30,6 +36,14 @@ class StateAutoResetter:
         if new_state != self.cur_state:
             rospy.loginfo(f"State changed: {self.cur_state} → {new_state}")
             self.cur_state = new_state
+
+    def nearest_distance_callback(self, msg):
+        self.latest_nearest_distance = msg.data
+        print("$$$$$$$$$$$$$$$$$$$$$$$$$$", self.under_stop_distance_counter)
+        if self.cur_state == "move:approaching_person" and self.latest_nearest_distance < self.stop_distance:
+            self.under_stop_distance_counter += 1
+        else:
+            self.under_stop_distance_counter = 0
 
     def hand_pose_update_callback(self, msg):
         if msg.label_names:
@@ -52,10 +66,12 @@ class StateAutoResetter:
                             resp = self.set_state_srv(req_state)
                             if resp.success:
                                 rospy.loginfo(f"State reset successful: {resp.message}")
+                                self.move_forward()
                             else:
                                 rospy.logwarn(f"State reset failed: {resp.message}")
                         except rospy.ServiceException as e:
                             rospy.logerr(f"Failed to call service: {e}")
+                        
 
                 # 手をふっている人がいるけど、もうちょっと回転しないといけない
                 elif msg.x < 300:
@@ -77,10 +93,25 @@ class StateAutoResetter:
         else:
             pass
 
-    def move_forward(self, msg):
-        if self.cur_state == "move:approaching_person":
-            self.move_and_rotate.move_forward_target_distance(0.01)
-
+    def move_forward(self):
+        while self.cur_state == "move:approaching_person":
+            print("$$$$$$$$$$$$$$$$$$$$$$$$$$", self.under_stop_distance_counter)
+            if self.under_stop_distance_counter < self.max_under_stop_distance_counter:
+                self.move_and_rotate.move_forward_target_velocity(0.01)
+            else:
+                self.move_and_rotate.move_forward_target_velocity(0)
+                self.under_stop_distance_counter = 0
+                break
+        req_state = "daily:happy"
+        try:
+            resp = self.set_state_srv(req_state)
+            if resp.success:
+                rospy.loginfo(f"State reset successful: {resp.message}")
+            else:
+                rospy.logwarn(f"State reset failed: {resp.message}")
+        except rospy.ServiceException as e:
+            rospy.logerr(f"Failed to call service: {e}")
+        
         
 if __name__ == "__main__":
     try:

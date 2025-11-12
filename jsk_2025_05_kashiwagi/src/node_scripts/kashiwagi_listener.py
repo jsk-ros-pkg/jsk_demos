@@ -151,7 +151,7 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_oyasumi.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["おいで", "こっち"]):
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て"]):
             self.during_speech_req_state = None
             self.after_speech_req_state = "move:finding_person"
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
