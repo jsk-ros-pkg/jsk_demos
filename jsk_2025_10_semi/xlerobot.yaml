@@ -1,0 +1,29 @@
+rarm:
+  - Rotation    : rarm-shoulder-y
+  - Pitch       : rarm-shoulder-p
+  - Elbow       : rarm-elbow-p
+  - Wrist_Pitch : rarm-wrist-p
+  - Wrist_Roll  : rarm-wrist-r
+  - Jaw         : rarm-gripper
+larm:
+  - Rotation_2  : larm-shoulder-y
+  - Pitch_2     : larm-shoulder-p
+  - Elbow_2     : larm-elbow-p
+  - Wrist_Pitch_2 : larm-wrist-p
+  - Wrist_Roll_2  : larm-wrist-r
+  - Jaw_2         : larm-gripper
+head:
+  - head_pan_joint  : head-neck-y
+  - head_tilt_joint : head-neck-p
+
+angle-vector:
+  reset-pose: [10, 45, 90, -45, 90, 40, -10, 45, 90, -45, 90, 40, 0, 30]
+
+rarm-end-coords:
+  parent : Fixed_Jaw_tip
+  translate : [0, 0, 0]
+  rotate : [0, 0, 1, -90]
+larm-end-coords:
+  parent : Fixed_Jaw_tip_2
+  translate : [0, 0, 0]
+  rotate : [0, 0, 1, -90]
