@@ -146,10 +146,26 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_oyasumi.wav"
 
-        elif self.cur_kashiwagi_state in ["daily:normal", "move:getting_lost"] and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て", "家に"]):
+        elif self.cur_kashiwagi_state in ["daily:normal"] and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て", "家に"]):
             self.during_speech_req_state = None
             self.after_speech_req_state = "move:finding_person"
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_darekayonda.wav"
+
+        elif self.cur_kashiwagi_state == "move:approaching_person" and self.is_mentioned(spoken_word, ["危", "落ち", "止"]):
+            print("99999999999999999999999 surprised")
+            self.during_speech_req_state = "move:surprised"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_bikkuri.wav"
+
+        elif self.cur_kashiwagi_state in ["move:getting_lost", "move:staying"] and self.is_mentioned(spoken_word, ["おいで", "こっち", "来て", "家に", "柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+            self.during_speech_req_state = None
+            self.after_speech_req_state = "move:finding_person"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_dokodaro.wav"
+
+        elif self.cur_kashiwagi_state in ["move:getting_lost", "move:finding_person", "move:approaching_person", "move:staying"] and self.is_mentioned(spoken_word, ["ありがとう", "ありがと", "休んで", "終わり", "おわり"]):
+            self.during_speech_req_state = None
+            self.after_speech_req_state = "daily:happy"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_ehehe.wav"
 
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["歌", "歌って"]):
             self.during_speech_req_state = "daily:singing"
@@ -176,11 +192,6 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = None
 
-        if self.sound_file != None:
-            print("playing")
-            print(self.sound_file)
-            self.play_sound_file(self.sound_file)
-
         if req_state != None:
             try:
               resp = self.set_state_srv(req_state)
@@ -190,6 +201,11 @@ class Listener:
                 rospy.logwarn(f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
               rospy.logerr(f"Service call failed: {e}")
+
+        if self.sound_file != None:
+            print("playing")
+            print(self.sound_file)
+            self.play_sound_file(self.sound_file)
 
 if __name__ == "__main__":
     try:

@@ -28,6 +28,8 @@ class ModuleManager:
             "move:found_person": (0, 163, 255),
             "move:approaching_person":  (0, 163, 255),
             "move:getting_lost":  (0, 163, 255),
+            "move:staying":  (0, 163, 255),
+            "move:surprised":  (0, 163, 255),
         }
 
         self.cheek_led_color_map = {
@@ -41,6 +43,7 @@ class ModuleManager:
             "daily:singing":  (255, 35, 140),
             "move:found_person": (255, 35, 140),
             "move:approaching_person":  (255, 35, 140),
+            "move:surprised": (255, 130, 255),
         }
 
         self.eye_map = {
@@ -56,6 +59,7 @@ class ModuleManager:
             "move:finding_person" : "normal",
             "move:approaching_person" : "expecting",
             "move:getting_lost" : "troubled",
+            "move:surprised": "surprised",
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)

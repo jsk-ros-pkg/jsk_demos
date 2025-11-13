@@ -7,15 +7,35 @@ import time
 
 class KashiwagiSpeaker:
     def __init__(self):
-        self.current_kashiwagi_state = "unknown"
-        self.prev_kashiwagi_state = "unknown"
         rospy.init_node('kashiwagi_speaker')
+        self.cur_state = "unknown"
+        self.prev_state = "unknown"
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
         rospy.loginfo("Launching kashiwagi speaker node ....")
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         self.client.wait_for_server()
-        self.is_thinking = False
+        self.state_updated = False
         rospy.spin()
+
+    def state_callback(self, msg):
+        print("cur, prev", self.cur_state, self.prev_state)
+        self.prev_state = self.cur_state
+        self.cur_state = msg.data
+
+        if self.prev_state == self.cur_state:
+            self.state_updated = False
+        else:
+            self.state_updated = True
+
+        wav_file = None
+
+        if self.state_updated:
+            if self.cur_state == "talking_game:thinking_turn":
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+            elif self.cur_state == "move:getting_lost":
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
+            if wav_file:
+                self.play_wav(wav_file)
 
     def play_wav(self, file_path):
         goal = SoundRequestGoal()
@@ -28,16 +48,6 @@ class KashiwagiSpeaker:
         self.client.send_goal(goal)
         self.client.wait_for_result()
         rospy.loginfo("Playback finished.")
-
-    def state_callback(self, msg):
-        self.current_kashiwagi_state = msg.data
-        if self.current_kashiwagi_state == "talking_game:thinking_turn":
-            if self.is_thinking == False:
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
-                self.play_wav(wav_file)
-                self.is_thinking = True
-        else:
-            self.is_thinking = False
 
 if __name__ == '__main__':
     try:

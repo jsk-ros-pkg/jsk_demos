@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import rospy
+import time
+import random
 from std_msgs.msg import Float32, String
 from jsk_recognition_msgs.msg import ClassificationResult
 from geometry_msgs.msg import Point
@@ -10,6 +12,11 @@ import math  # ← 追加
 class MoveAndRotateManager:
     def __init__(self):
         rospy.init_node("kashiwagi_move_and_rotate_manager")
+
+        self.lost_person_counter = 0
+        self.max_lost_person_counter = 4
+        self.plus_or_minus = 1
+        
         rospy.sleep(1)
         rospy.Subscriber('/gesture_recognition/result', ClassificationResult, self.hand_pose_update_callback, queue_size=1)
         rospy.Subscriber('/gesture_recognition/hand_position', Point, self.rotate_callback, queue_size=1)
@@ -31,9 +38,10 @@ class MoveAndRotateManager:
 
         # --- 追加: 探索中の累積回転量 [rad] ---
         self.search_rotation_accum = 0.0
-        self.full_turn_threshold = 4.0 * math.pi  # 1回転
+        self.full_turn_threshold = 2.0 * math.pi  # 1回転
         # -------------------------------------
 
+        self.approach_time_limit = 40
         rospy.loginfo("Launching Move and Rotate node ....")
         rospy.spin()
 
@@ -46,6 +54,7 @@ class MoveAndRotateManager:
             if new_state == "move:finding_person":
                 self.search_rotation_accum = 0.0
                 self.nice_position_counter = 0
+                self.plus_or_minus = random.choice([-1, 1])
             else:
                 # 探索以外に入ったら念のためリセット
                 self.search_rotation_accum = 0.0
@@ -78,6 +87,7 @@ class MoveAndRotateManager:
                     resp = self.set_state_srv(req_state)
                     if resp.success:
                         rospy.logwarn("Did a full turn without finding a person → move:getting_lost")
+                        self.cur_state = req_state
                         self.search_rotation_accum = 0.0
                     else:
                         rospy.logwarn(f"State change to getting_lost failed: {resp.message}")
@@ -89,6 +99,7 @@ class MoveAndRotateManager:
         if self.cur_state == "move:finding_person" or self.cur_state == "move:found_person":
             if self.latest_hand_pose == "Paper":
                 print("11111")
+                self.lost_person_counter = 0
                 # 人を検出
                 if self.cur_state == "move:finding_person":
                     print("22222")
@@ -96,6 +107,7 @@ class MoveAndRotateManager:
                     try:
                         resp = self.set_state_srv(req_state)
                         if resp.success:
+                            self.cur_state = req_state
                             rospy.loginfo(f"State reset successful: {resp.message}")
                             # 見つけたので探索累積はリセット
                             self.search_rotation_accum = 0.0
@@ -115,6 +127,7 @@ class MoveAndRotateManager:
                             resp = self.set_state_srv(req_state)
                             if resp.success:
                                 rospy.loginfo(f"State reset successful: {resp.message}")
+                                self.cur_state = req_state
                                 self.move_forward()
                             else:
                                 rospy.logwarn(f"State reset failed: {resp.message}")
@@ -136,44 +149,76 @@ class MoveAndRotateManager:
                         self.nice_position_counter = 0
                         self._accumulate_rotation_and_check_lost(delta, saw_person=True)
             else:
-                # 見えていないので探索回転
                 print(self.latest_hand_pose)
-                delta = -0.3
+                delta = 0.1 * self.plus_or_minus
                 self.move_and_rotate.rotate_target_radian(delta)
                 self.nice_position_counter = 0
                 print("CCCCCCCCCCCC")
+
                 if self.cur_state == "move:found_person":
-                    req_state = "move:finding_person"
-                    try:
-                        resp = self.set_state_srv(req_state)
-                        if resp.success:
-                            rospy.loginfo(f"State reset successful: {resp.message}")
-                        else:
-                            rospy.logwarn(f"State reset failed: {resp.message}")
-                    except rospy.ServiceException as e:
-                        rospy.logerr(f"Failed to call service: {e}")
+                    self.lost_person_counter += 1
+                    rospy.loginfo(f"Lost person count: {self.lost_person_counter}")
+
+                    if self.lost_person_counter >= self.max_lost_person_counter:
+                        req_state = "move:finding_person"
+                        try:
+                            resp = self.set_state_srv(req_state)
+                            if resp.success:
+                                rospy.loginfo(f"Lost person 5 times → move:finding_person")
+                                self.cur_state = req_state
+                                self.lost_person_counter = 0
+                            else:
+                                rospy.logwarn(f"State reset failed: {resp.message}")
+                        except rospy.ServiceException as e:
+                            rospy.logerr(f"Failed to call service: {e}")
+                else:
+                    self.lost_person_counter = 0
+                    
                 self._accumulate_rotation_and_check_lost(delta, saw_person=False)
+
         else:
             pass
 
     def move_forward(self):
         print("under stop distance counter", self.under_stop_distance_counter)
+
+        start_time = time.time() 
+        print(self.cur_state, "%%%%%%%%%%%%&&&&&&&&&&&&")
+            
+        
         while self.cur_state == "move:approaching_person":
+
+            # ★ 20秒経過したら停止して move:staying へ
+            elapsed = time.time() - start_time
+            if elapsed >= 20.0:
+                rospy.loginfo(f"Approach time limit exceeded ({elapsed:.1f} sec) → move:staying")
+                self.move_and_rotate.move_forward_target_velocity(0)
+                req_state = "move:staying"
+                break
+
+            # ★ 近づきすぎ判定（元の動き）
             if self.under_stop_distance_counter < self.max_under_stop_distance_counter:
-                self.move_and_rotate.move_forward_target_velocity(0.01)
+                self.move_and_rotate.move_forward_target_velocity(0.015)
             else:
                 self.move_and_rotate.move_forward_target_velocity(0)
                 self.under_stop_distance_counter = 0
+                req_state = "daily:happy"
                 break
-        req_state = "daily:happy"
-        try:
-            resp = self.set_state_srv(req_state)
-            if resp.success:
-                rospy.loginfo(f"State reset successful: {resp.message}")
-            else:
-                rospy.logwarn(f"State reset failed: {resp.message}")
-        except rospy.ServiceException as e:
-            rospy.logerr(f"Failed to call service: {e}")
+        
+        try:    
+            # ★ while を抜けた後に状態を更新
+            if req_state in ["daily:happy", "move:staying"]:
+                try:
+                    resp = self.set_state_srv(req_state)
+                    if resp.success:
+                        self.cur_state = req_state
+                        rospy.loginfo(f"State reset successful: {resp.message}")
+                    else:
+                        rospy.logwarn(f"State reset failed: {resp.message}")
+                except rospy.ServiceException as e:
+                    rospy.logerr(f"Failed to call service: {e}")
+        except NameError:
+            pass
 
 if __name__ == "__main__":
     try:

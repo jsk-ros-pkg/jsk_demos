@@ -36,6 +36,17 @@ def thinking_mode():
         ri.angle_vector(av, 0.2)
         ri.wait_interpolation()
 
+def look_around_mode():
+    larm_roll_angles = [-1.0, -1.0, -0.9, -0.8, -0.7, -0.7, -0.7, -0.8, -0.9, -1.0, -1.0] * 2
+    rarm_roll_angles = [1.0, 1.0, 0.9, 0.8, 0.7, 0.7, 0.7, 0.8, 0.9, 1.0, 1.0] * 2
+    # neck_yaw_angles = [-0.1, -0.08, -0.06, -0.04, 0, 0, 0, 0.04, 0.06, 0.08, 0.1, 0.1, 0.08, 0.06, 0.04, 0, 0, 0, -0.04, -0.06, -0.08, -0.1]
+    neck_yaw_angles = [-0.3, -0.3, -0.2, -0.1, 0, 0, 0, 0.1, 0.2, 0.3, 0.3, 0.3, 0.3, 0.2, 0.1, 0, 0, 0, 0, 0, -0.1, -0.2, -0.3, -0.3]
+
+    for i in range(22):
+        av = [neck_yaw_angles[i], 0.04, 0, larm_roll_angles[i], 0, 0, 0, rarm_roll_angles[i], 0, 0]
+        ri.angle_vector(av, 0.05)
+        ri.wait_interpolation()
+
 def look_at_direction(neck_yaw_angle):
     av = ri.angle_vector()
     av[0] = neck_yaw_angle
@@ -69,6 +80,11 @@ def speaking_mode():
         ri.angle_vector(av, 0.2)
         ri.wait_interpolation()
 
-    
-    
-    
+def moving_mode():
+    larm_roll_angles = [-0.8, -0.2]
+    rarm_roll_angles = [0.8, 0.2]
+
+    for i in range(2):
+        av = [0, 0.04, 0, larm_roll_angles[i], 0, 0, 0, rarm_roll_angles[i], 0, 0]
+        ri.angle_vector(av, 0.4)
+        ri.wait_interpolation()

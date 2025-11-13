@@ -46,6 +46,16 @@ class MotionManager:
                 kashiwagi_utils.goodbye()
             elif self.current_kashiwagi_state == "idle":
                 kashiwagi_utils.breath_mode()
+            elif self.current_kashiwagi_state == "move:staying":
+                kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "move:surprised":
+                kashiwagi_utils.init_pose()
+            elif self.current_kashiwagi_state == "move:approaching_person":
+                kashiwagi_utils.moving_mode()
+            elif self.current_kashiwagi_state == "move:finding_person":
+                kashiwagi_utils.look_around_mode()
+            elif self.current_kashiwagi_state == "move:found_person":
+                kashiwagi_utils.init_pose()
             self.rate.sleep()
 
 if __name__ == '__main__':
