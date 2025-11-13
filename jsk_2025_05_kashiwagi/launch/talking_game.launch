@@ -137,4 +137,7 @@
   <!-- nearest depth publisher -->
   <node pkg="jsk_2025_05_kashiwagi" type="nearest_depth_publisher.py" name="nearest_depth_publisher" output="screen" />
 
+  <!-- nearest depth publisher -->
+  <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator.py" name="katakanashi_response_generator" output="screen" />
+
 </launch>

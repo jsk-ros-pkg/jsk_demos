@@ -32,6 +32,8 @@ class KashiwagiSpeaker:
         if self.state_updated:
             if self.cur_state == "talking_game:thinking_turn":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+            elif self.cur_state == "katakanashi:thinking_turn":
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
             elif self.cur_state == "move:getting_lost":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
             if wav_file:

@@ -17,6 +17,7 @@ class ResponseSpeakerWithAction:
         rospy.loginfo("Waiting for sound_play action server...")
         self.client.wait_for_server()
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
         self.is_speaking = False
         rospy.loginfo("Connected to sound_play action server.")
         # rospy.Subscriber("/talking_game_response", String, self.say_text)
@@ -25,11 +26,17 @@ class ResponseSpeakerWithAction:
         rospy.Subscriber("/talking_game_response", String, self.generate_wav_and_play_sound_file)
         rospy.spin()
 
+    def state_callback(self, msg):
+        self.current_kashiwagi_state = msg.data
+
     def _done_cb(self, state, result):
         rospy.loginfo("Speech finished!")
         self.is_speaking = False
         try:
-            resp = self.set_state_srv("talking_game:listening_turn")
+            if self.current_kashiwagi_state.split(":")[0] == "talking_game":
+                resp = self.set_state_srv("talking_game:listening_turn")
+            elif self.current_kashiwagi_state.split(":")[0] == "katakanashi":
+                resp = self.set_state_srv("katakanashi:playing")
             rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -37,7 +44,10 @@ class ResponseSpeakerWithAction:
     def _feedback_cb(self, state):
         if (self.is_speaking == False):
             try:
-                resp = self.set_state_srv("talking_game:speaking_turn")
+                if self.current_kashiwagi_state.split(":")[0] == "talking_game":
+                    resp = self.set_state_srv("talking_game:speaking_turn")
+                elif self.current_kashiwagi_state.split(":")[0] == "katakanashi":
+                    resp = self.set_state_srv("katakanashi:speaking_turn")
                 rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
@@ -87,18 +97,6 @@ class ResponseSpeakerWithAction:
         rate = rospy.Rate(10)
         while not self.client.wait_for_result(timeout=rospy.Duration(0.1)):
             rate.sleep()
-
-        # # rospy.loginfo("Speech finished!")
-        # # change kashiwagi state to "talking_game:listening_turn"
-        # try:
-        #     req_state = "talking_game:listening_turn"
-        #     resp = self.set_state_srv(req_state)
-        #     if resp.success:
-        #         rospy.loginfo(f"State updated: {resp.message}")
-        #     else:
-        #         rospy.logwarn(f"State update failed: {resp.message}")
-        # except rospy.ServiceException as e:
-        #     rospy.logerr(f"Service call failed: {e}")
 
 if __name__ == "__main__":
     try:

@@ -30,6 +30,11 @@ class ModuleManager:
             "move:getting_lost":  (0, 163, 255),
             "move:staying":  (0, 163, 255),
             "move:surprised":  (0, 163, 255),
+            "katakanashi:starting": (225, 110, 243),
+            "katakanashi:playing": (255, 255, 40),
+            "katakanashi:speaking_turn": (0, 225, 78),
+            "katakanashi:happy": (255, 110, 243),
+            "katakanashi:thinking_turn": (255, 110, 243),
         }
 
         self.cheek_led_color_map = {
@@ -44,6 +49,9 @@ class ModuleManager:
             "move:found_person": (255, 35, 140),
             "move:approaching_person":  (255, 35, 140),
             "move:surprised": (255, 130, 255),
+            "katakanashi:starting": (225, 110, 243),
+            "katakanashi:speaking_turn": (255, 130, 255),
+            "katakanashi:happy": (255, 110, 243),
         }
 
         self.eye_map = {
@@ -60,6 +68,11 @@ class ModuleManager:
             "move:approaching_person" : "expecting",
             "move:getting_lost" : "troubled",
             "move:surprised": "surprised",
+            "katakanashi:starting": "happy",
+            "katakanashi:listening_turn": "blink",
+            "katakanashi:speaking_turn": "normal",
+            "katakanashi:happy": "happy",
+            "katakanashi:thinking": "normal",
         }
 
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)

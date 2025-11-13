@@ -18,8 +18,6 @@ class ResponseGenerator:
         base_dir = os.path.dirname(__file__)
         self.tsv_path = os.path.join(base_dir, "talking_game.tsv")
         self.record_path = os.path.join(base_dir, "response_record.json")
-        # 追加: eventテキストのファイルパス
-        self.event_path = os.path.join(base_dir, "kashiwagi_event.txt")
 
         self.last_qr_distance = float('nan')
         self.qr_distance_threshold = 0.10
@@ -83,14 +81,10 @@ class ResponseGenerator:
 
     def save_response_record(self, qr_id, gpt_response):
         now = int(time.time())
-        readable_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
-
         if qr_id not in self.recorded_responses:
             self.recorded_responses[qr_id] = []
-
         self.recorded_responses[qr_id].append({
-            "timestamp": now,                     # UNIX 時刻
-            "timestamp_readable": readable_time,  # 人間が読める時刻 ← 追加
+            "timestamp": now,
             "response": gpt_response
         })
 
@@ -100,24 +94,6 @@ class ResponseGenerator:
             rospy.loginfo(f"record in response_record.json {qr_id} → {gpt_response}")
         except Exception as e:
             rospy.logerr(f"failed to write in response_record.json: {e}")
-
-    def load_event_text(self):
-        """
-        kashiwagi_event.txt からイベント文を読み込む。
-        読み込めなかった場合は空文字列を返す。
-        """
-        if not os.path.exists(self.event_path):
-            rospy.logwarn(f"event file not found: {self.event_path}")
-            return ""
-        try:
-            with open(self.event_path, encoding='utf-8') as f:
-                text = f.read().strip()
-                if not text:
-                    rospy.logwarn("event file is empty")
-                return text
-        except Exception as e:
-            rospy.logerr(f"failed to read event file: {e}")
-            return ""
 
     def state_callback(self, msg):
         self.cur_state = msg.data
@@ -174,9 +150,6 @@ class ResponseGenerator:
             for i, item in enumerate(history_list[-3:]):  # 直近3件のみプロンプトに含める
                 history_text += f"【過去の回答{i+1}】{item['response']}\n"
 
-            # ここで毎回 event テキストを読み込む
-            event_text = self.load_event_text()
-
             prompt = f"""以下の質問に、柏木さんとして自然な形でタメ語で答えてください。
             - 話し方はゆっくりのんびりで、言いよどみや間を自然に入れてください。
             - 以下の「参考回答」および「過去の回答」と矛盾がないようにしてください。
@@ -185,7 +158,7 @@ class ResponseGenerator:
             {history_text}
             - 参考回答や過去の回答を参照しているという事実は回答中で言わないでください。
             - 以下の先週の出来事も参考にしてください
-            【出来事】{event_text}
+           【出来事】{event}
             - 「ふれあい」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください。ただし回答に無理にそれらの単語を入れる必要はありません。
             - 「澤田」「さわだ」の敬称は必ず「さん」でお願いします。
             - 「鳩」という言葉については「ハト」と書くようにしてください。
