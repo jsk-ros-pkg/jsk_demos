@@ -28,7 +28,7 @@ class MoveAndRotateManager:
         self.latest_nearest_distance = float('nan')
         self.stop_distance = 0.150 #[m]
         self.under_stop_distance_counter = 0
-        self.max_under_stop_distance_counter = 5
+        self.max_under_stop_distance_counter = 3
         rospy.Subscriber("/nearest_distance", Float32, self.nearest_distance_callback, queue_size=1)
 
         self.latest_hand_pose = "no_hand"
@@ -97,7 +97,7 @@ class MoveAndRotateManager:
     def rotate_callback(self, msg):
         print("###################", self.cur_state)
         if self.cur_state == "move:finding_person" or self.cur_state == "move:found_person":
-            if self.latest_hand_pose == "Paper":
+            if self.latest_hand_pose in ["Paper", "Rock", "Scissors"]:
                 print("11111")
                 self.lost_person_counter = 0
                 # 人を検出
@@ -120,7 +120,7 @@ class MoveAndRotateManager:
                 if 300 <= msg.x <= 500:
                     print("OK")
                     self.nice_position_counter += 1
-                    if self.nice_position_counter >= 5:
+                    if self.nice_position_counter >= 3:
                         req_state = "move:approaching_person"
                         print("33333")
                         try:
@@ -150,7 +150,7 @@ class MoveAndRotateManager:
                         self._accumulate_rotation_and_check_lost(delta, saw_person=True)
             else:
                 print(self.latest_hand_pose)
-                delta = 0.1 * self.plus_or_minus
+                delta = 0.07 * self.plus_or_minus
                 self.move_and_rotate.rotate_target_radian(delta)
                 self.nice_position_counter = 0
                 print("CCCCCCCCCCCC")
@@ -188,12 +188,12 @@ class MoveAndRotateManager:
         
         while self.cur_state == "move:approaching_person":
 
-            # ★ 20秒経過したら停止して move:staying へ
+            # ★ 120秒経過したら停止して move:staying へ
             elapsed = time.time() - start_time
-            if elapsed >= 20.0:
-                rospy.loginfo(f"Approach time limit exceeded ({elapsed:.1f} sec) → move:staying")
+            if elapsed >= 120.0:
+                rospy.loginfo(f"Approach time limit exceeded ({elapsed:.1f} sec) → move:getting_lost")
                 self.move_and_rotate.move_forward_target_velocity(0)
-                req_state = "move:staying"
+                req_state = "move:getting_lost"
                 break
 
             # ★ 近づきすぎ判定（元の動き）
@@ -202,12 +202,12 @@ class MoveAndRotateManager:
             else:
                 self.move_and_rotate.move_forward_target_velocity(0)
                 self.under_stop_distance_counter = 0
-                req_state = "daily:happy"
+                req_state = "move:goal"
                 break
-        
-        try:    
+
+        try:
             # ★ while を抜けた後に状態を更新
-            if req_state in ["daily:happy", "move:staying"]:
+            if req_state in ["move:goal", "move:getting_lost"]:
                 try:
                     resp = self.set_state_srv(req_state)
                     if resp.success:
