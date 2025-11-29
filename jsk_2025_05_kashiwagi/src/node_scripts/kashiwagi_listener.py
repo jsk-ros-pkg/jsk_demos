@@ -8,6 +8,13 @@ from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from sound_play.msg import SoundRequestAction, SoundRequestGoal, SoundRequest
 from sound_play.libsoundplay import SoundClient
 
+# ここから追加 import --------------------
+import json
+from datetime import datetime
+import os
+# ここまで追加 --------------------------
+
+
 class Listener:
     def __init__(self):
         rospy.init_node("kashiwagi_listener")
@@ -71,10 +78,35 @@ class Listener:
         else:
             return False
 
+    # ここから追加: state & spoken_word ログ関数 --------------------
+    def log_state_and_speech(self, state_str, spoken_word):
+        """
+        現在の state と、そのときの spoken_word を JSON Lines 形式で保存する。
+        デフォルト保存先: ~/kashiwagi_speech_state_log.jsonl
+        パラメータ ~log_path で上書き可能。
+        """
+        log_path_default = os.path.expanduser("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/src/node_scripts/kashiwagi_speech_state_log.jsonl")
+        log_path = rospy.get_param("~log_path", log_path_default)
+
+        entry = {
+            "timestamp": datetime.now().isoformat(),
+            "state": state_str,
+            "spoken_word": spoken_word
+        }
+
+        try:
+            # 1行1JSONで追記
+            with open(log_path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        except IOError as e:
+            rospy.logerr("Failed to write log file: %s", e)
+    # ここまで追加 -------------------------------------------------
+
     def speech_callback(self, msg):
         rospy.loginfo(msg.transcript[0])
         spoken_word = msg.transcript[0]
         print(spoken_word)
+
         req_state = None
         if self.cur_kashiwagi_state == "idle" and self.is_mentioned(spoken_word, ["おはよう", "起きて", "おきて", "掟", "起き", "柏木さん", "柏", "柏木", "押上", "押上さん", "西脇", "芦屋駅"]):
             self.during_speech_req_state = "daily:waking_up"
@@ -189,7 +221,42 @@ class Listener:
         elif self.cur_kashiwagi_state in ["move:getting_lost", "move:finding_person", "move:approaching_person", "move:staying"] and self.is_mentioned(spoken_word, ["ありがとう", "ありがと", "休んで", "終わり", "おわり"]):
             self.during_speech_req_state = None
             self.after_speech_req_state = "daily:happy"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_tanoshikattane.wav"
+
+        elif self.cur_kashiwagi_state == "move:staying" and self.is_mentioned(spoken_word, ["さようなら", "さよなら", "またね", "また", "さよう", "バイバイ", "ばいばい"]):
+            self.during_speech_req_state = "daily:goodbye"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_matane.wav"
+
+        elif self.cur_kashiwagi_state == "move:staying" and self.is_mentioned(spoken_word, ["ありがとう", "ありがと"]):
+            self.during_speech_req_state = "move:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_arigato.wav"
+
+        elif self.cur_kashiwagi_state == "move:staying" and self.is_mentioned(spoken_word, ["かわいい", "可愛い"]):
+            self.during_speech_req_state = "move:happy"
+            self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_ehehe.wav"
+            
+        elif self.cur_kashiwagi_state == "move:staying" and self.is_mentioned(spoken_word, ["こんにちは", "こんにち"]):
+            self.during_speech_req_state = "move:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_konnichiwa.wav"
+            
+        elif self.cur_kashiwagi_state == "move:staying" and self.is_mentioned(spoken_word, ["おはよう"]):
+            self.during_speech_req_state = "move:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_ohayou.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["新曲"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            songs = ["/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_aogeba.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_sakura.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_usagi.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_idle.mp3"
+            ]
+            self.sound_file = random.choice(songs)
 
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["歌", "歌って"]):
             self.during_speech_req_state = "daily:singing"
@@ -198,7 +265,12 @@ class Listener:
                      "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_donguri.mp3",
                      "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_katatsumuri.mp3",
                      "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_momotaro.mp3",
-                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_hato.mp3"]
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_hato.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_aogeba.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_sakura.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_usagi.mp3",
+                     "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_idle.mp3"
+            ]
             self.sound_file = random.choice(songs)
         
         elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
@@ -235,6 +307,8 @@ class Listener:
             print("playing")
             print(self.sound_file)
             self.play_sound_file(self.sound_file)
+            # 現在の self.cur_kashiwagi_state と spoken_word を保存
+            self.log_state_and_speech(self.cur_kashiwagi_state, spoken_word)
 
 if __name__ == "__main__":
     try:
