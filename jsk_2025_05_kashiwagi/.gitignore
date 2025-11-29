@@ -1,3 +1,7 @@
 src/node_scripts/kashiwagi_event.txt
 src/node_scripts/response_record*
+src/node_scripts/records
 data/tmp/*
+src/node_scripts/kashiwagi_speech_state_log.jsonl
+src/node_scripts/kashiwagi_state_log.json
+src/node_scripts/katakana_explanation_record.json
