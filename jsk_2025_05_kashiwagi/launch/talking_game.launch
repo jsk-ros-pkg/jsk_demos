@@ -140,4 +140,7 @@
   <!-- nearest depth publisher -->
   <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator.py" name="katakanashi_response_generator" output="screen" />
 
+  <!-- kashiwagi state logger -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_logger.py" name="kashiwagi_state_logger" output="screen"/>
+
 </launch>
