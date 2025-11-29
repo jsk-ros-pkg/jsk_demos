@@ -88,3 +88,13 @@ def moving_mode():
         av = [0, 0.04, 0, larm_roll_angles[i], 0, 0, 0, rarm_roll_angles[i], 0, 0]
         ri.angle_vector(av, 0.4)
         ri.wait_interpolation()
+
+
+def patapata_mode():
+    larm_roll_angles = [0.4, -0.4]
+    rarm_roll_angles = [-0.4, 0.4]
+
+    for i in range(2):
+        av = [0, 0.04, 0, larm_roll_angles[i], 0, 0, 0, rarm_roll_angles[i], 0, 0]
+        ri.angle_vector(av, 0.3)
+        ri.wait_interpolation()
