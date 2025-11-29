@@ -1,2 +1,3 @@
 src/node_scripts/kashiwagi_event.txt
 src/node_scripts/response_record*
+data/tmp/*
