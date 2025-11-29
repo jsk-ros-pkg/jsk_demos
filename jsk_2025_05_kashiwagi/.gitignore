@@ -1,6 +1,7 @@
 src/node_scripts/kashiwagi_event.txt
 src/node_scripts/response_record*
 src/node_scripts/records
+src/node_scripts/talking_game.tsv
 data/tmp/*
 src/node_scripts/kashiwagi_speech_state_log.jsonl
 src/node_scripts/kashiwagi_state_log.json
