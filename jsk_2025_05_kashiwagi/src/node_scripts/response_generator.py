@@ -21,7 +21,7 @@ class ResponseGenerator:
         # 追加: eventテキストのファイルパス
         self.event_path = os.path.join(base_dir, "kashiwagi_event.txt")
         # class name setting
-        class_name = os.getenv("CLASS_NAME", "教室")
+        self.class_name = os.getenv("CLASS_NAME", "教室")
 
         self.last_qr_distance = float('nan')
         self.qr_distance_threshold = 0.10
@@ -191,7 +191,7 @@ class ResponseGenerator:
             - 参考回答や過去の回答を参照しているという事実は回答中で言わないでください。
             - 以下のこれまでの出来事も参考にしてください
             【出来事】{event_text}
-            - 「{class_name}」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください。ただし回答に無理にそれらの単語を入れる必要はありません。
+            - 「{self.class_name}」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください。ただし回答に無理にそれらの単語を入れる必要はありません。
             - 「澤田」「さわだ」の敬称は必ず「さん」でお願いします。
             - 「鳩」という言葉については「ハト」と書くようにしてください。
             - 文字カウントをして300文字に収まっているのかを確認し、文章を途中で終わらせないでください。
