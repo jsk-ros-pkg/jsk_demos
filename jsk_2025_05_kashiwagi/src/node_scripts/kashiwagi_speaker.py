@@ -4,6 +4,7 @@ import actionlib
 from std_msgs.msg import String
 from sound_play.msg import SoundRequestAction, SoundRequestGoal, SoundRequest
 import time
+import random
 
 class KashiwagiSpeaker:
     def __init__(self):
@@ -12,6 +13,9 @@ class KashiwagiSpeaker:
         self.prev_state = "unknown"
         self.last_play_time = 0.0  # 最後に再生した時間
         self.repeat_interval = 3.0 # move:happy時の繰り返し秒数
+        self.thinking_wav_files = ["/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking.wav",
+                                   "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_2.wav",
+                                   "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_3.wav"]
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
         rospy.loginfo("Launching kashiwagi speaker node ....")
 
@@ -34,8 +38,10 @@ class KashiwagiSpeaker:
         if self.state_updated:
             if self.cur_state == "talking_game:thinking_turn":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                self.last_play_time = time.time()
             elif self.cur_state == "katakanashi:thinking_turn":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                self.last_play_time = time.time()
             elif self.cur_state == "move:getting_lost":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
             elif self.cur_state == "move:goal":
@@ -48,13 +54,31 @@ class KashiwagiSpeaker:
                 self.play_wav(wav_file)
 
     def timer_callback(self, event):
-        if self.cur_state != "move:approaching_person":
+        thinking_wav_file = random.choice(self.thinking_wav_files)
+        repeat_config = {
+            "move:approaching_person": {
+                "wav": "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yoisho.wav",
+                "interval": 3.0,
+            },
+            "talking_game:thinking_turn": {
+                "wav": thinking_wav_file,
+                "interval": 5.0,
+            },
+            "katakanashi:thinking_turn": {
+                "wav": thinking_wav_file,
+                "interval": 5.0,
+            },
+        }
+
+        cfg = repeat_config.get(self.cur_state)
+        if cfg is None:
+            # 繰り返し再生対象外の state
             return
 
         now = time.time()
-        if now - self.last_play_time >= self.repeat_interval:
-            wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yoisho.wav"
-            self.play_wav(wav_file)
+
+        if now - self.last_play_time >= cfg["interval"]:
+            self.play_wav(cfg["wav"])
             self.last_play_time = now
 
     def play_wav(self, file_path):

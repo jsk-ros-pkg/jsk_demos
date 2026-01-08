@@ -116,7 +116,12 @@ class Listener:
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["自己紹介", "自己", "事故"]):
             self.during_speech_req_state = "daily:introduction"
             self.after_speech_req_state = "daily:happy"
-            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_self_introduction.wav"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_self_introduction_2.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["今日の予定"]):
+            self.during_speech_req_state = "daily:introduction"
+            self.after_speech_req_state = "daily:happy"
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yotei_12_10.wav"
             
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["さようなら", "さよなら", "またね", "また", "さよう", "バイバイ", "ばいばい"]):
             self.during_speech_req_state = "daily:goodbye"
@@ -288,6 +293,12 @@ class Listener:
             song = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_idle.mp3"
             self.sound_file = song
 
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["仰げば尊"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            song = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_song_aogeba.mp3"
+            self.sound_file = song
+            
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["ぽっぽ"]):
             self.during_speech_req_state = "daily:singing"
             self.after_speech_req_state = "daily:happy"
