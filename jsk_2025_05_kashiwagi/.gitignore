@@ -4,6 +4,8 @@ src/node_scripts/records
 src/node_scripts/talking_game.tsv
 data/tmp/*
 data/kashiwagi_self_introduction.wav
+data/kashiwagi_self_introduction_2.wav
+data/kashiwagi_yotei_12_10.wav
 src/node_scripts/kashiwagi_speech_state_log.jsonl
 src/node_scripts/kashiwagi_state_log.json
 src/node_scripts/katakana_explanation_record.json
