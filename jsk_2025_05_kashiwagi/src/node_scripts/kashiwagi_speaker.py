@@ -42,6 +42,9 @@ class KashiwagiSpeaker:
             elif self.cur_state == "katakanashi:thinking_turn":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
                 self.last_play_time = time.time()
+            elif self.cur_state == "shiritori:thinking_turn":
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                self.last_play_time = time.time()
             elif self.cur_state == "move:getting_lost":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
             elif self.cur_state == "move:goal":
@@ -65,6 +68,10 @@ class KashiwagiSpeaker:
                 "interval": 5.0,
             },
             "katakanashi:thinking_turn": {
+                "wav": thinking_wav_file,
+                "interval": 5.0,
+            },
+            "shiritori:thinking_turn": {
                 "wav": thinking_wav_file,
                 "interval": 5.0,
             },

@@ -138,10 +138,13 @@
   <!-- nearest depth publisher -->
   <node pkg="jsk_2025_05_kashiwagi" type="nearest_depth_publisher.py" name="nearest_depth_publisher" output="screen" />
 
-  <!-- nearest depth publisher -->
+  <!-- katakana response generator -->
   <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator.py" name="katakanashi_response_generator" output="screen" />
 
   <!-- kashiwagi state logger -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_logger.py" name="kashiwagi_state_logger" output="screen"/>
+
+  <!-- shiritori response generator -->
+  <node pkg="jsk_2025_05_kashiwagi" type="shiritori_response_generator.py" name="shiritori_response_generator" output="screen"/>
 
 </launch>

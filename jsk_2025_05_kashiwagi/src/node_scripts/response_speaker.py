@@ -37,6 +37,8 @@ class ResponseSpeakerWithAction:
                 resp = self.set_state_srv("talking_game:listening_turn")
             elif self.current_kashiwagi_state.split(":")[0] == "katakanashi":
                 resp = self.set_state_srv("katakanashi:playing")
+            elif self.current_kashiwagi_state.split(":")[0] == "shiritori":
+                resp = self.set_state_srv("shiritori:listening_turn")
             rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -48,6 +50,8 @@ class ResponseSpeakerWithAction:
                     resp = self.set_state_srv("talking_game:speaking_turn")
                 elif self.current_kashiwagi_state.split(":")[0] == "katakanashi":
                     resp = self.set_state_srv("katakanashi:speaking_turn")
+                elif self.current_kashiwagi_state.split(":")[0] == "shiritori":
+                    resp = self.set_state_srv("shiritori:speaking_turn")
                 rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")
@@ -56,7 +60,10 @@ class ResponseSpeakerWithAction:
     def generate_wav_and_play_sound_file(self, msg):
         cmd = ["rosrun", "voicevox", "text2wave", "-o", self.wav_file_path, self.text_path, "-eval", "(3)"]
         rospy.loginfo("Running VoiceVox text2wave...")
+        print("aaaaaaaaaaaaaaaaaaaaaaaaa")
         result = subprocess.run(cmd, capture_output=True, text=True)
+        print("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+        
         if result.returncode != 0:
             rospy.logerr(f"VoiceVox error:\n{result.stderr}")
             return

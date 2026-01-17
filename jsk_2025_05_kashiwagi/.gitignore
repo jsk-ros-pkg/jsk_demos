@@ -9,3 +9,4 @@ data/kashiwagi_yotei_12_10.wav
 src/node_scripts/kashiwagi_speech_state_log.jsonl
 src/node_scripts/kashiwagi_state_log.json
 src/node_scripts/katakana_explanation_record.json
+src/node_scripts/shiritori_record.json
