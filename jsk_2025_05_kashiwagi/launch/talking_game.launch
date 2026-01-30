@@ -17,10 +17,10 @@
   </node>
 
   <node name="webrtcvad_ros"
-        pkg="webrtcvad_ros" type="webrtcvad_ros.py"
+        pkg="riberry_startup" type="webrtcvad_ros.py"	
         output="screen" >
     <rosparam>
-      aggressiveness: 1
+      aggressiveness: 3
     </rosparam>
     <remap from="audio_data" to="$(arg audio_topic)" />
     <remap from="audio_info" to="$(arg audio_info_topic)" />
