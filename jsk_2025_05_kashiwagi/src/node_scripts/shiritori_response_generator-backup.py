@@ -5,13 +5,12 @@ import os
 import json
 import time
 import re
-import random
 
 import rospy
 from std_msgs.msg import String
+from openai import AzureOpenAI
 
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
-
 
 class ShiritoriResponder:
     """
@@ -29,13 +28,13 @@ class ShiritoriResponder:
         self.record_path = os.path.join(base_dir, "shiritori_record.json")
         self.latest_reply_path = os.path.join(base_dir, "latest_shiritori_reply.txt")
 
-        # 追加：辞書ファイル
-        self.words_path = os.path.join(base_dir, "shiritori_words.json")
-        self.words_dict = self.load_words_dict(self.words_path)
-
+        # 出力トピック（元コードに合わせて同じにしてます。必要なら変えてOK）
         self.pub = rospy.Publisher("/talking_game_response", String, queue_size=10)
+
+        # 入力トピック
         rospy.Subscriber("/shiritori_word", String, self.word_callback)
 
+        # 状態変更サービス（存在しない環境でも落ちないように）
         self.set_state_srv = None
         if SetKashiwagiState is not None:
             try:
@@ -43,47 +42,40 @@ class ShiritoriResponder:
             except Exception as e:
                 rospy.logwarn(f"Failed to setup /set_kashiwagi_state proxy: {e}")
 
+        # Azure OpenAI クライアント
+        self.client = AzureOpenAI(
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_KEY"),
+            api_version="2024-08-01-preview"
+        )
+
+        # キャラ（必要なら変えてOK）
+        self.system_prompt = {
+            "role": "system",
+            "content": (
+                "返答は必ず“単語1つだけ”。"
+                "説明文・理由・句読点・改行は禁止。"
+                "しりとりなので、与えられた単語の最後の文字から始まる単語を返す。"
+                "同じ単語の繰り返しは禁止。語尾が「ん」(「ン」含む)で終わる単語は禁止。"
+            )
+        }
+
         # 記録ロード（使用済み単語の復元）
         self.record = self.load_record()
         self.used_words = set(self.record.get("used_words", []))
 
+        # again 用
         self.last_input = None
         self.last_reply = None
 
-        rospy.loginfo("ShiritoriResponder node started (DICT mode).")
+        rospy.loginfo("ShiritoriResponder node started.")
         rospy.spin()
-
-    # ----------------- 辞書ロード -----------------
-    def load_words_dict(self, path: str) -> dict:
-        """
-        { "あ": ["あさ", ...], "い": [...], ... } を想定。
-        壊れててもノードが落ちないように空辞書で起動。
-        """
-        if not os.path.exists(path):
-            rospy.logwarn(f"Words dict not found: {path} (start with empty dict)")
-            return {}
-
-        try:
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-            if not isinstance(data, dict):
-                rospy.logwarn("Words dict JSON is not a dict. Use empty dict.")
-                return {}
-
-            # 値がリストでないものは除外
-            cleaned = {}
-            for k, v in data.items():
-                if isinstance(k, str) and isinstance(v, list):
-                    cleaned[k] = [str(w) for w in v if str(w).strip()]
-            rospy.loginfo(f"Loaded words dict: {path} (keys={len(cleaned)})")
-            return cleaned
-
-        except Exception as e:
-            rospy.logerr(f"Failed to read words dict: {e}")
-            return {}
 
     # ★ 追加：最新reply（単語だけ）を上書き保存
     def save_latest_reply_word(self, reply_word: str) -> None:
+        """
+        latest_shiritori_reply.txt に reply_word を1行で上書き保存する。
+        """
         try:
             with open(self.latest_reply_path, "w", encoding="utf-8") as f:
                 f.write(reply_word.strip() + "\n")
@@ -91,6 +83,7 @@ class ShiritoriResponder:
         except Exception as e:
             rospy.logerr(f"Failed to write latest reply file: {e}")
 
+        
     # ----------------- 記録 -----------------
     def load_record(self):
         if os.path.exists(self.record_path):
@@ -115,7 +108,7 @@ class ShiritoriResponder:
         self.record["history"].append({
             "timestamp": now,
             "timestamp_readable": readable_time,
-            "mode": mode,
+            "mode": mode,  # "new" or "again"
             "input": input_word,
             "reply": reply_word
         })
@@ -139,6 +132,7 @@ class ShiritoriResponder:
     })
 
     def _strip_word(self, w: str) -> str:
+        # 空白や記号をできるだけ落として「単語だけ」に寄せる
         w = w.strip()
         w = re.sub(r"\s+", "", w)
         w = w.strip("。、．，!！?？「」『』（）()[]【】<>《》・…―-")
@@ -148,6 +142,7 @@ class ShiritoriResponder:
         w = self._strip_word(w)
         if not w:
             return ""
+        # 末尾の長音「ー」は無視して、その前を見る
         i = len(w) - 1
         while i >= 0 and w[i] == "ー":
             i -= 1
@@ -188,36 +183,58 @@ class ShiritoriResponder:
             return False
         return need == got
 
-    # ----------------- 辞書ベース生成 -----------------
-    def generate_reply_from_dict(self, input_word: str, max_tries: int = 200) -> str:
-        """
-        words_dict から「最後のかな」に対応する単語を探す。
-        max_tries は候補が多い場合のランダム試行上限。
-        """
+    # ----------------- OpenAI 呼び出し -----------------
+    def generate_reply(self, input_word: str, max_tries: int = 10) -> str:
         last = self._last_kana(input_word)
-        if not last:
-            return ""
+        used_preview = "、".join(list(sorted(self.used_words))[:200])  # 長すぎ防止（先頭だけ）
+        used_count = len(self.used_words)
 
-        candidates = self.words_dict.get(last, [])
-        if not candidates:
-            return ""
+        base_user_prompt = (
+            f"入力: {input_word}\n"
+            f"しりとり返答は「{last}」から始まる単語。\n"
+            f"返答は単語1つだけ。説明・句読点・改行は禁止。\n"
+            f"語尾が「ん」で終わる単語は禁止。\n"
+            f"使用済み単語は避ける（使用済み {used_count} 件）。\n"
+            f"使用済み例（抜粋）: {used_preview}\n"
+        )
 
-        # 候補が十分あるならランダムに max_tries 回試す（速い）
-        # 少ないならシャッフルして総当り
-        if len(candidates) <= max_tries:
-            pool = candidates[:]
-            random.shuffle(pool)
-            for w in pool:
-                w = self._strip_word(w)
-                if self._valid_reply(input_word, w):
-                    return w
-            return ""
+        last_error = ""
+        for attempt in range(1, max_tries + 1):
+            user_prompt = base_user_prompt
+            if last_error:
+                user_prompt += f"前回NG理由: {last_error}\n必ず条件を満たす“単語1つだけ”を出して。\n"
+            try:
+                resp = self.client.chat.completions.create(
+                    model=os.getenv("AZURE_OPENAI_MODEL"),
+                    messages=[self.system_prompt, {"role": "user", "content": user_prompt}],
+                    max_tokens=30,
+                    temperature=0.6,
+                    top_p=0.9,
+                    stream=False
+                )
+                reply = resp.choices[0].message.content or ""
+                reply = self._strip_word(reply)
 
-        for _ in range(max_tries):
-            w = self._strip_word(random.choice(candidates))
-            if self._valid_reply(input_word, w):
-                return w
+                if self._valid_reply(input_word, reply):
+                    return reply
 
+                # NG理由を作る（次の試行の補助）
+                if not reply:
+                    last_error = "空だった"
+                elif self._ends_with_n(reply):
+                    last_error = "語尾が「ん」だった"
+                elif reply in self.used_words:
+                    last_error = "使用済みだった"
+                else:
+                    need = self._last_kana(input_word)
+                    got = self._first_kana(reply)
+                    last_error = f"頭文字が違う（必要:{need} 実際:{got}）"
+
+            except Exception as e:
+                last_error = f"APIエラー: {e}"
+                rospy.logerr(f"Failed to generate reply: {e}")
+
+        # 最後までダメなら、空返し（運用側で扱いやすいように）
         return ""
 
     # ----------------- コールバック -----------------
@@ -229,6 +246,7 @@ class ShiritoriResponder:
             rospy.logwarn("Empty input. Skip.")
             return
 
+        # 状態更新（任意）
         if self.set_state_srv is not None:
             try:
                 resp = self.set_state_srv("shiritori:thinking_turn")
@@ -246,28 +264,26 @@ class ShiritoriResponder:
             rospy.loginfo(f"Republished (again): {self.last_reply}")
             self.save_record(self.last_input, self.last_reply, mode="again")
             return
-
-        # new: 辞書から返答を選んで publish
+    
+        # new: 生成して publish
         input_word = self._strip_word(text)
-        word = self.generate_reply_from_dict(input_word)
-
-        # 返せない場合は空
-        if not word:
-            rospy.logwarn("No valid word found in dict.")
+        reply = input_word + "だよね。" + "うーん。" + "そうだ！" + self.generate_reply(input_word)
+        
+        if not reply:
+            rospy.logwarn("Could not generate a valid shiritori word.")
             return
 
-        reply = input_word + "だよね。" + "うーん。" + "そうだ！" + word
-
-        with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt",
-                  "w", encoding="utf-8") as f:
+        with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
             f.write(reply)
 
-        self.save_latest_reply_word(word)
+        self.save_latest_reply_word(reply)
+
         self.pub.publish(reply)
         rospy.loginfo(f"Published reply: {reply}")
 
         self.last_input = input_word
-        self.last_reply = word
+        self.last_reply = reply
+
         self.save_record(self.last_input, self.last_reply, mode="new")
 
 

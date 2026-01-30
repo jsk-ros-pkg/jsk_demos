@@ -10,20 +10,15 @@ from speech_recognition_msgs.msg import SpeechRecognitionCandidates
 
 
 class NounReadingPublisher:
-    """
-    /speech_to_text を購読し、名詞だけなら読みを取得。
-    ファイルに書かれた単語の「最後の文字」を毎回読み込み、
-    それと読み(ひらがな)の先頭が一致すれば /shiritori_word に publish。
-    ファイルが無い/空なら制限なし。
-    """
-
     def __init__(self):
         self.in_topic = "/speech_to_text"
         self.out_topic = "/shiritori_word"
 
         self.word_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/src/node_scripts/latest_shiritori_reply.txt"
+        self.clear_word_file()
 
         self.tagger = Tagger()
+        self.cur_state = "unknown"
 
         self.pub = rospy.Publisher(self.out_topic, String, queue_size=10)
         self.sub = rospy.Subscriber(
@@ -32,28 +27,56 @@ class NounReadingPublisher:
             self.speech_callback,
             queue_size=10,
         )
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        rospy.Subscriber("/talking_game_response", String, self.print_kashiwagi_shiritori_response)
 
         rospy.loginfo(f"[NounReadingPublisher] in={self.in_topic} out={self.out_topic}")
         rospy.loginfo(f"[NounReadingPublisher] word_file={self.word_file}")
 
+    def state_callback(self, msg):
+        self.cur_state = msg.data
+
+    def print_kashiwagi_shiritori_response(self, msg):
+        if self.cur_state != "shiritori:listening_turn" and self.cur_state != "shiritori:speaking_turn" and self.cur_state != "shiritori:thinking_turn":
+            return
+        else:
+            print("kashiwagi said => ", msg.data)
+
+    # ファイルを空にする
+    def clear_word_file(self):
+        try:
+            with open(self.word_file, "w", encoding="utf-8") as f:
+                f.write("")
+            rospy.loginfo(f"Cleared word file: {self.word_file}")
+        except Exception as e:
+            rospy.logwarn(f"Failed to clear word file: {e}")
+
     def speech_callback(self, msg):
-        if not hasattr(msg, "transcript") or not msg.transcript:
+        if not hasattr(msg, "transcript") or not msg.transcript or self.cur_state != "shiritori:listening_turn":
             return
 
         spoken_word = (msg.transcript[0] or "").strip()
         if not spoken_word:
             return
 
+        # 「終わり」「おわり」でファイルを空にする
+        if "終わり" in spoken_word or "おわり" in spoken_word:
+            self.clear_word_file()
+            return
+
         ok, hira = self._noun_only_hiragana_reading(spoken_word)
         if not ok or not hira:
             return
 
-        # ★ ここで毎回ファイルを読み直す（起動後の更新を反映）
+        # ★追加：「ん」で終わる単語は受け付けない（publishしないで次を待つ）
+        if self._ends_with_n(hira):
+            rospy.loginfo(f"Blocked (ends with ん): spoken_word='{spoken_word}' reading='{hira}'")
+            return
+
         target_initial, raw_word = self._load_last_char_with_debug()
 
-        # target_initial が None のときは無条件で通す
-        if target_initial is None or hira[0] == target_initial:
-            self.pub.publish(String(data=spoken_word))
+        if target_initial is None or self._is_allowed_start(hira, target_initial):
+            self.pub.publish(String(data=hira))
             rospy.loginfo(
                 f"Published: spoken_word='{spoken_word}' reading='{hira}' "
                 f"target='{target_initial}' from_file_word='{raw_word}'"
@@ -64,15 +87,16 @@ class NounReadingPublisher:
                 f"target='{target_initial}' from_file_word='{raw_word}'"
             )
 
+    def _ends_with_n(self, hira: str) -> bool:
+        hira = (hira or "").strip()
+        if not hira:
+            return False
+        return hira[-1] == "ん"
+
     def _load_last_char_with_debug(self):
-        """
-        Returns (target_initial or None, raw_word)
-        raw_word: ファイルの中身（strip後）をログ用に返す
-        """
         try:
             with open(self.word_file, "r", encoding="utf-8") as f:
                 word = f.read()
-            # 改行や空白を除去
             stripped = (word or "").strip()
 
             if not stripped:
@@ -86,6 +110,32 @@ class NounReadingPublisher:
         except Exception as e:
             rospy.logwarn(f"failed to read word file: {e}. no initial restriction.")
             return None, ""
+
+    _small_to_big = {
+        "ゃ": "や", "ゅ": "ゆ", "ょ": "よ",
+        "ぁ": "あ", "ぃ": "い", "ぅ": "う", "ぇ": "え", "ぉ": "お",
+        "っ": "つ", "ゎ": "わ",
+    }
+
+    def _is_allowed_start(self, hira: str, target: str) -> bool:
+        if not hira:
+            return False
+
+        # 通常の一致
+        if hira[0] == target:
+            return True
+
+        # target が小文字のときの特別ルール
+        if target in self._small_to_big:
+            big = self._small_to_big[target]
+            # 小→大 (ゃ→や 等)
+            if hira[0] == big:
+                return True
+            # 拗音許容（しゃ, きゃ, りょ など）
+            if len(hira) >= 2 and hira[1] == target:
+                return True
+
+        return False
 
     def _noun_only_hiragana_reading(self, text: str):
         tokens = list(self.tagger(text))
