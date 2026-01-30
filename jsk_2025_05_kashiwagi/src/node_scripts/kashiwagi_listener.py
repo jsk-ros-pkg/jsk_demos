@@ -107,7 +107,6 @@ class Listener:
         spoken_word = msg.transcript[0]
         print(spoken_word)
 
-        req_state = None
         if self.cur_kashiwagi_state == "idle" and self.is_mentioned(spoken_word, ["おはよう", "起きて", "おきて", "掟", "起き", "柏木さん", "柏", "柏木", "押上", "押上さん", "西脇", "芦屋駅", "ピッピ"]):
             self.during_speech_req_state = "daily:waking_up"
             self.after_speech_req_state = None
@@ -408,16 +407,6 @@ class Listener:
             self.during_speech_req_state = None
             self.after_speech_req_state = None
             self.sound_file = None
-
-        if req_state != None:
-            try:
-              resp = self.set_state_srv(req_state)
-              if resp.success:
-                rospy.loginfo(f"State updated: {resp.message}")
-              else:
-                rospy.logwarn(f"State update failed: {resp.message}")
-            except rospy.ServiceException as e:
-              rospy.logerr(f"Service call failed: {e}")
 
         if self.sound_file != None:
             print("playing")
