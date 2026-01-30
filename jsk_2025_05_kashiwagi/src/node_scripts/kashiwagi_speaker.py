@@ -73,7 +73,7 @@ class KashiwagiSpeaker:
             },
             "shiritori:thinking_turn": {
                 "wav": thinking_wav_file,
-                "interval": 5.0,
+                "interval": 8.0,
             },
         }
 
