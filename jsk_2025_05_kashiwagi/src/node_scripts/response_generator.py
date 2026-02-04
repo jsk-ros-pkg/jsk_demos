@@ -70,9 +70,9 @@ class ResponseGenerator:
         self.pub_response = rospy.Publisher("/talking_game_response", String, queue_size=10)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
 
-        rospy.Subscriber("/qr_distance", Float32, self.depth_update_callback)
-        rospy.Subscriber("/qr_data", String, self.response_callback)
-        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        rospy.Subscriber("/qr_distance", Float32, self.depth_update_callback, queue_size=1)
+        rospy.Subscriber("/qr_data", String, self.response_callback, queue_size=1)
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
 
         rospy.loginfo("Response Generator starting nodes...")
         rospy.spin()

@@ -22,7 +22,7 @@ class MoveAndRotateManager:
         rospy.Subscriber('/gesture_recognition/hand_position', Point, self.rotate_callback, queue_size=1)
 
         self.cur_state = "unknown"
-        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
 
         self.latest_nearest_distance = float('nan')

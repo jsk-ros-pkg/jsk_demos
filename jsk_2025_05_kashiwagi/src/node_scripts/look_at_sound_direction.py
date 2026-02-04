@@ -18,8 +18,8 @@ class VoiceTriggerWithMajority:
         self.spike_votes = deque(maxlen=self.vote_window)  # スパイクかどうかの履歴
         self.latest_direction = None  # 最新の音源方向
 
-        self.audio_volume_sub = rospy.Subscriber("/audio_volume", Float32, self.volume_callback)
-        self.sound_direction_sub = rospy.Subscriber("/sound_direction", Int32, self.direction_callback)
+        self.audio_volume_sub = rospy.Subscriber("/audio_volume", Float32, self.volume_callback, queue_size=1)
+        self.sound_direction_sub = rospy.Subscriber("/sound_direction", Int32, self.direction_callback, queue_size=1)
         self.neck_pub = rospy.Publisher("/neck_yaw_angle", Float32, queue_size=10)
         self.rotate_rad = rospy.Publisher("/rotate_rad", Float32, queue_size=10)
 

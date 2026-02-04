@@ -8,7 +8,7 @@ class QuestionGenerator:
         rospy.sleep(1.0)
 
         self.pub = rospy.Publisher('/input_text', String, queue_size=10)
-        rospy.Subscriber('/barcode', String, self.callback)
+        rospy.Subscriber('/barcode', String, self.callback, queue_size=1)
 
         self.seen_questions = set()  # 既に処理済みのQR内容を記録
 

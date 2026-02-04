@@ -23,7 +23,7 @@ class QRReader:
         # 最新フレームだけ処理するため queue_size=1
         self.image_sub = rospy.Subscriber('/camera/color/image_raw', Image, self.image_callback,
                                           queue_size=1, buff_size=2**24)
-        self.state_sub = rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
+        self.state_sub = rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
         self.text_pub = rospy.Publisher('/qr_data', String, queue_size=10)
         self.pos_pub = rospy.Publisher('/qr_position', Point, queue_size=10)
         rospy.loginfo("Launching QR code reader node ....")

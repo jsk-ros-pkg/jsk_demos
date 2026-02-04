@@ -18,8 +18,8 @@ class QRDepthReader:
         self.qr_timeout = 1.0
 
         # Subscribers
-        self.depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback)
-        self.pos_sub = rospy.Subscriber("/qr_position", Point, self.position_callback)
+        self.depth_sub = rospy.Subscriber("/camera/aligned_depth_to_color/image_raw", Image, self.depth_callback, queue_size=1)
+        self.pos_sub = rospy.Subscriber("/qr_position", Point, self.position_callback, queue_size=1)
 
         # Publisher
         self.distance_pub = rospy.Publisher("/qr_distance", Float32, queue_size=10)

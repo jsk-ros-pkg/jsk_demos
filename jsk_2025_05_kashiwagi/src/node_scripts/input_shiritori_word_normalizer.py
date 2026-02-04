@@ -27,8 +27,8 @@ class NounReadingPublisher:
             self.speech_callback,
             queue_size=10,
         )
-        rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
-        rospy.Subscriber("/talking_game_response", String, self.print_kashiwagi_shiritori_response)
+        rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
+        rospy.Subscriber("/talking_game_response", String, self.print_kashiwagi_shiritori_response, queue_size=1)
 
         rospy.loginfo(f"[NounReadingPublisher] in={self.in_topic} out={self.out_topic}")
         rospy.loginfo(f"[NounReadingPublisher] word_file={self.word_file}")
