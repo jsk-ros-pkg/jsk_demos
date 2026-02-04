@@ -21,11 +21,11 @@ class TimeSignal:
         rospy.sleep(1.0)
 
         self.cur_kashiwagi_state = "unknown"
-        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         self.schedule_and_soundfile = {
-            "18:53":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1500.wav",
+            "15:00":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1500.wav",
             "15:50":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1550.wav",
             "16:00":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1600.wav"}
         self.client.wait_for_server()
