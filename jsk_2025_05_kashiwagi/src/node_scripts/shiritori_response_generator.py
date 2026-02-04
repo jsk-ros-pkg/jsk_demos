@@ -27,6 +27,7 @@ class ShiritoriResponder:
 
         base_dir = os.path.dirname(__file__)
         self.record_path = os.path.join(base_dir, "shiritori_record.json")
+        self.clear_file()
         self.latest_reply_path = os.path.join(base_dir, "latest_shiritori_reply.txt")
 
         # 追加：辞書ファイル
@@ -52,6 +53,14 @@ class ShiritoriResponder:
 
         rospy.loginfo("ShiritoriResponder node started (DICT mode).")
         rospy.spin()
+
+    def clear_file(self):
+        try:
+            with open(self.record_path, "w", encoding="utf-8") as f:
+                f.write("")
+            rospy.loginfo(f"Cleared word file: {self.word_file}")
+        except Exception as e:
+            rospy.logwarn(f"Failed to clear word file: {e}")
 
     # ----------------- 辞書ロード -----------------
     def load_words_dict(self, path: str) -> dict:
@@ -194,29 +203,29 @@ class ShiritoriResponder:
         words_dict から「最後のかな」に対応する単語を探す。
         max_tries は候補が多い場合のランダム試行上限。
         """
+        print("input word", input_word)
         last = self._last_kana(input_word)
         if not last:
+            print("FFFFFFFFFFFFFFFFFFFFF")
             return ""
 
         candidates = self.words_dict.get(last, [])
         if not candidates:
+            print("JJJJJJJJJJJJJJJJJJJJJJ")
             return ""
 
         # 候補が十分あるならランダムに max_tries 回試す（速い）
         # 少ないならシャッフルして総当り
         if len(candidates) <= max_tries:
+            print("candidates = ", candidates)
             pool = candidates[:]
             random.shuffle(pool)
             for w in pool:
+                print("w=", w)
                 w = self._strip_word(w)
                 if self._valid_reply(input_word, w):
                     return w
             return ""
-
-        for _ in range(max_tries):
-            w = self._strip_word(random.choice(candidates))
-            if self._valid_reply(input_word, w):
-                return w
 
         return ""
 
