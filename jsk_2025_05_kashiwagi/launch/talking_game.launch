@@ -72,9 +72,13 @@
 
   <!-- Hand Pose Estimation -->
   <include file="$(find semi2024)/launch/hand_pose_estimation_d405.launch" />
+  <!-- <!-\- Hand Pose Estimation -\-> -->
+  <!-- <include file="$(find semi2024)/launch/hand_pose_estimation_d405_light.launch" /> -->
 
   <!-- Gesture Recognition -->
   <include file="$(find semi2024)/launch/gesture_recognition.launch"/>
+  <!-- <!-\- Gesture Recognition -\-> -->
+  <!-- <include file="$(find semi2024)/launch/gesture_recognition_light.launch"/> -->
 
 
   <!-- <!-\- respeaker -\-> -->
@@ -146,5 +150,8 @@
 
   <!-- shiritori response generator -->
   <node pkg="jsk_2025_05_kashiwagi" type="shiritori_response_generator.py" name="shiritori_response_generator" output="screen"/>
+
+  <!-- shiritori word normalizer -->
+  <node pkg="jsk_2025_05_kashiwagi" type="input_shiritori_word_normalizer.py" name="input_shiritori_word_normalizer" output="screen"/>
 
 </launch>
