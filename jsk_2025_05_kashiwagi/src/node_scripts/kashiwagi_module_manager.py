@@ -42,6 +42,11 @@ class ModuleManager:
             "shiritori:speaking_turn": (0, 225, 78),
             "shiritori:happy": (255, 110, 243),
             "shiritori:thinking_turn": (255, 110, 243),
+            "free_talk:starting": (225, 110, 243),
+            "free_talk:listening_turn": (255, 255, 40),
+            "free_talk:speaking_turn": (0, 225, 78),
+            "free_talk:happy": (255, 110, 243),
+            "free_talk:thinking_turn": (255, 110, 243),
         }
 
         self.cheek_led_color_map = {
@@ -64,6 +69,9 @@ class ModuleManager:
             "shiritori:starting": (225, 110, 243),
             "shiritori:speaking_turn": (255, 130, 255),
             "shiritori:happy": (255, 110, 243),
+            "free_talk:starting": (225, 110, 243),
+            "free_talk:speaking_turn": (255, 130, 255),
+            "free_talk:happy": (255, 110, 243),
         }
 
         self.eye_map = {
@@ -92,9 +100,14 @@ class ModuleManager:
             "shiritori:speaking_turn": "normal",
             "shiritori:happy": "happy",
             "shiritori:thinking": "normal",
+            "free_talk:starting": "happy",
+            "free_talk:listening_turn": "blink",
+            "free_talk:speaking_turn": "normal",
+            "free_talk:happy": "happy",
+            "free_talk:thinking": "normal",
         }
 
-        rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
         rospy.loginfo("Launching Module Manager node ....")
         rospy.spin()
 

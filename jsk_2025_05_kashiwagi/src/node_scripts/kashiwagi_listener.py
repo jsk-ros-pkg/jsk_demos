@@ -21,8 +21,8 @@ class Listener:
         rospy.sleep(1.0)
 
         self.cur_kashiwagi_state = "unknown"
-        self.sub_speech = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.speech_callback)
-        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback)
+        self.sub_speech = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.speech_callback, queue_size=1)
+        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         self.client.wait_for_server()
@@ -162,6 +162,16 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_iiyo.wav"
 
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["おしゃべり", "お喋り"]):
+            self.during_speech_req_state = "free_talk:starting"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_iiyo.wav"
+
+        elif self.cur_kashiwagi_state in ["free_talk:listening_turn","free_talk:thinking_turn", "free_talk:speaking_turn"] and self.is_mentioned(spoken_word, ["おわり", "終わり", "ありがとう"]):
+            self.during_speech_req_state = "daily:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_tanoshikattane.wav"
+
             
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["宜しく", "よろしく", "お願い"]):
             self.during_speech_req_state = "daily:happy"
@@ -234,6 +244,8 @@ class Listener:
             self.during_speech_req_state = "katakanashi:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yahho.wav"
+
+###########
 
 ###########
         elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["こんにちは", "こんにち"]):

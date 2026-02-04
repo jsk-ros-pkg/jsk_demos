@@ -7,8 +7,8 @@ class MotionManager:
     def __init__(self):
         self.current_kashiwagi_state = "unknown"
         self.prev_kashiwagi_state = "unknown"
-        rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
-        rospy.Subscriber('/neck_yaw_angle', Float32, self.look_at_direction_callback)
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
+        rospy.Subscriber('/neck_yaw_angle', Float32, self.look_at_direction_callback, queue_size=1)
 
         self.neck_yaw_angle = 0
         kashiwagi_utils.servo_on()
@@ -32,6 +32,8 @@ class MotionManager:
                 kashiwagi_utils.speaking_mode()  # 繰り返し実行される
             elif self.current_kashiwagi_state == "shiritori:speaking_turn":
                 kashiwagi_utils.speaking_mode()  # 繰り返し実行される
+            elif self.current_kashiwagi_state == "free_talk:speaking_turn":
+                kashiwagi_utils.speaking_mode()  # 繰り返し実行される
             elif self.current_kashiwagi_state == "daily:introduction":
                 kashiwagi_utils.speaking_mode()
             elif self.current_kashiwagi_state == "daily:singing":
@@ -42,9 +44,13 @@ class MotionManager:
                 kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
             elif self.current_kashiwagi_state == "shiritori:listening_turn":
                 kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
+            elif self.current_kashiwagi_state == "free_talk:listening_turn":
+                kashiwagi_utils.breath_mode_and_look_at_direction(self.neck_yaw_angle)
             elif self.current_kashiwagi_state == "talking_game:thinking_turn":
                 kashiwagi_utils.thinking_mode()
             elif self.current_kashiwagi_state == "katakanashi:thinking_turn":
+                kashiwagi_utils.thinking_mode()
+            elif self.current_kashiwagi_state == "free_talk:thinking_turn":
                 kashiwagi_utils.thinking_mode()
             elif self.current_kashiwagi_state == "shiritori:thinking_turn":
                 kashiwagi_utils.thinking_mode()

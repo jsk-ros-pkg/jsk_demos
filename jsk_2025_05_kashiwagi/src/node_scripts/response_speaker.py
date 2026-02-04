@@ -17,13 +17,13 @@ class ResponseSpeakerWithAction:
         rospy.loginfo("Waiting for sound_play action server...")
         self.client.wait_for_server()
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
-        rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
         self.is_speaking = False
         rospy.loginfo("Connected to sound_play action server.")
         # rospy.Subscriber("/talking_game_response", String, self.say_text)
         self.text_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt"
         self.wav_file_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.wav"
-        rospy.Subscriber("/talking_game_response", String, self.generate_wav_and_play_sound_file)
+        rospy.Subscriber("/talking_game_response", String, self.generate_wav_and_play_sound_file, queue_size=1)
         rospy.spin()
 
     def state_callback(self, msg):
@@ -39,6 +39,8 @@ class ResponseSpeakerWithAction:
                 resp = self.set_state_srv("katakanashi:playing")
             elif self.current_kashiwagi_state.split(":")[0] == "shiritori":
                 resp = self.set_state_srv("shiritori:listening_turn")
+            elif self.current_kashiwagi_state.split(":")[0] == "free_talk":
+                resp = self.set_state_srv("free_talk:listening_turn")
             rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
         except rospy.ServiceException as e:
             rospy.logerr(f"Service call failed: {e}")
@@ -52,6 +54,8 @@ class ResponseSpeakerWithAction:
                     resp = self.set_state_srv("katakanashi:speaking_turn")
                 elif self.current_kashiwagi_state.split(":")[0] == "shiritori":
                     resp = self.set_state_srv("shiritori:speaking_turn")
+                elif self.current_kashiwagi_state.split(":")[0] == "free_talk":
+                    resp = self.set_state_srv("free_talk:speaking_turn")
                 rospy.loginfo(f"State updated: {resp.message}" if resp.success else f"State update failed: {resp.message}")
             except rospy.ServiceException as e:
                 rospy.logerr(f"Service call failed: {e}")

@@ -16,7 +16,7 @@ class KashiwagiSpeaker:
         self.thinking_wav_files = ["/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking.wav",
                                    "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_2.wav",
                                    "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_3.wav"]
-        rospy.Subscriber('/kashiwagi_state', String, self.state_callback)
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
         rospy.loginfo("Launching kashiwagi speaker node ....")
 
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
@@ -47,6 +47,8 @@ class KashiwagiSpeaker:
                 self.last_play_time = time.time()
             elif self.cur_state == "move:getting_lost":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
+            elif self.cur_state == "free_talk:thinking_turn":
+                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_2.wav"
             elif self.cur_state == "move:goal":
                 wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_kitayo.wav"
             elif self.cur_state == "move:approaching_person":
