@@ -154,4 +154,7 @@
   <!-- shiritori word normalizer -->
   <node pkg="jsk_2025_05_kashiwagi" type="input_shiritori_word_normalizer.py" name="input_shiritori_word_normalizer" output="screen"/>
 
+  <!-- time signal -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_signal.py" name="kashiwagi_time_signal" output="screen"/>
+
 </launch>
