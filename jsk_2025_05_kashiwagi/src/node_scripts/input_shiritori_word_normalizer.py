@@ -20,12 +20,12 @@ class NounReadingPublisher:
         self.tagger = Tagger()
         self.cur_state = "unknown"
 
-        self.pub = rospy.Publisher(self.out_topic, String, queue_size=10)
+        self.pub = rospy.Publisher(self.out_topic, String, queue_size=1)
         self.sub = rospy.Subscriber(
             self.in_topic,
             SpeechRecognitionCandidates,
             self.speech_callback,
-            queue_size=10,
+            queue_size=1,
         )
         rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
         rospy.Subscriber("/talking_game_response", String, self.print_kashiwagi_shiritori_response, queue_size=1)
