@@ -395,25 +395,46 @@ class Listener:
             ]
             self.sound_file = random.choice(songs)
         
-        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "ピッピ"]):
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
             self.during_speech_req_state = "talking_game:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "katakanashi:playing" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "ピッピ"]):
+        elif self.cur_kashiwagi_state == "katakanashi:playing" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
             self.during_speech_req_state = "katakanashi:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "ピッピ"]):
+        elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
             self.during_speech_req_state = "shiritori:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "ピッピ"]):
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
             self.during_speech_req_state = "daily:happy"
             self.after_speech_req_state = None
             self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yonda.wav"
+
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["ピッピ"]):
+            self.during_speech_req_state = "talking_game:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_pippidayo.wav"
+
+        elif self.cur_kashiwagi_state == "katakanashi:playing" and self.is_mentioned(spoken_word, ["ピッピ"]):
+            self.during_speech_req_state = "katakanashi:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_pippidayo.wav"
+
+        elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["ピッピ"]):
+            self.during_speech_req_state = "shiritori:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_pippidayo.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["ピッピ"]):
+            self.during_speech_req_state = "daily:happy"
+            self.after_speech_req_state = None
+            self.sound_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_pippidayo.wav"
+            
 
         else:
             self.during_speech_req_state = None
