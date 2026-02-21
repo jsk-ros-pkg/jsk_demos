@@ -4,6 +4,9 @@
 import rospy
 from std_msgs.msg import String
 
+import rospkg
+import os
+
 import jaconv
 from fugashi import Tagger
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
@@ -14,7 +17,10 @@ class NounReadingPublisher:
         self.in_topic = "/speech_to_text"
         self.out_topic = "/shiritori_word"
 
-        self.word_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/src/node_scripts/latest_shiritori_reply.txt"
+        rospack = rospkg.RosPack()
+        package_path = rospack.get_path("jsk_2025_05_kashiwagi")
+
+        self.word_file = os.path.join(package_path, "src", "node_scripts", "latest_shiritori_reply.txt",)
         self.clear_word_file()
 
         self.tagger = Tagger()

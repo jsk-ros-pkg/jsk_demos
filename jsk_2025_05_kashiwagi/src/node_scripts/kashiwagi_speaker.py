@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import sys, os, rospkg
 import rospy
 import actionlib
 from std_msgs.msg import String
@@ -9,13 +10,15 @@ import random
 class KashiwagiSpeaker:
     def __init__(self):
         rospy.init_node('kashiwagi_speaker')
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
+
         self.cur_state = "unknown"
         self.prev_state = "unknown"
         self.last_play_time = 0.0  # 最後に再生した時間
         self.repeat_interval = 3.0 # move:happy時の繰り返し秒数
-        self.thinking_wav_files = ["/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking.wav",
-                                   "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_2.wav",
-                                   "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_3.wav"]
+        self.thinking_wav_files = [f"{self.path_to_pkg}/data/kashiwagi_thinking.wav",
+                                   f"{self.path_to_pkg}/data/kashiwagi_thinking_2.wav",
+                                   f"{self.path_to_pkg}/data/kashiwagi_thinking_3.wav"]
         rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
         rospy.loginfo("Launching kashiwagi speaker node ....")
 
@@ -37,22 +40,22 @@ class KashiwagiSpeaker:
 
         if self.state_updated:
             if self.cur_state == "talking_game:thinking_turn":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "katakanashi:thinking_turn":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "shiritori:thinking_turn":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "move:getting_lost":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_megamawaru.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_megamawaru.wav"
             elif self.cur_state == "free_talk:thinking_turn":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_thinking_2.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_thinking_2.wav"
             elif self.cur_state == "move:goal":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_kitayo.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_kitayo.wav"
             elif self.cur_state == "move:approaching_person":
-                wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yoisho.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_yoisho.wav"
                 self.last_play_time = time.time()
 
             if wav_file:
@@ -62,7 +65,7 @@ class KashiwagiSpeaker:
         thinking_wav_file = random.choice(self.thinking_wav_files)
         repeat_config = {
             "move:approaching_person": {
-                "wav": "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_yoisho.wav",
+                "wav": f"{self.path_to_pkg}/data/kashiwagi_yoisho.wav",
                 "interval": 3.0,
             },
             "talking_game:thinking_turn": {

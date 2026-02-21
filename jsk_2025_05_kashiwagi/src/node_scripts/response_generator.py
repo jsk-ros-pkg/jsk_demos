@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 from std_msgs.msg import String, Float32
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from geometry_msgs.msg import Point
@@ -16,6 +17,7 @@ class ResponseGenerator:
 
         # file path settings
         base_dir = os.path.dirname(__file__)
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
         self.tsv_path = os.path.join(base_dir, "talking_game.tsv")
         self.record_path = os.path.join(base_dir, "response_record.json")
         # 追加: eventテキストのファイルパス
@@ -217,7 +219,7 @@ class ResponseGenerator:
                 print(response.choices[0].message.content)
                 reply = response.choices[0].message.content.strip()
                 rospy.loginfo(f"generated response: {reply}")
-                with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
+                with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
                     f.write(reply)
                 self.pub_response.publish(reply)
                 self.save_response_record(qr_text, reply)

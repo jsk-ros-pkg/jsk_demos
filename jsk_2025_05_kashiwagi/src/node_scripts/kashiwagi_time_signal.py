@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 import actionlib
 import random
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
@@ -19,15 +20,16 @@ class TimeSignal:
     def __init__(self):
         rospy.init_node("kashiwagi_time_signal")
         rospy.sleep(1.0)
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
 
         self.cur_kashiwagi_state = "unknown"
         self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         self.schedule_and_soundfile = {
-            "15:00":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1500.wav",
-            "15:50":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1550.wav",
-            "16:00":"/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_time_signal_1600.wav"}
+            "15:00":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1500.wav",
+            "15:50":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1550.wav",
+            "16:00":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1600.wav"}
         self.client.wait_for_server()
         self.sound_file = None
         self.after_speech_req_state = None

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 from std_msgs.msg import String
 from openai import AzureOpenAI
 import os
@@ -15,6 +16,7 @@ class KatakanaWordExplainer:
         # --- ファイルパス設定（回答ログ保存用） ---
         base_dir = os.path.dirname(__file__)
         self.record_path = os.path.join(base_dir, "katakana_explanation_record.json")
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
 
         # 説明の履歴 { "ワード": [ {timestamp: int, explanation: str}, ... ] }
@@ -178,7 +180,7 @@ class KatakanaWordExplainer:
 
             reply = response.choices[0].message.content.strip()
             rospy.loginfo(f"Generated explanation ({target_word}): {reply}")
-            with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
+            with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
                 f.write(reply)
 
             # トピックに publish

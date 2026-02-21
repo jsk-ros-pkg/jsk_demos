@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import rospy
+import sys, os, rospkg
 from std_msgs.msg import String
 import json
 from datetime import datetime
@@ -13,7 +14,8 @@ class StateLogger(object):
         rospy.init_node("kashiwagi_state_logger")
 
         # 保存先パス（パラメータで上書きも可）
-        default_path = os.path.expanduser("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/src/node_scripts/kashiwagi_state_log.json")
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
+        default_path = os.path.expanduser(f"{self.path_to_pkg}/src/node_scripts/kashiwagi_state_log.json")
         self.output_path = rospy.get_param("~output_path", default_path)
 
         self.prev_state = None

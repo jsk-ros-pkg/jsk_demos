@@ -7,6 +7,7 @@ import time
 import re
 
 import rospy
+import sys, os, rospkg
 from std_msgs.msg import String
 from openai import AzureOpenAI
 
@@ -25,6 +26,7 @@ class ShiritoriResponder:
         rospy.sleep(1)
 
         base_dir = os.path.dirname(__file__)
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
         self.record_path = os.path.join(base_dir, "shiritori_record.json")
         self.latest_reply_path = os.path.join(base_dir, "latest_shiritori_reply.txt")
 
@@ -273,7 +275,7 @@ class ShiritoriResponder:
             rospy.logwarn("Could not generate a valid shiritori word.")
             return
 
-        with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
+        with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
             f.write(reply)
 
         self.save_latest_reply_word(reply)

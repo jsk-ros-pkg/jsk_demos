@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
+import sys, os, rospkg
 import json
 import time
 import re
@@ -26,6 +26,7 @@ class ShiritoriResponder:
         rospy.sleep(1)
 
         base_dir = os.path.dirname(__file__)
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
         self.record_path = os.path.join(base_dir, "shiritori_record.json")
         self.clear_file()
         self.latest_reply_path = os.path.join(base_dir, "latest_shiritori_reply.txt")
@@ -267,7 +268,7 @@ class ShiritoriResponder:
 
         reply = input_word + "だよね。" + "うーん。" + "そうだ！" + word
 
-        with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt",
+        with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt",
                   "w", encoding="utf-8") as f:
             f.write(reply)
 

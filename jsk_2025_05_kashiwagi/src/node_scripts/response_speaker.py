@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 import actionlib
 import time
 import subprocess
@@ -21,8 +22,9 @@ class ResponseSpeakerWithAction:
         self.is_speaking = False
         rospy.loginfo("Connected to sound_play action server.")
         # rospy.Subscriber("/talking_game_response", String, self.say_text)
-        self.text_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt"
-        self.wav_file_path = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.wav"
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
+        self.text_path = f"{self.path_to_pkg}/data/tmp/tmp_response.txt"
+        self.wav_file_path = f"{self.path_to_pkg}/data/tmp/tmp_response.wav"
         rospy.Subscriber("/talking_game_response", String, self.generate_wav_and_play_sound_file, queue_size=1)
         rospy.spin()
 

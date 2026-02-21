@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 import actionlib
 from speech_recognition_msgs.msg import SpeechRecognitionCandidates
 from std_msgs.msg import String
@@ -12,6 +13,7 @@ class Listener:
         rospy.sleep(1.0)
 
         self.cur_kashiwagi_state = "unknown"
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
 
         self.sub_speech = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.speech_callback)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
@@ -39,7 +41,7 @@ class Listener:
         spoken_word = msg.transcript[0]
         print(spoken_word)
         if (spoken_word in ["おはよう", "起きて", "おきて", "掟"]):
-            self.greeting_wav_file = "/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/kashiwagi_ohayou.wav"
+            self.greeting_wav_file = f"{self.path_to_pkg}/data/kashiwagi_ohayou.wav"
 
         if self.greeting_wav_file != None:
             print("playing")

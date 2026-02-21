@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import rospy
+import sys, os, rospkg
 from std_msgs.msg import String
 from jsk_2025_05_kashiwagi.srv import SetKashiwagiState
 from openai import AzureOpenAI
@@ -18,6 +19,7 @@ class FreeTalkResponder:
         base_dir = os.path.dirname(__file__)
         self.event_path = os.path.join(base_dir, "kashiwagi_event.txt")
         self.record_path = os.path.join(base_dir, "free_talk_record.json")
+        self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
 
         self.class_name = os.getenv("CLASS_NAME", "教室")
         self.history = deque(maxlen=8)
@@ -148,7 +150,7 @@ class FreeTalkResponder:
 
             reply = response.choices[0].message.content.strip()
             rospy.loginfo(f"generated response: {reply}")
-            with open("/home/ubuntu/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
+            with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:
                 f.write(reply)
             self.pub_response.publish(reply)
 
