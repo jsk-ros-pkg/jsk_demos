@@ -3,7 +3,7 @@
   <arg name="namespace" default="" />
   <arg name="model_path" default="$(find semi2024)/models/keypoint_classifier.tflite" />
   <arg name="label_csv" default="$(find semi2024)/models/keypoint_classifier_label.csv" />
-  <arg name="venv" value="/home/ubuntu/venvs/tensorflow/bin/python3" />
+  <arg name="venv" default="" />
 
   <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
     <node name="gesture_recognition"
