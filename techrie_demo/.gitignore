@@ -1,5 +1,11 @@
-# generated data
-/object_images
-/config/gpt_api.yaml
+# local secrets
+config/gpt_api.yaml
+
+# generated / temporary
+object_images/
+motions/_jit/
+config/*.bak.*
+
+# python cache
 __pycache__/
-*.pyc_
+*.pyc
