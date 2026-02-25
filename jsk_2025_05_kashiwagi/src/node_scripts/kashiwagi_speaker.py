@@ -40,13 +40,13 @@ class KashiwagiSpeaker:
 
         if self.state_updated:
             if self.cur_state == "talking_game:thinking_turn":
-                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_untone.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "katakanashi:thinking_turn":
-                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_untone.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "shiritori:thinking_turn":
-                wav_file = f"{self.path_to_pkg}/data/kashiwagi_hmm.wav"
+                wav_file = f"{self.path_to_pkg}/data/kashiwagi_untone.wav"
                 self.last_play_time = time.time()
             elif self.cur_state == "move:getting_lost":
                 wav_file = f"{self.path_to_pkg}/data/kashiwagi_megamawaru.wav"

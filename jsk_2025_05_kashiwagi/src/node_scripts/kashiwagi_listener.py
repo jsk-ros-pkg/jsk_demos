@@ -118,12 +118,12 @@ class Listener:
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["自己紹介", "自己", "事故"]):
             self.during_speech_req_state = "daily:introduction"
             self.after_speech_req_state = "daily:happy"
-            self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_self_introduction_2.wav"
+            self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_self_introduction_3.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["今日の予定"]):
-            self.during_speech_req_state = "daily:introduction"
-            self.after_speech_req_state = "daily:happy"
-            self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yotei_12_10.wav"
+        # elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["今日の予定"]):
+        #     self.during_speech_req_state = "daily:introduction"
+        #     self.after_speech_req_state = "daily:happy"
+        #     self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yotei_12_10.wav"
             
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["さようなら", "さよなら", "またね", "また", "さよう", "バイバイ", "ばいばい"]):
             self.during_speech_req_state = "daily:goodbye"
@@ -174,7 +174,6 @@ class Listener:
             self.during_speech_req_state = "daily:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_tanoshikattane.wav"
-
             
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["宜しく", "よろしく", "お願い"]):
             self.during_speech_req_state = "daily:happy"
@@ -190,6 +189,16 @@ class Listener:
             self.during_speech_req_state = "daily:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yahho.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["疲れた", "お疲れ様", "お疲れ"]):
+            self.during_speech_req_state = "daily:happy"
+            self.after_speech_req_state = None
+            self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_otsukare.wav"
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["元気ですか"]):
+            self.during_speech_req_state = "daily:happy"
+            self.after_speech_req_state = None
+            self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_genki.wav"
 
 #################
         elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["こんにちは", "こんにち"]):
