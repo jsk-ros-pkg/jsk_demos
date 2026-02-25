@@ -59,8 +59,8 @@ class FreeTalkResponder:
 
         self.pub_response = rospy.Publisher("/talking_game_response", String, queue_size=10)
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
-        self.sub_speech = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.speech_callback, queue_size=1)
-        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=1)
+        self.sub_speech = rospy.Subscriber("/speech_to_text", SpeechRecognitionCandidates, self.speech_callback, queue_size=10)
+        self.sub_state = rospy.Subscriber("/kashiwagi_state", String, self.state_callback, queue_size=10)
         
         rospy.loginfo("FreeTalkResponder started...")
         rospy.spin()
