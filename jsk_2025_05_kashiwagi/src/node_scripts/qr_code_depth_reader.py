@@ -36,7 +36,7 @@ class QRDepthReader:
 
         if self.last_seen_time is None or now - self.last_seen_time > self.qr_timeout:
             # Cannot find QR for qr_timeout [seconds]
-            rospy.loginfo("Cannot find QR code now")
+            # rospy.loginfo("Cannot find QR code now")
             self.distance_pub.publish(Float32(data=float('nan')))
             return
 
