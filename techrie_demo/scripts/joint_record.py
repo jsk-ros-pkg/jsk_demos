@@ -3,8 +3,10 @@
 import os, json, datetime, select, sys
 import rospy
 from sensor_msgs.msg import JointState
+import rospkg
 
-OUT_DIR = os.path.expanduser('~/enshu_ws/src/techrie_demo/motions')
+pkg_root = rospkg.RosPack().get_path("techrie_demo")
+OUT_DIR = os.path.join(pkg_root, "motions")
 LEFT  = ['larm_joint0','larm_joint1','larm_joint2','larm_joint3','larm_joint4','larm_joint5','larm_joint6']
 RIGHT = ['rarm_joint0','rarm_joint1','rarm_joint2','rarm_joint3','rarm_joint4','rarm_joint5','rarm_joint6']
 

@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os, json, yaml, sys
+import rospkg
+pkg_root = rospkg.RosPack().get_path("techrie_demo")
+MOTION_DIR = os.path.join(pkg_root, "motions")
+YAML_PATH = os.path.join(pkg_root, "config", "arm_poses.yaml")
 
-MOTION_DIR = os.path.expanduser('~/enshu_ws/src/techrie_demo/motions')
-YAML_PATH  = os.path.expanduser('~/enshu_ws/src/techrie_demo/config/arm_poses.yaml')
 
 def main(name, step_dur=0.04):
     jpath = os.path.join(MOTION_DIR, name + '.json')

@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 import rospy, os, json, time, random, glob
 from std_msgs.msg import String
+from rospkg import RosPack
 
 class JitterPlayer:
     def __init__(self):
         rospy.init_node("traj_jitter_player")
-
-        base = os.path.expanduser('~/enshu_ws/src/techrie_demo')
+        base = RosPack().get_path("techrie_demo")
         self.motion_dir = rospy.get_param("~motion_dir", os.path.join(base, "motions"))
         self.out_subdir = rospy.get_param("~out_subdir", "_jit")
         self.out_dir    = os.path.join(self.motion_dir, self.out_subdir)
