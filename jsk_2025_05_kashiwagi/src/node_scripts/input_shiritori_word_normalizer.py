@@ -109,7 +109,11 @@ class NounReadingPublisher:
                 rospy.logwarn("word file is empty. no initial restriction.")
                 return None, ""
 
-            last_char = stripped[-1]
+            if stripped[-1] == "ー" and len(stripped) >= 2:
+                last_char = stripped[-2]
+            else:
+                last_char = stripped[-1]
+
             rospy.loginfo(f"Loaded file word='{stripped}', last_char='{last_char}'")
             return last_char, stripped
 
