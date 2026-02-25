@@ -1,0 +1,186 @@
+joints:
+  left:
+  - larm_joint0
+  - larm_joint1
+  - larm_joint2
+  - larm_joint3
+  - larm_joint4
+  - larm_joint5
+  - larm_joint6
+  right:
+  - rarm_joint0
+  - rarm_joint1
+  - rarm_joint2
+  - rarm_joint3
+  - rarm_joint4
+  - rarm_joint5
+  - rarm_joint6
+poses:
+  peace:
+    left:
+    - 0.264483
+    - 0.058905
+    - 0.031809
+    - -0.444143
+    - 0.640885
+    - 0.657378
+    - -0.154331
+    right:
+    - -0.358141
+    - -0.098371
+    - -0.7799
+    - -1.522102
+    - -0.002356
+    - 0.632049
+    - 0.121344
+    dur: 1.0
+  joy:
+    left:
+    - 0.977821
+    - 0.347539
+    - 0.832326
+    - -1.353045
+    - 0.106618
+    - 0.876505
+    - 0.0
+    right:
+    - -0.83586
+    - -0.273318
+    - -0.820545
+    - -1.577472
+    - 0.46476
+    - 0.240921
+    - -0.005302
+    dur: 1.0
+  hi:
+    left:
+    - 1.339497
+    - 0.183783
+    - 0.084823
+    - -0.561953
+    - 0.196742
+    - 0.876505
+    - -0.326333
+    right:
+    - 0.189085
+    - -0.075398
+    - 0.05596
+    - -0.92834
+    - 0.458869
+    - 0.183783
+    - 0.127234
+    dur: 1.0
+  reset:
+    left:
+    - 0.419992
+    - 0.138427
+    - -0.206756
+    - -0.455335
+    - 0.371101
+    - 0.702146
+    - -0.154331
+    right:
+    - -0.043589
+    - -0.186139
+    - -0.219126
+    - -0.751626
+    - 0.002356
+    - 0.581391
+    - 0.115453
+    dur: 1.0
+  head_center:
+    dur: 0.25
+    head:
+    - 1.5708
+    - 0.0
+  head_shake_left:
+    dur: 0.18
+    head:
+    - 1.6708
+    - 0.0
+  head_shake_right:
+    dur: 0.18
+    head:
+    - 1.4708
+    - 0.0
+  head_nod_up:
+    dur: 0.18
+    head:
+    - 1.5708
+    - 0.25
+  head_nod_down:
+    dur: 0.18
+    head:
+    - 1.5708
+    - -0.25
+  head_micro_left:
+    dur: 0.2
+    head:
+    - 1.6208
+    - 0.0
+  head_micro_right:
+    dur: 0.2
+    head:
+    - 1.5208
+    - 0.0
+  head_micro_up:
+    dur: 0.2
+    head:
+    - 1.5708
+    - 0.1
+  head_micro_down:
+    dur: 0.2
+    head:
+    - 1.5708
+    - -0.1
+  present_hand:
+    left:
+    - 0.408211
+    - 0.398786
+    - 0.832326
+    - -0.449444
+    - 0.36521
+    - 0.702146
+    - -0.143139
+    right:
+    - 0.143728
+    - -0.174358
+    - -0.213824
+    - -0.745735
+    - 0.008247
+    - 0.586693
+    - 0.103672
+    dur: 1.0
+sequences:
+  joy_pose:
+  - pose: joy
+  nod:
+  - head_center
+  - head_nod_down
+  - head_nod_up
+  - head_nod_down
+  - head_center
+  shake:
+  - head_center
+  - head_shake_left
+  - head_shake_right
+  - head_shake_left
+  - head_center
+  micro_pitch_s:
+  - head_center
+  - head_micro_down
+  - head_center
+  - head_micro_up
+  - head_center
+  micro_yaw_s:
+  - head_center
+  - head_micro_left
+  - head_center
+  - head_micro_right
+  - head_center
+  micro_yaw_m:
+  - head_center
+  - head_shake_left
+  - head_center
+  - head_shake_right
+  - head_center

@@ -1,0 +1,9 @@
+# goal
+string kind
+float32 intensity
+---
+# result
+bool done
+---
+# feedback
+string stage

@@ -1,0 +1,32 @@
+# --- human_input_bridge が担当する既存の human 入力 ---
+0: ok
+1: no
+32: praise        # 褒める
+33: pet           # なでる
+34: offer_food    # 食べ物をあげる
+35: show_art      # 人が見せる
+36: invite        # 人が誘う
+37: dance         # ノリノリ開始
+# 追加（どのボタンにするかはお好みで）
+38: dance_mode_clap
+39: dance_mode_random
+40: sing
+
+4:  dance_stop     # 停止
+2:  dance_slow     # テンポ遅く
+3:  dance_fast     # テンポ速く
+
+# --- 他ノードが担当（ここでは扱わない） ---
+6:  ignore        # diary_switch が使用
+7:  ignore
+8:  ignore        # color_selector が使用
+9:  ignore
+10: ignore
+11: ignore
+27: ignore        # greeting_joy（ダブルタップ）
+63: ignore        # greeting_joy（ダブルタップ）
+
+# 追加したくなったら、たとえば：
+# 36: invite
+# 37: joke
+# 38: sorry

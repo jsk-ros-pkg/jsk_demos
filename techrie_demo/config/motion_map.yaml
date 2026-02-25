@@ -1,0 +1,6 @@
+praise: seq:nod           # うなずく（seq:shake等もOK）
+pet: seq:shake
+offer_food: pose:present_hand
+show_art: pose:joy
+invite: pose:hi
+default: pose:reset

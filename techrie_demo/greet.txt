@@ -1,0 +1,7 @@
+# 開始の挨拶
+roslaunch techrie_demo greeting_mode.launch
+40番
+
+# 終了の挨拶
+roslaunch techrie_demo greeting_mode.launch
+41番

@@ -1,0 +1,30 @@
+cooldown_sec: 1.0
+
+praise:
+  gpt_hint: "褒められて喜ぶ。短く元気に。"
+  emotion: "joy"
+
+pet:
+  gpt_hint: "なでられて落ち着く。ふわっとやさしく。"
+  emotion: "calm"
+
+offer_food:
+  gpt_hint: "食べ物をもらって嬉しい。食べ物語彙を1つ入れる。"
+  emotion: "joy"
+
+show_art:
+  gpt_hint: "作品を見て感嘆。素直な驚き。"
+  emotion: "interest"
+
+invite:
+  gpt_hint: "一緒に描こうと前向きに誘う。"
+  emotion: "interest"
+
+greeting_hello:
+  gpt_hint: "あいさつ。今日もよろしくのニュアンス。"
+  emotion: "joy"
+
+greeting_goodnight:
+  gpt_hint: "おやすみの挨拶。やさしく締める。"
+  emotion: "calm"
+

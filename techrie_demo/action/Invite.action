@@ -1,0 +1,8 @@
+# goal
+string phrase
+---
+# result
+bool accepted
+---
+# feedback
+string stage

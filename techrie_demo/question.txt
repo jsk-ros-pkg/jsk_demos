@@ -1,0 +1,10 @@
+# 例: 1行1件
+echo "ロボットはどんな絵が好き？"           >> questions.txt
+echo "いっしょに月のピースを作るコツは？"     >> questions.txt
+
+# 例1: テキストファイルから
+rosrun techrie_demo qa_batch_responder.py --in ~/questions.txt --title "Jedyへのお返事" --date 2025-09-20
+
+# 例2: 標準入力から
+rosrun techrie_demo qa_batch_responder.py --title "Jedyへのお返事"
+(ここで1行ずつ入力、Ctrl-Dで終了)

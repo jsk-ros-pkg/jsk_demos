@@ -1,0 +1,1 @@
+ssh -i ~/.ssh/ichikura-vm_key.pem azureuser@40.81.208.141

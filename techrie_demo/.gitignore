@@ -1,0 +1,5 @@
+# generated data
+/object_images
+/config/gpt_api.yaml
+__pycache__/
+*.pyc_
