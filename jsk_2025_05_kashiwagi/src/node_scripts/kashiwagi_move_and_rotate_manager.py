@@ -120,7 +120,7 @@ class MoveAndRotateManager:
                 if 300 <= msg.x <= 500:
                     print("OK")
                     self.nice_position_counter += 1
-                    if self.nice_position_counter >= 3:
+                    if self.nice_position_counter >= 50:
                         req_state = "move:approaching_person"
                         print("33333")
                         try:
