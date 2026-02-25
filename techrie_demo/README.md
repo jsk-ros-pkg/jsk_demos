@@ -1,55 +1,32 @@
 # techrie_demo
 
 `techrie_demo` は、ロボットと人の共創・対話デモ（挨拶 / イベント / 日次運用 / 終了挨拶）を行うための ROS パッケージです。  
-本パッケージでは、主に以下の4つの運用 launch を入口として使います。
+この README は、**初めて触る人が「どう起動して」「どのノード/トピックを見ればよいか」** をひと目で把握できるように整理したものです。
+
+---
+
+## 1. 入口になる launch（運用モード）
+
+このパッケージでは、主に次の 4 つの launch を入口として使います。
 
 - `greeting_mode.launch`（開始時の挨拶）
 - `event_mode.launch`（イベント本体・共創/お絵描き運用）
 - `daily_mode.launch`（日次運用・記録含む）
 - `end_greeting_mode.launch`（終了時の挨拶）
 
-この README は、**初めて触る人が「どう起動して」「どのノード/トピックを見ればよいか」** をすぐ把握できるようにまとめています。
+### ざっくり使い分け
+- **開始時だけ動かしたい** → `greeting_mode.launch`
+- **イベント本体（人入力・描画・反応）を動かしたい** → `event_mode.launch`
+- **日次運用（記録系含む）を回したい** → `daily_mode.launch`
+- **終了演出をしたい** → `end_greeting_mode.launch`
 
 ---
 
-## 1. パッケージの位置づけ
-
-`techrie_demo` は、次のような役割を組み合わせた構成になっています。
-
-- **行動実行**（姿勢・モーション再生）
-- **イベント進行**（人入力 / 自己提案 / 割り込み処理）
-- **表現**（発話・感情ラベル）
-- **記録**（写真・日記ログ）
-- **橋渡し**（ボタン入力やイベント通知）
-
----
-
-## 2. 運用モード（launch）
-
-### `greeting_mode.launch`
-開始時の挨拶デモ用。  
-運用の立ち上がりで、ロボットの基本挨拶や短い反応を動かすための launch です。
-
-### `event_mode.launch`
-イベント本体（共創・お絵描き運用）の中心となる launch。  
-人の入力（例: ボタン）に応じて、ロボットが描画・反応・自己提案を行います。  
-日記記録系（写真 / diary）もこのモードで使う想定です。
-
-### `daily_mode.launch`
-日次運用用。  
-日々の記録・状態遷移を含む運用をまとめて起動するための launch です。
-
-### `end_greeting_mode.launch`
-終了時の挨拶デモ用。  
-イベント終了時の締めの挨拶や短い演出に使います。
-
----
-
-## 3. セットアップ（初回）
+## 2. セットアップ（初回）
 
 ### 前提
 - ROS 1（catkin workspace）
-- `techrie_demo` が `src/` 以下にあること
+- `techrie_demo` が `src/` 配下にあること
 - 必要なハードウェア/外部ノード（カメラ、入力デバイス、ロボット制御系）は別途起動
 
 ### 依存解決（推奨）
@@ -59,100 +36,296 @@
 rosdep install --from-paths src --ignore-src -r -y
 ```
 
+### ビルド
+```bash
+cd ~/tmp_ws
+catkin_make
+source devel/setup.bash
+```
 
 ---
 
-## 4. 起動方法（使い方）
+## 3. 起動方法（基本）
 
-通常は、用途に応じて 4つの launch のどれかを起動します。
-
-### 4.1 開始時の挨拶（初回イベントで使ったもの）
 ```bash
+# 開始時の挨拶
 roslaunch techrie_demo greeting_mode.launch
-```
 
-### 4.2 イベント本体（初回イベント・最終回イベントで使ったもの）
-```bash
+# イベント本体（メイン）
 roslaunch techrie_demo event_mode.launch
-```
 
-### 4.3 日次運用（通常導入のときにつかったもの）
-```bash
+# 日次運用
 roslaunch techrie_demo daily_mode.launch
-```
 
-### 4.4 終了時の挨拶（最終回イベントでつかったもの）
-```bash
+# 終了時の挨拶
 roslaunch techrie_demo end_greeting_mode.launch
 ```
 
 ---
 
-## 5. 主要トピック（初見でまず見るところ）
+## 4. Event Mode（Painting Workshop）の概要
 
-### 人 → ロボット（入力系）
+`event_mode.launch` は、「ロボットと一緒に絵を描く」イベント運用向けの最小構成です。  
+人の入力（Launchpad など）・ロボの自己提案・割り込みバランス・日記ログ（Diary）を扱います。
+
+### 4.1 主な依存ノード（例）
+- `paint_executor.py`（描画アクションの実体 /colors, /motion/play を駆動）
+- `motion_player.py`（pose/seq/traj 再生）
+- `event_orchestrator.py`（本モードの振る舞い統合）
+- `ask_and_confirm_node.py`（0/1 ボタンの確認サービス）
+- `reaction_router.py`（発話表現のハブ：任意）
+- `diary_logger.py`・`photo_recorder.py`（日記）
+- `human_input_bridge.py`（ボタン→ `/human/*` へ）
+- （任意）`inactivity_watchdog.py` → `SULK_START` を発火
+
+---
+
+## 5. 主要トピック（まず見るところ）
+
+### 5.1 人 → ロボット（入力系）
 `event_mode` では、以下の入力トピックをきっかけにロボットの行動を進行します。
 
-- `/human/invite` … 「描いて！」などの開始要求
+- `/human/invite` … 「描いて！」（ボタンで指示）
 - `/human/show_art` … 人が作品を見せる
 - `/human/praise` … 人が褒める
-- `/human/pet` … なでる / 触れる
+- `/human/pet` … なでる
 
 > 実際の入力デバイス（例: ボタン、Launchpad）からの変換は `human_input_bridge.py` などが担当します。
 
-### ロボット → 表現（出力系）
-- `/robot_text` (`std_msgs/String`)  
-  ロボットの台詞テキスト
-- `/emotion/set` (`std_msgs/String`)  
-  感情ラベルの設定
-- `/motion/play` (`std_msgs/String`)  
-  姿勢・シーケンス・軌道の再生命令（例: `pose:...`, `seq:...`, `traj:...`）
+### 5.2 ロボット → 表現（出力系）
+- `/robot_text` (`std_msgs/String`) … 台詞
+- `/emotion/set` (`std_msgs/String`) … 感情ラベル
+- `/motion/play` (`std_msgs/String`) … `pose:...` / `seq:...` / `traj:...`
 
-### イベント通知
-- `/interaction_events` (`techrie_demo/InteractionEvent`)  
-  イベント状態の通知・監視に使うトピック  
-  例: `SULK_START` などのイベントトリガ
-
-### 日記/記録系（モードにより使用）
-- 写真保存 / 日記記録系ノードが内部で利用するトピック・サービス
-- 出力先は `~/.ros/techrie_demo/` 配下（後述）
+### 5.3 イベント通知
+- `/interaction_events` (`techrie_demo/InteractionEvent`)
+  - `event_type == "SULK_START"` を受けると、しょんぼり演出＆待機
+  - `meta_json` に `{"dur": 秒数}` を入れると長さ可変
 
 ---
 
-## 6. 主要ノード（役割ベース）
+## 6. アクション / サービス（event_mode）
 
-以下は、初めて読むときに把握しておくと全体像がつかみやすい主要ノードです。  
-（どの launch に含まれるかは各 launch ファイルを参照）
+### 6.1 アクション
+- `paint_stroke` (Action) … 描画実行（`paint_executor.py`）
+- `show_art` (Action, 任意) … 見せる演出（無ければ `pose:joy` にフォールバック）
 
-### 行動実行系
-- `nodes/hw/motion_player.py`  
-  `pose/seq/traj` 形式のモーション再生を担当する実行ノード
-
-### イベント進行系
-- `nodes/event/event_orchestrator.py`  
-  `event_mode` の進行役（人入力・ロボ反応・自己提案・割り込み制御）
-
-- `nodes/event/ask_and_confirm_node.py`  
-  0/1入力などによる確認（OK/NG）を扱う補助ノード
-
-### 表現・反応系
-- `nodes/social/reaction_router.py`  
-  発話/感情ラベル/軽いモーションなど、反応表現のハブ
-
-### 記録系
-- `nodes/logging/photo_recorder.py`  
-  写真の保存
-
-- `nodes/logging/diary_logger.py`  
-  日記ログ（Markdown/DB）の保存
-
-### 入力ブリッジ系
-- `nodes/bridge/human_input_bridge.py`  
-  外部入力（ボタンなど）を `/human/*` に橋渡し
+### 6.2 サービス
+- `ask_for_item(AskForItem)` … 0/1 ボタンによる簡易確認（色OK / 置いたらOK 等）
+- `/diary/snapshot` (`std_srvs/Trigger`) … 現在画像をスナップショット保存（`photo_recorder.py`）
 
 ---
 
-## 7. 保存先（生成物）
+## 7. event_mode の振る舞い（ざっくりフロー）
+
+### 人が `/human/invite` を送る
+→ `paint_stroke` を開始  
+→ 完了したら「できたよ！」  
+→ （設定で）自動で見せる  
+→ 描画中に来た他の入力は「キュー」or「確率中断」ポリシーで処理
+
+### 人が `/human/show_art` を送る
+→ ロボが興味→喜び＋軽いうなずきで反応
+
+### 人が `/human/praise` を送る
+→ ロボが「ありがとう！」＋うなずき
+
+### 人が `/human/pet` を送る
+→ ロボが「えへへ…」＋軽い姿勢リセット
+
+### ロボの自己駆動（self-drive）
+`selfdrive_enabled=true` かつ
+
+- 直近の人入力から `selfdrive_min_idle_sec` 経過
+- 前回提案から `selfdrive_interval_sec` 経過
+
+のとき、「ちょっと描いてみてもいい？」と問いかけます。
+
+`ask_for_item("invite_confirm")` を `selfdrive_gate_wait_sec` 秒待って
+
+- OK → 描画開始
+- NG / 無応答 → 「あとでにするね」
+
+### SULK（いじけ）
+`/interaction_events` に `SULK_START` が来たら
+
+- しょんぼり演出（首振り→reset→待機）→「しょんぼり」
+- `meta_json.dur` で長さ調整可（既定 `default_sulk_dur`）
+
+---
+
+## 8. 主なパラメータ（event_mode 抜粋）
+
+| Param | 既定値 | 説明 |
+|---|---:|---|
+| `~announce_via_text` | `true` | `/robot_text` と `/emotion/set` を出す |
+| `~paint_result_wait_sec` | `120.0` | 描画アクションの待ち時間 |
+| `~auto_show_after_paint` | `true` | 描画後に自動で見せる |
+| `~auto_robot_praise_after_show` | `false` | 見せたあとロボからも褒める |
+| `~default_sulk_dur` | `12.0` | SULK の標準時間（秒） |
+| `~selfdrive_enabled` | `true` | 自己駆動の有効/無効 |
+| `~selfdrive_min_idle_sec` | `60.0` | 人入力がこれ以上なければ自己提案を検討 |
+| `~selfdrive_interval_sec` | `90.0` | 前回提案から最低この間隔を空ける |
+| `~selfdrive_gate_wait_sec` | `12.0` | 自己提案時の 0/1 応答待ち |
+| `~interrupt_enabled` | `true` | 割り込みポリシーを有効化 |
+| `~interrupt_policy` | `"queue"` | `"queue"` or `"cancel"` |
+| `~interrupt_prob` | `0.4` | `"cancel"` のとき中断に切替える確率 |
+| `~diary_project` | `"making_the_moon_together"` | 日記メタ：プロジェクト |
+| `~diary_phase` | `"workshop_general"` | 日記メタ：フェーズ |
+| `~diary_goal` | `"co-create art pieces for the Moon"` | 日記メタ：目標 |
+
+> 詳しい実装は `event_orchestrator.py` を参照してください。
+
+---
+
+## 9. Developer Tools: Pose authoring（姿勢作成・調整）
+
+`techrie_demo` では、腕ポーズや簡単な軌道を `config/arm_poses.yaml` / `motions/*.json` として管理します。  
+以下のスクリプトは **本番 launch とは別の開発補助ツール** です。
+
+### 9.1 単発ポーズを保存する（`joint_save.py`）
+- Script: `scripts/joint_save.py`
+- Input topic: `/joint_states`
+- Output: `config/arm_poses.yaml`（`poses` セクション）
+
+```bash
+rosrun techrie_demo joint_save.py
+```
+
+- 実行後、Enter で現在姿勢を取り込み
+- ポーズ名を入力して保存
+
+### 9.2 軌道を記録する（`joint_record.py`）
+- Script: `scripts/joint_record.py`
+- Input topic: `/joint_states`
+- Output: `motions/<name>.json`
+
+```bash
+rosrun techrie_demo joint_record.py
+```
+
+- Enter で記録開始
+- Enter で停止 → 保存
+
+### 9.3 記録した軌道を YAML に変換する（`json_to_yaml_poses.py`）
+- Script: `scripts/json_to_yaml_poses.py`
+- Input: `motions/<name>.json`
+- Output: `config/arm_poses.yaml`（`poses`, `sequences`）
+
+```bash
+rosrun techrie_demo json_to_yaml_poses.py <name> [step_dur]
+```
+
+### 9.4 姿勢/位置の確認（`watch_pose.py`）
+- Script: `scripts/watch_pose.py`
+- 用途: `/paint_position` などの位置変化を確認（デバッグ兼調整）
+
+---
+
+## 10. Developer Tools: Test / Debug（テスト・デバッグ）
+
+### 10.1 入力デバイス確認（Launchpad / Joy）
+- `scripts/joy_probe.py`  
+  `/joy` の押下ボタン番号を確認（ROS経由）
+
+```bash
+rosrun techrie_demo joy_probe.py
+```
+
+- `scripts/joy_test.py`, `scripts/joy_test2.py`  
+  Launchpad 単体のLED確認（ROS非依存、ローカル環境向け）
+
+### 10.2 アクション / パイプライン疎通確認
+- `scripts/ping_actions.py`  
+  `invite` / `paint_stroke` アクションの単発テスト
+
+```bash
+rosrun techrie_demo ping_actions.py invite
+rosrun techrie_demo ping_actions.py paint
+```
+
+- `scripts/smoke_paint.py`  
+  paint系のスモークテスト（イベント系の疎通確認）
+
+- `scripts/check_techrie.py`  
+  トピック・サービス・アクションの生存確認（環境チェック）
+
+### 10.3 まず見るべき確認コマンド
+```bash
+# ノード一覧
+rosnode list
+
+# human / robot / interaction だけ見る
+rostopic list | egrep "human|robot|interaction"
+
+# event 通知
+rostopic echo /interaction_events
+
+# ロボットの台詞
+rostopic echo /robot_text
+
+# 接続を可視化
+rqt_graph
+```
+
+---
+
+## 11. Diary（絵日記）pipeline
+
+`techrie_demo` には、イベントログからロボットの日記を生成する機能があります。  
+**実行時のログ収集（ROS）** と **生成パイプライン（Python）** の 2 段構成です。
+
+### 11.1 Runtime nodes（ROS）
+
+#### `photo_recorder.py`
+- Subscribes: `~image_topic`（default: `/camera/color/image_raw`）
+- Service: `/diary/snapshot`
+- Saves snapshots to: `~/.ros/techrie_demo/object_images/YYYY/MM/DD/*.jpg`
+- `~save_root` パラメータで保存先を上書き可能（default: `~/.ros/techrie_demo/object_images`）
+
+#### `diary_logger.py`
+- Subscribes: `/interaction_events`（必要に応じて `/robot_text` など）
+- Calls: `/diary/snapshot`（イベント時にスナップショットを取る）
+- Appends diary log to: `~/.ros/techrie_demo/diary/...`
+- DB: `~/.ros/techrie_demo/diary.db`
+
+#### `diary_pipeline_service.py`
+- Service: `/diary/make_today`
+- Runs: `main_pipeline.py`（scene selection → caption → diary text → image generation）
+- Outputs（例）:
+  - `diary.json`
+  - `diary_image.png`
+  - `diary_combined.png`
+
+#### `diary_switch.py`
+- Subscribes: `/joy`
+- Trigger button → `/diary/make_today` を呼ぶための補助ノード
+
+### 11.2 Offline pipeline scripts（任意）
+- `main_pipeline.py`
+- `step1_select_scene.py`
+- `step2_generate_caption.py`
+- `step3_generate_diary.py`
+- `step4_generate_image.py`
+- `step5_merge_image_and_text.py`
+- `gpt_profile_reflect.py`
+
+### 11.3 API 設定（Azure OpenAI）
+Diary 生成（caption / text / image）には API 設定が必要です。
+
+- ローカルファイル（gitignore）: `config/gpt_api.yaml`
+- または環境変数（例: `TECHRIE_TEXT_*`, `TECHRIE_IMAGE_*`）
+
+テンプレート:
+```bash
+cp config/gpt_api.yaml.example config/gpt_api.yaml
+```
+
+> **注意**: `config/gpt_api.yaml` は Git 管理しません。APIキーはコミットしないでください。
+
+---
+
+## 12. 保存先（生成物）
 
 このパッケージは、生成物を **source tree ではなく `~/.ros` 配下** に保存する設計です。
 
@@ -162,27 +335,9 @@ roslaunch techrie_demo end_greeting_mode.launch
 - `~/.ros/techrie_demo/diary.db` … 日記DB
 - `~/.ros/techrie_demo/profile/` … 実行時プロフィール状態
 
-> これにより、リポジトリを汚さず、複数環境で扱いやすくしています。
-
 ---
 
-## 8. 設定ファイル（GPT/Azure OpenAI など）
-
-秘密情報を含む設定ファイルは **Git管理しません**。  
-テンプレートをコピーしてローカルで設定してください。
-
-### テンプレートから作成
-```bash
-cp config/gpt_api.yaml.example config/gpt_api.yaml
-```
-
-### 重要
-- `config/gpt_api.yaml` は `.gitignore` 対象です
-- APIキーはコミットしないでください
-
----
-
-## 9. 開発の入口（どこから読むか）
+## 13. 開発の入口（どこから読むか）
 
 初めてコードを読む場合は、次の順番がおすすめです。
 
@@ -203,36 +358,7 @@ cp config/gpt_api.yaml.example config/gpt_api.yaml
 
 ---
 
-## 10. よく使う確認コマンド（デバッグ）
-
-### ノード一覧
-```bash
-rosnode list
-```
-
-### トピック一覧（human / robot / interaction を絞って見る）
-```bash
-rostopic list | egrep "human|robot|interaction"
-```
-
-### イベント通知を見る
-```bash
-rostopic echo /interaction_events
-```
-
-### ロボットの台詞を見る
-```bash
-rostopic echo /robot_text
-```
-
-### ノード接続を可視化
-```bash
-rqt_graph
-```
-
----
-
-## 11. トラブルシュート
+## 14. トラブルシュート（最小）
 
 ### `config/gpt_api.yaml` がない
 テンプレートから作成してください:
@@ -251,9 +377,18 @@ cp config/gpt_api.yaml.example config/gpt_api.yaml
 - `/human/*` トピックに入力が流れているか（`rostopic echo` で確認）
 - `event_orchestrator.py` が起動しているか
 
+### `ask_for_item` が無い環境
+- 自己提案のゲートはデフォルトで NG 扱い（一定時間待って流れる）
+- 実運用では `ask_and_confirm_node.py` を立てて、OK/NG の 0/1 ボタンを反応させてください
+
+### 日記の写真が保存されない
+- `photo_recorder.py` が起動しているか
+- `/diary/snapshot` サービスが見えているか（`rosservice list | grep diary`）
+- `~image_topic` に画像が来ているか（`rostopic echo -n1 <image_topic>`）
+
 ---
 
-## 12. 補足
+## 15. 補足
 
 - 実行時に使う外部ノード・ハードウェア（カメラ、入力装置、ロボット実機側ノード）は環境依存です
 - 詳細なパラメータは各 `launch/*.launch` と各ノード内の `rospy.get_param(...)` を参照してください
