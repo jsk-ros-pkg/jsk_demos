@@ -46,6 +46,11 @@ source devel/setup.bash
 ---
 
 ## 3. 起動方法（基本）
+まず、ロボット(Jedy)の中で
+```
+roslaunch jedy_play new_jedy.launch use_camera:=true
+```
+をしてから以下のいずれかを実行する
 
 ```bash
 # 初回イベントの挨拶
