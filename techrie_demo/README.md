@@ -39,7 +39,7 @@ rosdep install --from-paths src --ignore-src -r -y
 ### ビルド
 ```bash
 cd ~/tmp_ws
-catkin_make
+catkin build
 source devel/setup.bash
 ```
 
@@ -48,16 +48,16 @@ source devel/setup.bash
 ## 3. 起動方法（基本）
 
 ```bash
-# 開始時の挨拶
+# 初回イベントの挨拶
 roslaunch techrie_demo greeting_mode.launch
 
-# イベント本体（メイン）
+# イベントのとき
 roslaunch techrie_demo event_mode.launch
 
-# 日次運用
+# 日常導入のとき
 roslaunch techrie_demo daily_mode.launch
 
-# 終了時の挨拶
+# 最終回の挨拶
 roslaunch techrie_demo end_greeting_mode.launch
 ```
 
