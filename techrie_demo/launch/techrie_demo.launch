@@ -208,7 +208,7 @@
     <!-- プロフィール重みを管理：/interaction_events を聞いて重みを更新し /profile/weights をpublish -->
   <node pkg="techrie_demo" type="profile_manager.py" name="profile_manager" output="screen" respawn="true">
     <param name="jedy_profile" value="$(find techrie_demo)/config/Jedy.json"/>
-    <!-- オプション：保存先（省略時は ~/.techrie_demo/profile/state.json） -->
+    <!-- オプション：保存先（省略時は ~/.ros/techrie_demo/profile/state.json） -->
     <!-- <param name="save_path" value="$(env HOME)/.techrie_demo/profile/state.json"/> -->
   </node>
 

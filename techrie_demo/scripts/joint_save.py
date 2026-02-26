@@ -4,7 +4,7 @@
 """
 joint_save.py
 - /joint_states を購読し、Enterキーで現在の関節角をキャプチャ
-- 入力したポーズ名で ~/enshu_ws/src/techrie_demo/config/arm_poses.yaml に登録
+- 入力したポーズ名で arm_poses.yaml に登録
 - 腕は 7 関節 (larm_joint0..6, rarm_joint0..6) を対象とし、既存YAMLがあれば追記更新
 """
 

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 InteractionEvent を受けて:
-- 既存の Markdown 日記 (~/.techrie_demo/diary/YYYY-MM-DD.md) に1行追記
+- 既存の Markdown 日記 (~/.ros/techrie_demo/diary/YYYY-MM-DD.md) に1行追記
 - 必要なイベントでは /diary/snapshot サービスを叩いて写真を保存
 - "object_images/YYYY/MM/DD/YYYY-MM-DD.json" に「場面レコード」を追記
 
