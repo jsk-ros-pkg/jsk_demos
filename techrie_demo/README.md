@@ -1,24 +1,35 @@
 # techrie_demo
 
-`techrie_demo` は、ロボットと人の共創・対話デモ（挨拶 / イベント / 日次運用 / 終了挨拶）を行うための ROS パッケージです。  
-この README は、**初めて触る人が「どう起動して」「どのノード/トピックを見ればよいか」** をひと目で把握できるように整理したものです。
+`techrie_demo` は、ロボットと人の共創・対話デモ（挨拶 / イベント / 日次運用 / 終了挨拶）を行うための ROS パッケージです。
+
+- プロジェクト実施概要(JSK内部のみ閲覧可）：
+
+https://drive.google.com/drive/folders/1XYhy79nsa9jBod3T8mexUpDNlz_K7bew?usp=sharing
+
+- イベント実施時のスライド（JSK内部のみ閲覧可能)
+
+https://docs.google.com/presentation/d/179zz4kf8Qx043eTgupcHrlLExAfg9EgkcPOddYiXf4c/edit?usp=sharing
+
+- 説明スライド（JSK内部のみ閲覧可能）
+
+https://docs.google.com/presentation/d/1qYzKMFAmBUZeDUsA0WqrwGvUIunvp0UAaEu4uHVW_dw/edit?usp=sharing
 
 ---
 
-## 1. 入口になる launch（運用モード）
+## 1. 起動するlaunch
 
-このパッケージでは、主に次の 4 つの launch を入口として使います。
+このパッケージでは、主に次の 4 つの launch を使います。
 
-- `greeting_mode.launch`（開始時の挨拶）
+- `greeting_mode.launch`（開始時の挨拶・初回イベント用）
 - `event_mode.launch`（イベント本体・共創/お絵描き運用）
 - `daily_mode.launch`（日次運用・記録含む）
-- `end_greeting_mode.launch`（終了時の挨拶）
+- `end_greeting_mode.launch`（終了時の挨拶・最終回イベント用）
 
-### ざっくり使い分け
-- **開始時だけ動かしたい** → `greeting_mode.launch`
+### 使い分け
+- **最初の挨拶を含む** → `greeting_mode.launch`
 - **イベント本体（人入力・描画・反応）を動かしたい** → `event_mode.launch`
-- **日次運用（記録系含む）を回したい** → `daily_mode.launch`
-- **終了演出をしたい** → `end_greeting_mode.launch`
+- **通常時の運用を含む** → `daily_mode.launch`
+- **終了の挨拶を含む** → `end_greeting_mode.launch`
 
 ---
 
@@ -121,7 +132,7 @@ roslaunch techrie_demo end_greeting_mode.launch
 
 ---
 
-## 7. event_mode の振る舞い（ざっくりフロー）
+## 7. event_mode の振る舞い
 
 ### 人が `/human/invite` を送る
 → `paint_stroke` を開始  
@@ -136,7 +147,7 @@ roslaunch techrie_demo end_greeting_mode.launch
 → ロボが「ありがとう！」＋うなずき
 
 ### 人が `/human/pet` を送る
-→ ロボが「えへへ…」＋軽い姿勢リセット
+→ ロボが「なでなで…」＋軽い姿勢リセット
 
 ### ロボの自己駆動（self-drive）
 `selfdrive_enabled=true` かつ
@@ -144,7 +155,7 @@ roslaunch techrie_demo end_greeting_mode.launch
 - 直近の人入力から `selfdrive_min_idle_sec` 経過
 - 前回提案から `selfdrive_interval_sec` 経過
 
-のとき、「ちょっと描いてみてもいい？」と問いかけます。
+のとき、「描きたい！」と誘う
 
 `ask_for_item("invite_confirm")` を `selfdrive_gate_wait_sec` 秒待って
 
@@ -326,7 +337,7 @@ Diary 生成（caption / text / image）には API 設定が必要です。
 cp config/gpt_api.yaml.example config/gpt_api.yaml
 ```
 
-> **注意**: `config/gpt_api.yaml` は Git 管理しません。APIキーはコミットしないでください。
+> **注意**: `config/gpt_api.yaml` は Git 管理していません。APIキーを公開しないように気をつけてください。
 
 ---
 
@@ -342,7 +353,7 @@ cp config/gpt_api.yaml.example config/gpt_api.yaml
 
 ---
 
-## 13. 開発の入口（どこから読むか）
+## 13. 開発のために
 
 初めてコードを読む場合は、次の順番がおすすめです。
 
