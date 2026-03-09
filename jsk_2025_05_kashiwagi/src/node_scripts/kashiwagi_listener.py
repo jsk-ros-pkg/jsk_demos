@@ -200,6 +200,11 @@ class Listener:
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_genki.wav"
 
+        # elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["金額", "見学"]):
+        #     self.during_speech_req_state = "daily:happy"
+        #     self.after_speech_req_state = None
+        #     self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_kitekuretano.wav"
+
 #################
         elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["こんにちは", "こんにち"]):
             self.during_speech_req_state = "talking_game:happy"
@@ -392,6 +397,18 @@ class Listener:
             song = f"{self.path_to_pkg}/data/kashiwagi_song_hato.mp3"
             self.sound_file = song
 
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["君が代"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            song = f"{self.path_to_pkg}/data/kashiwagi_song_kimigayo.mp3"
+            self.sound_file = song
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["勇者"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            song = f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3"
+            self.sound_file = song
+
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["歌", "歌って"]):
             self.during_speech_req_state = "daily:singing"
             self.after_speech_req_state = "daily:happy"
@@ -403,26 +420,37 @@ class Listener:
                      f"{self.path_to_pkg}/data/kashiwagi_song_aogeba.mp3",
                      f"{self.path_to_pkg}/data/kashiwagi_song_sakura.mp3",
                      f"{self.path_to_pkg}/data/kashiwagi_song_usagi.mp3",
-                     f"{self.path_to_pkg}/data/kashiwagi_song_idle.mp3"
+                     f"{self.path_to_pkg}/data/kashiwagi_song_kimigayo.mp3",
+                     f"{self.path_to_pkg}/data/kashiwagi_song_idle.mp3",
+                     f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3"
             ]
             self.sound_file = random.choice(songs)
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["声変えて", "違う声"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            songs = [
+                f"{self.path_to_pkg}/data/kashiwagi_voice_change{i}.{ext}"
+                for i in range(1, 7)
+                for ext in ["wav", "mp3"]]
+            self.sound_file = random.choice(songs)
         
-        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+        elif self.cur_kashiwagi_state == "talking_game:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "うさぎさん"]):
             self.during_speech_req_state = "talking_game:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "katakanashi:playing" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+        elif self.cur_kashiwagi_state == "katakanashi:playing" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "うさぎさん"]):
             self.during_speech_req_state = "katakanashi:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+        elif self.cur_kashiwagi_state == "shiritori:listening_turn" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "うさぎさん"]):
             self.during_speech_req_state = "shiritori:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yonda.wav"
 
-        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅"]):
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["柏木さん", "柏", "柏木", "押上", "押上さん", "西脇さん", "西脇", "芦屋駅", "うさぎさん", "未来"]):
             self.during_speech_req_state = "daily:happy"
             self.after_speech_req_state = None
             self.sound_file = f"{self.path_to_pkg}/data/kashiwagi_yonda.wav"
