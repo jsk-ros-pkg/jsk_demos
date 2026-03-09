@@ -33,7 +33,7 @@
       language: $(arg language)
       self_cancellation: $(arg self_cancellation)
       tts_tolerance: 0.5
-      google_cloud_credentials_json: /home/ubuntu/eternal-byte-236613-4bc6962824d1.json
+      google_cloud_credentials_json: /home/leus/config/eternal-byte-236613-4bc6962824d1.json
     </rosparam>
   </node>
 
