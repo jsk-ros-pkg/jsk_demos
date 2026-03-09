@@ -1,6 +1,7 @@
 <launch>
   <!-- Define the robot name argument -->
   <arg name="robot_name" default="kashiwagi" />
+  <arg name="device" default="/dev/ttyFTDI_AO007YW8" />
 
   <!-- Set the robot_name as a ROS parameter -->
   <param name="robot_name" value="$(arg robot_name)" />
@@ -18,6 +19,7 @@
   <include file="$(find kxr_controller)/launch/kxr_controller.launch">
     <arg name="urdf_path" value="$(arg urdf_path)" />
     <arg name="servo_config_path" value="$(arg servo_config_path)" />
+    <arg name="device" value="$(arg device)" />
   </include>
 
   <!-- Launch the differential drive controller -->
