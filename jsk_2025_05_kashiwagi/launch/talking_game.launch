@@ -163,4 +163,7 @@
   <!-- free talk -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk.py" name="kashiwagi_free_talk" output="screen"/>
 
+  <!-- speech filter -->
+  <node pkg="jsk_2025_05_kashiwagi" type="speech_filter.py" name="speech_filter" output="screen"/>
+  
 </launch>
