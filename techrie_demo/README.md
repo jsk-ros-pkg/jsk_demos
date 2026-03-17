@@ -339,6 +339,140 @@ cp config/gpt_api.yaml.example config/gpt_api.yaml
 
 > **注意**: `config/gpt_api.yaml` は Git 管理していません。APIキーを公開しないように気をつけてください。
 
+`config.py` は以下を参照します。
+
+- text: `api_key`, `api_version`, `base_url`
+- image: `api_key`, `api_version`, `azure_endpoint`
+
+環境変数を使う場合:
+- `TECHRIE_TEXT_API_KEY`
+- `TECHRIE_TEXT_API_VERSION`
+- `TECHRIE_TEXT_BASE_URL`
+- `TECHRIE_IMAGE_API_KEY`
+- `TECHRIE_IMAGE_API_VERSION`
+- `TECHRIE_IMAGE_AZURE_ENDPOINT`
+
+---
+
+## 11.4 実機なしデモ: miniature event + diary demo
+
+`techrie_demo` には、**実機なし**で「小さな相互作用の流れ → ロボット日記生成」まで試せるデモがあります。  
+このデモでは、ROS の event mode をそのまま再現する代わりに、
+
+1. 小さな相互作用シナリオ（JSON）
+2. 各場面に対応する画像
+3. Diary pipeline
+
+を使って、`techrie_demo` の特徴である
+
+- 人の働きかけへの反応
+- ロボット側の自己提案
+- 小さな出来事の列
+- その出来事が日記として言語化されること
+
+を、実機なしで確認できます。
+
+### 関連ファイル
+- `run_story_demo.py`  
+  小さな相互作用シナリオを replay し、その結果を `scenes_json` に保存したうえで Diary pipeline を呼ぶ
+- `action_policy.py`  
+  実機・ROS 非依存の簡易行動提案ロジック
+- `sample_story_demo.json`  
+  サンプルシナリオ
+- `run_diary_demo.py`  
+  Diary pipeline 単体の実行用
+- `demo_assets/story_demo/scene1.jpg` 〜 `scene4.jpg`  
+  サンプル画像
+
+### 事前準備
+#### API 設定
+Diary 生成には Azure OpenAI の設定が必要です。  
+`config/gpt_api.yaml` を用意してください。
+
+例:
+```yaml
+provider: azure
+
+text:
+  api_key: "YOUR_TEXT_KEY"
+  api_version: "2024-12-01-preview"
+  base_url: "https://<your-text-resource>.openai.azure.com/openai/deployments/<your-text-deployment>"
+
+image:
+  api_key: "YOUR_IMAGE_KEY"
+  api_version: "2025-04-01-preview"
+  azure_endpoint: "https://<your-image-resource>.openai.azure.com/"
+```
+
+> `config/gpt_api.yaml` は `.gitignore` 対象です。公開しないでください。
+
+#### サンプル画像の配置
+サンプル画像そのものは repo 内の `demo_assets/story_demo/` に置いてあります。  
+ただし実行時には、Diary pipeline が **`~/.ros/techrie_demo/object_images/YYYY/MM/DD/`** を参照するため、その日の `day_dir` にコピーする必要があります。
+
+例: `2026-03-16` の場合
+
+```bash
+mkdir -p ~/.ros/techrie_demo/object_images/2026/03/16
+cp demo_assets/story_demo/scene1.jpg ~/.ros/techrie_demo/object_images/2026/03/16/
+cp demo_assets/story_demo/scene2.jpg ~/.ros/techrie_demo/object_images/2026/03/16/
+cp demo_assets/story_demo/scene3.jpg ~/.ros/techrie_demo/object_images/2026/03/16/
+cp demo_assets/story_demo/scene4.jpg ~/.ros/techrie_demo/object_images/2026/03/16/
+```
+
+### まず相互作用リプレイだけ書き出す
+```bash
+python run_story_demo.py   --date 2026-03-16   --story sample_story_demo.json   --write-scenes-only
+```
+
+これにより、以下が生成されます。
+
+- `~/.ros/techrie_demo/object_images/2026/03/16/2026-03-16.json`
+
+この JSON は、miniature interaction replay の結果を Diary pipeline 用 `scenes_json` として保存したものです。
+
+### 日記本文まで生成する
+画像生成をまだ行わず、本文まで確認したい場合:
+
+```bash
+python run_story_demo.py   --date 2026-03-16   --story sample_story_demo.json   --skip-image-gen   --skip-merge   --skip-profile-reflect
+```
+
+生成物:
+- `2026-03-16_captioned.json`
+- `diary.json`
+
+### 日記画像まで生成する
+画像生成 API 設定も正しければ、`--skip-image-gen` を外して実行できます。
+
+```bash
+python run_story_demo.py   --date 2026-03-16   --story sample_story_demo.json   --skip-merge   --skip-profile-reflect
+```
+
+生成物:
+- `diary_image.png`
+
+### 合成画像まで生成する
+```bash
+python run_story_demo.py   --date 2026-03-16   --story sample_story_demo.json   --skip-profile-reflect
+```
+
+生成物:
+- `diary_combined.png`
+
+### Diary pipeline 単体で試す
+相互作用 replay を使わず、手で `scenes_json` を作って Diary pipeline だけ試す場合は:
+
+```bash
+python run_diary_demo.py --date 2026-03-16 --init-sample --dry-run
+python run_diary_demo.py --date 2026-03-16 --skip-image-gen --skip-merge --skip-profile-reflect
+```
+
+### 補足
+- 実行時の入力・出力は source tree ではなく `~/.ros/techrie_demo/object_images/...` に保存されます。
+- repo 内の `demo_assets/story_demo/` は、**再現用のサンプル画像置き場**です。
+- 生成物そのものは git 管理せず、`~/.ros` 側に出す想定です。
+
 ---
 
 ## 12. 保存先（生成物）

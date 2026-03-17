@@ -1,0 +1,200 @@
+{
+  "character_name": "Jedy",
+  "shared_inputs": {
+    "system_started": true,
+    "allow_paint": true,
+    "start_grace_sec": 10.0,
+    "min_state_interval_sec": 120.0
+  },
+  "scenes": [
+    {
+      "image_filename": "scene1.jpg",
+      "human_event": "show_art",
+      "selected_object": "moon piece",
+      "human_state": {
+        "emotion": "happy",
+        "action": "showing drawing",
+        "needs": "share",
+        "interaction": "close",
+        "gaze_target": "robot"
+      },
+      "robot_state": {
+        "interest": 0.80,
+        "fatigue": 0.10,
+        "last_action": "idle",
+        "mode": "observe"
+      },
+      "extra_info": {
+        "weather": "sunny"
+      },
+      "decision_inputs": {
+        "seconds_since_start": 30.0,
+        "recent_human_events": {
+          "praise": false,
+          "pet": false,
+          "offer_food": false,
+          "show_art": true
+        },
+        "desire": {
+          "want_with_people": 0.6,
+          "want_paint": 0.4,
+          "want_show": 0.2,
+          "want_eat": 0.1,
+          "want_idle": 0.1
+        },
+        "cooldowns": {
+          "invite_cooldown_active": false
+        },
+        "recent_exec": {
+          "invite": 999.0,
+          "paint": 999.0,
+          "show": 999.0,
+          "eat": 999.0,
+          "sulk": 999.0
+        }
+      }
+    },
+    {
+      "image_filename": "scene2.jpg",
+      "human_event": "none",
+      "selected_object": "drawing paper",
+      "human_state": {
+        "emotion": "curious",
+        "action": "waiting",
+        "needs": "co-create",
+        "interaction": "open",
+        "gaze_target": "robot"
+      },
+      "robot_state": {
+        "interest": 0.92,
+        "fatigue": 0.20,
+        "last_action": "observe_human_show",
+        "mode": "invite"
+      },
+      "extra_info": {
+        "weather": "sunny"
+      },
+      "decision_inputs": {
+        "seconds_since_start": 80.0,
+        "recent_human_events": {
+          "praise": false,
+          "pet": false,
+          "offer_food": false,
+          "show_art": false
+        },
+        "desire": {
+          "want_with_people": 0.95,
+          "want_paint": 0.65,
+          "want_show": 0.2,
+          "want_eat": 0.05,
+          "want_idle": 0.1
+        },
+        "cooldowns": {
+          "invite_cooldown_active": false
+        },
+        "recent_exec": {
+          "invite": 999.0,
+          "paint": 999.0,
+          "show": 999.0,
+          "eat": 999.0,
+          "sulk": 999.0
+        }
+      }
+    },
+    {
+      "image_filename": "scene3.jpg",
+      "human_event": "invite_ok",
+      "selected_object": "blue paint",
+      "human_state": {
+        "emotion": "excited",
+        "action": "accepting invitation",
+        "needs": "create",
+        "interaction": "collaborative",
+        "gaze_target": "robot"
+      },
+      "robot_state": {
+        "interest": 0.94,
+        "fatigue": 0.25,
+        "last_action": "invite",
+        "mode": "paint"
+      },
+      "extra_info": {
+        "weather": "sunny"
+      },
+      "decision_inputs": {
+        "seconds_since_start": 120.0,
+        "recent_human_events": {
+          "praise": false,
+          "pet": false,
+          "offer_food": false,
+          "show_art": false
+        },
+        "desire": {
+          "want_with_people": 0.55,
+          "want_paint": 0.98,
+          "want_show": 0.3,
+          "want_eat": 0.05,
+          "want_idle": 0.1
+        },
+        "cooldowns": {
+          "invite_cooldown_active": false
+        },
+        "recent_exec": {
+          "invite": 200.0,
+          "paint": 999.0,
+          "show": 999.0,
+          "eat": 999.0,
+          "sulk": 999.0
+        }
+      }
+    },
+    {
+      "image_filename": "scene4.jpg",
+      "human_event": "none",
+      "selected_object": "finished picture",
+      "human_state": {
+        "emotion": "proud",
+        "action": "looking at result",
+        "needs": "be_seen",
+        "interaction": "warm",
+        "gaze_target": "robot"
+      },
+      "robot_state": {
+        "interest": 0.78,
+        "fatigue": 0.40,
+        "last_action": "paint",
+        "mode": "show"
+      },
+      "extra_info": {
+        "weather": "sunny"
+      },
+      "decision_inputs": {
+        "seconds_since_start": 180.0,
+        "last_policy": "show",
+        "recent_human_events": {
+          "praise": false,
+          "pet": false,
+          "offer_food": false,
+          "show_art": false
+        },
+        "desire": {
+          "want_with_people": 0.3,
+          "want_paint": 0.2,
+          "want_show": 0.9,
+          "want_eat": 0.05,
+          "want_idle": 0.2
+        },
+        "cooldowns": {
+          "invite_cooldown_active": false
+        },
+        "recent_exec": {
+          "invite": 300.0,
+          "paint": 240.0,
+          "show": 999.0,
+          "eat": 999.0,
+          "sulk": 999.0
+        }
+      }
+    }
+  ]
+}
