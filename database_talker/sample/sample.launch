@@ -1,0 +1,89 @@
+<launch>
+  <arg name="lovot_credentials_json" default="$(find database_talker)/auth/lovot_credentials.json" />
+  <arg name="openai_credentials_json" default="$(find database_talker)/auth/openai_credentials.json" />
+  <arg name="google_credentials_json" default="$(find database_talker)/auth/eternal-byte-236613-4bc6962824d1.json" />
+  <arg name="gdrive_credentials_yaml" default="$(find database_talker)/auth/pydrive_settings.yaml" />
+
+  <arg name="start_camera_driver" default="true" doc="set false to use robot camera" />
+  <arg name="resize_image_ns" default="/robot_a/camera/color" doc="name space for robot camera image topic" />
+  <arg name="camera_device" default="/dev/video0" />
+
+  <param name="robot/type" value="robot" />
+  <param name="robot/name" value="dummy" />
+
+  <node name="usb_cam" pkg="usb_cam" type="usb_cam_node" output="screen" if="$(arg start_camera_driver)" respawn="true">
+    <param name="video_device" value="$(arg camera_device)" />
+    <param name="image_width" value="320" />
+    <param name="image_height" value="240" />
+    <param name="pixel_format" value="yuyv" />
+    <!-- <param name="pixel_format" value="mjpeg" /> -->
+    <param name="color_format" value="yuv422p" />
+    <param name="camera_frame_id" value="usb_cam" />
+    <param name="io_method" value="mmap"/>
+    <param name="framerate" value="10"/>
+  </node>
+
+  <include file="$(find jsk_robot_startup)/launch/lifelog.launch" >
+    <arg name="logger_save_rgb" value="false" />
+    <arg name="logger_save_action" value="false" />
+    <arg name="logger_save_smach" value="false" />
+    <arg name="logger_save_faces" value="false" />
+    <arg name="logger_save_dialogflow" value="false" />
+    <arg name="logger_save_google_chat" value="false" />
+    <arg name="logger_save_video_to_scene" value="true" /> <!-- to reduce CPU load we use /aibo_driver/trigger -->
+    <arg name="image" value="/usb_cam/image_raw" />
+    <arg name="logger_save_throttled_image" value="false" />
+  </include>
+  <group ns="lifelog">
+    <include file="$(find jsk_robot_startup)/lifelog/lifelog_rgb_image.launch" >
+      <arg name="node_name" value="thorottled_color_logger" />
+      <arg name="image" value="/store_image_description/result/image/compressed" />
+      <arg name="manager" value="mongodb_record_nodelet_manager" />
+    </include>
+  </group>
+  <node pkg="rostopic" type="rostopic" name="periodic_mongodb_trigger"
+        launch-prefix="bash -c 'set -x; while [ 1 ]; do ${@:0:$#-2} &quot;${@: -3}&quot; ; sleep 1000; done;' "
+        args="pub -s -1 /publish_trigger_mongodb_event roseus/StringStamped &quot;{header: auto}&quot;" />
+
+  <!-- openai -->
+  <group ns="openai">
+    <node pkg="openai_ros" type="openai_node.py" name="openai" output="screen" >
+      <rosparam command="load" file="$(arg openai_credentials_json)" />
+    </node>
+  </group>
+  <!-- store vqa result -->
+  <node name="store_image_description"
+        pkg="database_talker" type="store_image_description.py"
+        output="screen" >
+    <remap from="image" to="/usb_cam/image_raw/compressed/throttled" />
+  </node>
+  <node name="vqa_logger"
+        pkg="jsk_robot_startup" type="mongo_record.py"
+        respawn="true">
+    <rosparam subst_value="true">
+      topics:
+      - /store_image_description/result
+    </rosparam>
+  </node>
+
+  <!-- google chat -->
+  <include file="$(find google_chat_ros)/launch/google_chat.launch" >
+    <arg name="use_helper" default="false" />
+    <arg name="receiving_mode" value="pubsub" />
+    <arg name="google_cloud_credentials_json" value="$(arg google_credentials_json)" />
+    <arg name="project_id" value="eternal-byte-236613" />
+    <arg name="subscription_id" value="chat-sub" />
+  </include>
+
+  <!-- gdrive_ros -->
+  <include file="$(find gdrive_ros)/launch/gdrive_server.launch" >
+    <arg name="settings_yaml" value="$(arg gdrive_credentials_yaml)" />
+    <arg name="respawn" value="true" />
+    <arg name="node_name" value="gdrive_ros" />
+  </include>
+
+  <!-- -->
+  <include file="$(find database_talker)/sample/include/resize.launch"  unless="$(arg start_camera_driver)" >
+    <arg name="image_ns" value="$(arg resize_image_ns)" />
+  </include>
+</launch>

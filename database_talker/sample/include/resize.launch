@@ -1,0 +1,31 @@
+<launch>
+  <arg name="image_ns" default="/robot_a/camera/color" />
+  <arg name="image_topic" default="image_raw" />
+  <node name="compress_to_raw"
+	pkg="image_transport"
+	type="republish"
+	args="compressed in:=$(arg image_ns)/$(arg image_topic) raw out:=/raw/$(arg image_ns)/$(arg image_topic)" />
+
+
+  <node name="resized" pkg="nodelet" type="nodelet"
+	args="standalone image_proc/resize"
+	output="screen" >
+    <!-- output -->
+    <remap from="~image" to="/raw/usb_cam/image_raw" />
+    <remap from="~camera_info" to="/usb_cam/camera_info" />
+
+    <!-- input -->
+    <remap from="image" to="/raw/$(arg image_ns)/$(arg image_topic)" />
+    <remap from="camera_info" to="$(arg image_ns)/camera_info" />
+
+    <param name="use_scale" value="false" />
+    <param name="width" value="320" />
+    <param name="height" value="240" />
+  </node>
+  
+  <node name="raw_to_compress"
+	pkg="image_transport"
+	type="republish"
+	args="raw in:=/raw/usb_cam/image_raw compressed out:=/usb_cam/image_raw" />
+  
+</launch>

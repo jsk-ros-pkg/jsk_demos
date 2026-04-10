@@ -1,0 +1,36 @@
+##
+## rosdep install --from-path . --ignores-rc
+## catkin build database_talker
+##
+#
+# database_talker demos
+# see https://github.com/jsk-ros-pkg/jsk_demos/pull/1388
+- git:
+    local-name: jsk_demos
+    uri: https://github.com/sktometometo/jsk_demos.git
+    version: PR/hoge-py
+# https://github.com/jsk-ros-pkg/jsk_robot/pull/1792
+- git:
+    local-name: jsk_robot
+    uri: https://github.com/k-okada/jsk_robot.git
+    version: ichikura_sample
+# wait until https://github.com/jsk-ros-pkg/jsk_3rdparty/pull/504
+- git:
+    local-name: jsk_3rdparty
+    uri: https://github.com/jsk-ros-pkg/jsk_3rdparty.git
+    version: master
+# lovot driver
+- git:
+    local-name: lovot_driver
+    uri: https://gitlab.jsk.imi.i.u-tokyo.ac.jp/ichikura/lovot.git
+    version: okada_ros_version
+# aibo driver
+- git:
+    local-name: aibo_driver
+    uri: https://gitlab.jsk.imi.i.u-tokyo.ac.jp/k-okada/aibo_status.git
+    version: driver
+# openai_ros, with latest endpoint
+- git:
+    local-name: openai_ros
+    uri: https://github.com/k-okada/openai_ros.git
+    version: use_ros

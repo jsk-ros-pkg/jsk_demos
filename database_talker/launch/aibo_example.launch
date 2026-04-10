@@ -1,0 +1,20 @@
+<launch>
+  <arg name="openai_credentials_json" default="$(find aibo_driver)/auth/openai_credentials.json" />
+  <param name="robot/type" value="aibo" />
+  <param name="robot/name" value="aibo" />
+
+
+  <param name="mongodb_host" value="musca.jsk.imi.i.u-tokyo.ac.jp" />
+  <param name="mongodb_port" value="27017" />
+  <node name="message_store" pkg="mongodb_store" type="message_store_node.py" >
+    <param name="mongodb_use_localdatacenter" value="false" />
+    <param name="queue_size" value="100" />
+  </node>
+
+  <!-- openai -->
+  <group ns="openai">
+    <node pkg="openai_ros" type="openai_node.py" name="openai" output="screen" >
+      <rosparam command="load" file="$(arg openai_credentials_json)" />
+    </node>
+  </group>
+</launch>
