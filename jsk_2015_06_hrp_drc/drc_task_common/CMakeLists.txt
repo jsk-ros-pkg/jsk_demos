@@ -101,6 +101,7 @@ add_executable(obstacle_indicator src/drc_task_common/obstacle_indicator.cpp)
 add_dependencies(obstacle_indicator ${PROJECT_NAME}_gencfg ${PROJECT_NAME}_gencpp)
 target_link_libraries(obstacle_indicator ${catkin_LIBRARIES})
 
+if(CATKIN_ENABLE_TESTING)
 execute_process(
   COMMAND mkdir -p ${PROJECT_SOURCE_DIR}/pcds)
 catkin_download_test_data(drill_pcd
@@ -135,6 +136,7 @@ if(NOT ($ENV{TRAVIS_JOB_ID}))
     # drill_full_pcd
     gun_drill_dae gun_drill_jpg gun_drill_model takenoko_drill_dae takenoko_drill_jpg takenoko_drill_model)
 endif(NOT ($ENV{TRAVIS_JOB_ID}))
+endif(CATKIN_ENABLE_TESTING)
 
 install(TARGETS
   standing_drill_detector

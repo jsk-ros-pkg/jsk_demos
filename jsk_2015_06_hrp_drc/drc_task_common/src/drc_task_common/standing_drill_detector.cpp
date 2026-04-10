@@ -35,6 +35,7 @@
 #define BOOST_PARAMETER_MAX_ARITY 7
 #include "drc_task_common/standing_drill_detector.h"
 #include <jsk_pcl_ros/pcl_conversion_util.h>
+#include <pcl/common/transforms.h>
 #include <pcl/filters/crop_box.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/segmentation/sac_segmentation.h>

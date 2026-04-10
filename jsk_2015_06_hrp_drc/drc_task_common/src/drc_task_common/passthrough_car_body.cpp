@@ -6,6 +6,7 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/pcl_config.h>   // PCL_VERSION_COMPARE
 // #include <dynamic_reconfigure/server.h>
 // #include <drc_task_common/PassthroughCarBodyConfig.h>
 #include <cmath>
@@ -103,7 +104,11 @@ public:
       pass_y.setInputCloud(cloud_back);
       pass_y.setFilterFieldName("y");
       pass_y.setFilterLimits(min_y, max_y);
+#if PCL_VERSION_COMPARE(<, 1, 10, 0)
       pass_y.setFilterLimitsNegative(true);
+#else
+      pass_y.setNegative(true);
+#endif
       pass_y.filter(*cloud_back_without_body);
       
       
