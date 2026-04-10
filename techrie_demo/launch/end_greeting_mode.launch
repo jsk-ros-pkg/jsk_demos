@@ -1,0 +1,66 @@
+<launch>
+<node pkg="techrie_demo" type="system_guard.py" name="system_guard" output="screen" required="true"/>
+<node pkg="techrie_demo" type="greeting_joy.py" name="greeting_joy" output="screen" respawn="true"/>
+  <node pkg="techrie_demo" type="robot_behavior.py" name="robot_behavior" output="screen"/>
+
+  <node pkg="jsk_teleop_joy" type="midi_config_player.py"
+        name="midi_config_player" output="screen"
+        args="$(find jsk_teleop_joy)/configs/launchpad_x.yaml"/>
+  <!-- 既存の基盤（必要に応じて） -->
+
+  <!-- ===== args (必要に応じて上書き) ===== -->
+  <arg name="joy_topic"           default="/joy"/>
+  <arg name="btn_open"            default="40"/>   <!-- 開会ボタン -->
+  <arg name="btn_close"           default="41"/>   <!-- 閉会ボタン -->
+  <arg name="require_longpress"   default="false"/>
+  <arg name="longpress_sec"       default="0.7"/>
+  <arg name="allow_repeat"        default="true"/>
+
+  <!-- 日記用メタ情報（任意） -->
+  <arg name="diary_project"       default="making_the_moon_together"/>
+  <arg name="diary_phase"         default="opening_ceremony"/>
+  <arg name="diary_goal"          default="workshop greeting"/>
+
+  <!-- ===== 表現系ノード（/robot_text, /emotion/set, /motion/play を処理） ===== -->
+  <!-- テキスト/感情のハブ（TTSや画面表示へ橋渡し）。既に起動していれば不要 -->
+  <node pkg="techrie_demo" type="expression_hub.py" name="expression_hub" output="screen"/>
+
+  <!-- モーション再生（pose:, seq:, traj: を /motion/play から受けて再生） -->
+  <!-- 既存の YAML を読み込む。パスはあなたの環境に合わせて調整 -->
+  <rosparam param="arm_poses"  file="$(find techrie_demo)/config/arm_poses.yaml"/>
+  <rosparam param="motion_map" file="$(find techrie_demo)/config/motion_map.yaml"/>
+  <node pkg="techrie_demo" type="motion_player.py" name="motion_player" output="screen">
+    <!-- 必要ならモーション速度などのパラメータをここで指定 -->
+  </node>
+
+  <!-- （任意）日記ロガー：式辞の InteractionEvent を拾って保存 -->
+  <node pkg="techrie_demo" type="diary_logger.py" name="diary_logger" output="screen">
+    <!-- どのイベントを記録するか。少なくとも /interaction_events は拾う -->
+    <rosparam param="topics">
+      - /interaction_events
+      - /robot_text
+    </rosparam>
+    <param name="meta/project" value="$(arg diary_project)"/>
+    <param name="meta/phase"   value="$(arg diary_phase)"/>
+    <param name="meta/goal"    value="$(arg diary_goal)"/>
+    <!-- スナップショット撮影を一緒に使う場合は /diary/snapshot サービスを別で起動しておく -->
+    <param name="enable_snapshot" value="false"/>
+  </node>
+
+  <!-- ===== あいさつコンダクタ（/joyからボタン40/41で実行） ===== -->
+  <node pkg="techrie_demo" type="greeting_conductor_end.py" name="greeting_conductor" output="screen">
+  <param name="enable_topic_trigger" value="true"/>	
+    <param name="joy_topic"         value="$(arg joy_topic)"/>
+    <param name="joy_button_open"   value="$(arg btn_open)"/>
+    <param name="joy_button_close"  value="$(arg btn_close)"/>
+    <param name="require_longpress" value="$(arg require_longpress)"/>
+    <param name="longpress_sec"     value="$(arg longpress_sec)"/>
+    <param name="allow_repeat"      value="$(arg allow_repeat)"/>
+    <param name="diary_project"     value="$(arg diary_project)"/>
+    <param name="diary_phase"       value="$(arg diary_phase)"/>
+    <param name="diary_goal"        value="$(arg diary_goal)"/>
+  </node>
+
+  <!-- 注意: /joy の供給（Launchpadやゲームパッド）は別プロセスで立ち上げておいてください -->
+</launch>
+

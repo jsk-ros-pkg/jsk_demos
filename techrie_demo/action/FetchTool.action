@@ -1,0 +1,8 @@
+# goal
+string item_name
+---
+# result
+bool received
+---
+# feedback
+string stage

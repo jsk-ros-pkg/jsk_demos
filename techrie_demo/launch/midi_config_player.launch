@@ -1,0 +1,6 @@
+<!-- test_midi_only.launch -->
+<launch>
+  <node pkg="jsk_teleop_joy" type="midi_config_player.py"
+        name="midi_config_player" output="screen"
+        args="$(find jsk_teleop_joy)/configs/launchpad_x.yaml"/>
+</launch>

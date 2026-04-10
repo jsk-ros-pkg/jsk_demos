@@ -1,0 +1,12 @@
+# goal
+string color
+geometry_msgs/Point start
+geometry_msgs/Point end
+float32 pressure
+---
+# result
+bool done
+string stroke_id
+---
+# feedback
+float32 progress

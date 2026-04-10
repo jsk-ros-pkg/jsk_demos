@@ -1,0 +1,16 @@
+# 感情ごとの基本色と点灯モード
+mood:
+  joy:      { color: [255,180,60],  pattern: "pulse" }      # 暖色・鼓動
+  calm:     { color: [80,140,255],  pattern: "fade" }       # 青系・ゆっくりフェード
+  interest: { color: [180,100,255], pattern: "breathe" }    # 紫系・呼吸
+  surprise: { color: [255,255,120], pattern: "flash" }      # 黄白・ワンショット
+  sorry:    { color: [120,160,200], pattern: "dim" }        # くすみ青・減光
+  neutral:  { color: [180,180,180], pattern: "steady" }     # 白グレー・常灯
+
+# 人の入力があったときの短期強調（上書き適用時間）
+human_pulse:
+  duration_sec: 0.7
+  gain: 1.2                 # 明るさ倍率
+
+# 全体明るさ上限（0-1）
+brightness: 0.7

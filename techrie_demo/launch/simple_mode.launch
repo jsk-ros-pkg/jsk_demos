@@ -1,0 +1,317 @@
+<launch>
+   <!-- シナリオ: paint_event / observe_weekly -->
+  <arg name="scenario" default="observe_weekly"/>
+  
+  <node pkg="techrie_demo" type="system_guard.py" name="system_guard" output="screen" required="true"/>
+  <node pkg="techrie_demo" type="greeting_joy.py" name="greeting_joy" output="screen" respawn="true"/>
+  
+  <!-- 既存の動作ノードを起動（ファイル名はあなたの実体に合わせて） -->
+  <node pkg="techrie_demo" type="robot_behavior.py" name="robot_behavior" output="screen"/>
+
+  <node pkg="jsk_teleop_joy" type="midi_config_player.py"
+        name="midi_config_player" output="screen"
+        args="$(find jsk_teleop_joy)/configs/launchpad_x.yaml"/>
+
+  <node pkg="techrie_demo" type="expression_hub.py" name="expression_hub" output="screen" respawn="true"/>
+
+  <node pkg="techrie_demo" type="pet_joystick_bridge.py" name="pet_joystick_bridge">
+    <param name="threshold_on"  value="180"/>
+    <param name="threshold_off" value="155"/>
+    <param name="ewma_alpha" value="0.3"/>
+    <param name="min_interval_sec" value="1.2"/>
+  </node>
+
+   <!-- motion → done 橋渡し -->
+   <node pkg="techrie_demo" type="motion_done_bridge.py" name="motion_done_bridge" output="screen"/>
+
+   <node name="idle_maintainer" pkg="techrie_demo" type="idle_maintainer.py" output="screen">
+  <param name="motion_topic"     value="/motion/play"/>
+  <param name="idle_gap_sec"     value="8.0"/>
+  <param name="min_period_sec"   value="2.5"/>
+  <param name="max_period_sec"   value="5.0"/>
+  <rosparam param="micro_ids">[seq:micro_pitch_s, seq:micro_yaw_s, seq:micro_yaw_m]</rosparam>
+  <rosparam param="micro_weights">[0.5, 0.4, 0.1]</rosparam>
+  <param name="center_id"        value="pose:head_center"/>
+  <param name="center_every"     value="5"/>
+   </node>
+
+   <!-- mood_director を追加起動 -->
+   <node pkg="techrie_demo" type="mood_director.py" name="mood_director" output="screen">
+     <param name="check_rate_hz" value="0.5"/>
+     <param name="event_name" value="Ambient Modes"/>
+     <param name="event_phase" value="live"/>
+     <param name="event_goal" value="自然なふるまい"/>
+   </node>
+  
+  <!-- ===== 基本パラメータ ===== -->
+  <!-- 人手で /system/started を上げる運用は温存。ここでは false のまま -->
+  <param name="/system/started" value="false" />
+
+  <!-- ===== 入出力ノード ===== -->
+
+  <!-- Launchpad等から /human/<intent> を出す橋渡し -->
+  <node pkg="techrie_demo" type="human_input_bridge.py" name="human_input_bridge" output="screen">
+    <param name="button_map_path" value="$(find techrie_demo)/config/button_map.yaml"/>
+    <param name="joy_topic" value="/joy"/>
+  </node>
+
+  <!-- 人の意図→モーション指示（/motion/play） -->
+  <node pkg="techrie_demo" type="motion_reaction_bridge.py" name="motion_reaction_bridge" output="screen">
+    <param name="motion_map_path" value="$(find techrie_demo)/config/motion_map.yaml"/>
+    <param name="motion_topic" value="/motion/play"/>
+    <param name="human_ns" value="/human"/>
+    <param name="started_topic" value="/system/started"/>
+    <param name="cooldown_sec" value="1.2"/>
+  </node>
+
+  <!-- 実モーション再生（pose/seq/traj） -->
+  <node pkg="techrie_demo" type="motion_player.py" name="motion_player" output="screen">
+    <param name="pose_file"  value="$(find techrie_demo)/config/arm_poses.yaml"/>
+    <param name="motion_dir" value="$(find techrie_demo)/motions"/>
+    <!-- コントローラ名は環境に合わせて -->
+    <param name="larm_action" value="/larm_controller/follow_joint_trajectory"/>
+    <param name="rarm_action" value="/rarm_controller/follow_joint_trajectory"/>
+    <param name="head_action" value="/head_controller/follow_joint_trajectory"/>
+    <param name="start_offset" value="0.05"/>
+  </node>
+
+  <!-- OK/NG ボタン確認（0/1） -->
+  <node pkg="techrie_demo" type="ask_and_confirm_node.py" name="ask_and_confirm_node" output="screen">
+    <!-- 既定で OK=0, NG=1 -->
+  </node>
+
+
+
+  <!-- リアクション生成（必要なら。すべて event_orchestrator 側で固定文にしてもOK） -->
+  <node pkg="techrie_demo" type="reaction_router.py" name="reaction_router" output="screen">
+    <param name="use_speak_lock" value="true"/>
+  </node>
+
+  <!-- 無反応 → SULK を発火する見張り -->
+<node pkg="techrie_demo" type="inactivity_watchdog.py" name="inactivity_watchdog" output="screen">
+  <!-- “開始待ち”するなら true。イベントでも /system/started を使っているなら true 推奨 -->
+  <param name="wait_system_started" value="true"/>
+
+  <!-- 何秒無反応で SULK にするか／SULK の長さ／SULK 再発火のクールダウン -->
+  <param name="to_sulk_sec"       value="90.0"/>
+  <param name="sulk_dur_sec"      value="12.0"/>
+  <param name="sulk_cooldown_sec" value="120.0"/>
+
+  <!-- paint_executor/event_orchestrator がロック中は発火しない -->
+  <param name="require_lock_clear" value="true"/>
+  <param name="lock_topic" value="/ui/speak_lock"/>
+
+  <!-- “反応あり”とみなすトピック（String） -->
+  <rosparam param="watch_topics">
+    - /human/ok
+    - /human/ng
+    - /human/invite
+    - /human/praise
+    - /human/pet
+    - /human/dance
+    - /human/show_art
+    - /robot/show
+    - /robot/praise
+  </rosparam>
+</node>
+
+     <!-- カメラからスナップショット -->
+  <node pkg="techrie_demo" type="photo_recorder.py" name="photo_recorder" output="screen">
+    <param name="image_topic" value="/camera/color/image_raw"/>
+  </node>
+
+  <!-- GPTパイプライン（ワンボタン呼び出し） -->
+  <node pkg="techrie_demo" type="diary_pipeline_service.py" name="diary_pipeline_service" output="screen" respawn="true"/>
+
+  <!-- 日記（イベント文脈つき） -->
+    <node pkg="techrie_demo" type="diary_logger.py" name="diary_logger" output="screen" respawn="true">
+    <param name="enable_snapshot" value="true"/>
+    <rosparam param="snap_events">
+    - GPT_ACT
+    - PAINT_BEGIN
+    - PAINT_DONE
+    - PAINT_TIMEOUT
+    - HUMAN_SHOW
+    - HUMAN_WAKE
+    - HUMAN_PRAISE
+    - HUMAN_PET
+    - HUMAN_OFFER_FOOD
+    - HUMAN_DANCE
+    - ROBOT_SHOW
+    - ROBOT_PRAISE
+    - ROBOT_DANCE_START
+    - SELF_INVITE
+    - SELF_INVITE_OK
+    - SELF_INVITE_NG
+    - SELF_START
+    - SULK_START
+    - SULK_DO
+    - SULK_END
+    - ROBOT_LISTEN
+    - ROBOT_PRESENT
+    <!--- TOPIC_STRING   # 文字列も写真＋JSONに残したい場合だけ-->
+  </rosparam>
+  <rosparam param="extra_string_topics">
+    - /robot_text
+    - /emotion/set
+    - /motion/play
+    - /policy/next_action
+    - /human/praise
+    - /human/pet
+    - /human/offer_food
+    - /human/show_art
+    - /human/invite
+    - /human_state
+    - /intereset/suggestion
+  </rosparam>
+    <param name="md_root" value="~/.ros/techrie_demo/diary"/>
+    <param name="profile_params_prefix" value="/profile"/>
+    <param name="env_params_prefix" value="/env"/>
+    <param name="snapshot_service" value="/diary/snapshot"/>
+    <param name="append_robot_text" value="true"/>
+    <!-- ★ イベント文脈（今日のページのヘッダ＆scene JSON に入る） -->
+    <param name="event_name"  value="Moon Project"/>
+    <param name="event_phase" value="daily"/>   <!-- kickoff / regular / finale など -->
+    <param name="event_goal"  value="日常の観察と関わり"/>
+    <param name="event_day"   value="6"/>
+    <param name="event_cohort" value="A組"/>
+    </node>
+
+      <node pkg="techrie_demo" type="diary_pipeline_service.py" name="diary_make_service" output="screen" respawn="true"/>
+  <node pkg="techrie_demo" type="diary_switch.py" name="diary_switch" output="screen">
+    <param name="button_index" value="6"/>
+  </node>
+
+  <!-- 人の選択（ボタン→色） -->
+  <node pkg="techrie_demo" type="color_selector.py" name="color_selector" output="screen"/>
+  
+  <!-- ポリシー提案（静かめ） -->
+  <node pkg="techrie_demo" type="color_policy.py" name="color_policy" output="screen">
+    <rosparam param="palette">[red, blue, yellow, green, orange, purple, pink]</rosparam>
+    <param name="rate" value="0.02"/>                 <!-- 5sごと -->
+    <param name="epsilon" value="0.1"/>
+    <param name="human_override_timeout" value="20.0"/>
+    <param name="color_cooldown_sec" value="12.0"/>
+    <!-- ★ 出力トピックを /paint_color_policy に変更しておく（ソース側で変更） -->
+  </node>
+  
+  <!-- 仲裁（人優先 → TTL切れたら提案採用） -->
+  <node pkg="techrie_demo" type="paint_color_mux.py" name="paint_color_mux" output="screen">
+    <param name="human_ttl_sec" value="20.0"/>
+    <param name="cooldown_sec"  value="0.5"/>
+    <param name="default_color" value="orange"/>
+  </node>
+
+  <node pkg="techrie_demo" type="interest_watcher.py" name="interest_watcher" output="screen">
+  <param name="suggestion_topic" value="/interest/suggestion"/>
+  <param name="speak_lock_topic" value="/ui/speak_lock"/>
+  <param name="painting_topic"   value="/painting_active"/>
+
+  <!-- 首ふり（既定はラベル方式。Pointを使うなら enable_point_target を true に） -->
+  <param name="gaze_label_topic" value="/detected_object_pose"/>
+  <param name="gaze_point_topic" value="/paint_position"/>
+  <param name="enable_point_target" value="false"/>
+
+  <!-- ゲート調整 -->
+  <param name="allow_during_paint" value="false"/>
+  <param name="min_interval_sec" value="6.0"/>
+  <param name="min_priority" value="0.30"/>
+</node>
+
+  <!-- 参考: 人手で興味検出ON/OFF切替したいときは
+       $ rostopic pub -1 /interest/enable std_msgs/Bool "data: true"
+  -->
+
+ <!-- 人状態（軽量VQA） -->
+  <node pkg="techrie_demo" type="human_state_estimator.py" name="human_state_estimator" output="screen">
+    <param name="period_sec" value="4.0"/>
+    <param name="camera_topic" value="/camera/color/image_raw"/>
+    <param name="vqa_action" value="/vqa/inference_server"/>
+    <param name="speak_lock_topic" value="/ui/speak_lock"/>
+    <param name="painting_active" value="/painting_active"/>
+
+    <!-- ここで質問を変えられます -->
+    <rosparam param="questions">
+      - "What is the person's general emotion? (one word)"
+      - "What is the person doing? (one short phrase)"
+      - "Does the person want help from the robot? (yes or no)"
+      - "Where is the person looking at? (left/center/right/up/down)"
+    </rosparam>
+  </node>
+
+    <!-- ロボット状態 -->
+  <node pkg="techrie_demo" type="robot_state_publisher.py" name="robot_state_publisher" output="screen" respawn="true"/>
+
+  <node pkg="techrie_demo" type="gpt_detection.py" name="gpt_detection" output="screen">
+  <param name="vision_enabled" value="true"/>         <!-- o1 を使う間は false 推奨 -->
+  <param name="min_interval_sec" value="20.0"/>
+  <param name="timeout_sec" value="60.0"/>
+  <param name="max_retries" value="2"/>
+  <param name="backoff_sec" value="1.5"/>
+  <param name="max_image_width" value="640"/>
+  <param name="jpeg_quality" value="70"/>
+</node>
+
+
+    <!-- 2. VQAノード -->
+  <include file="$(find jsk_perception)/launch/vqa.launch">
+    <arg name="port" value="8080"/>
+    <arg name="host" value="40.81.208.141"/>
+    <arg name="VQA_INPUT_IMAGE" value="/camera/color/image_raw"/>
+    <arg name="gui" value="false"/>
+  </include>
+
+    <!-- wake_word_blinker.launch の一部などに -->
+<node pkg="techrie_demo" type="wake_word_blinker.py" name="wake_word_blinker" output="screen">
+  <!-- 反応ワードの調整（必要なら） -->
+  <!--
+      <rosparam param="patterns">
+    - "(ジェ)(リ|ディ)[ー〜]?"
+    - "ジェリー"
+    - "チェリー"
+    - "じぇ(り|でぃ)?[ー〜]?"
+    - "\\bjedy\\b"
+    </rosparam>
+  -->
+  <param name="debounce_sec" value="2.0"/>
+  <param name="blink_times"  value="2"/>
+  <param name="blink_period" value="0.2"/>
+  <param name="respect_speak_lock" value="true"/>
+  <param name="color_r" value="1.0"/>
+  <param name="color_g" value="0.5"/>
+  <param name="color_b" value="0.0"/>
+  <param name="color_a" value="0.6"/>
+</node>
+
+<!-- ノリノリモード：Launchpad制御 -->
+<node pkg="techrie_demo" type="nori_mode_controller.py" name="nori_mode_controller" output="screen">
+  <!-- 初期モードをランダムにする -->
+  <param name="mode" value="random"/>
+  <!-- ランダムで使う候補 -->
+  <rosparam param="random_poses">["clap_1","clap_2","joy"]</rosparam>
+  <!-- 手拍子パターンをカスタム -->
+  <rosparam param="clap_pattern">["clap_1","clap_2","clap_1","clap_2"]</rosparam>
+  <!-- 同じポーズの連打を避ける -->
+  <param name="random_no_immediate_repeat" value="true"/>
+  <!-- 要件どおりのボタン割り当て -->
+  <param name="note_start" value="37"/>  <!-- dance -->
+  <param name="note_stop"  value="4"/>   <!-- stop -->
+  <param name="note_slow"  value="2"/>   <!-- slow down -->
+  <param name="note_fast"  value="3"/>   <!-- speed up -->
+  <!-- テンポの初期値など（必要なら調整） -->
+  <param name="duration_sec" value="0.35"/>
+  <param name="min_duration_sec" value="0.10"/>
+  <param name="max_duration_sec" value="2.00"/>
+  <param name="speed_up_factor" value="0.85"/>
+  <param name="slow_down_factor" value="1.15"/>
+  <!-- 環境に合わせてMIDIトピックをremap -->
+  <!-- <remap from="/midi/note_on" to="/launchpad/note_on"/> -->
+</node>
+
+
+<node pkg="techrie_demo" type="sing_controller.py" name="sing_controller" output="screen">
+ <env name="PYTHONPATH" value="$(optenv PYTHONPATH):$(find techrie_demo)/nodes/express"/>
+  <param name="bpm" value="96"/>
+</node>
+
+</launch>

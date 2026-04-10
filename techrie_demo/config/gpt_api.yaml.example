@@ -1,0 +1,9 @@
+text:
+  api_key: ""
+  api_version: "2024-12-01-preview"
+  base_url: "https://YOUR-RESOURCE-NAME.cognitiveservices.azure.com/openai/deployments/o1"
+
+image:
+  api_key: ""
+  api_version: "2024-12-01-preview"
+  azure_endpoint: "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/gpt-image-1/images/generations?api-version=2025-04-01-preview"
