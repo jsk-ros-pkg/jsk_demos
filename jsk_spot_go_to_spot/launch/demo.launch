@@ -1,0 +1,12 @@
+<launch>
+  <arg name="target_node_id" default="eng2_7FElevator" />
+
+  <node
+    pkg="jsk_spot_go_to_spot"
+    type="go_to_spot.py"
+    name="go_to_spot"
+    output="screen"
+    >
+    <param name="target_node_id" value="$(arg target_node_id)" />
+  </node>
+</launch>

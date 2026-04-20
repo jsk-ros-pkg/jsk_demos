@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "",
+        "limitSymbolsToIncludedHeaders": true
+      },
+      "includePath": [
+        "/home/sktometometo/ros/ws_jsk_spot/devel/include/**",
+        "/opt/ros/melodic/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/knorth55/audio_video_recorder/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_demos/jsk_2015_06_hrp_drc/drc_task_common/include/**",
+        "/opt/ros/melodic/share/fetch_gazebo/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/imagesift/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/jsk_pcl_ros/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/jsk_pcl_ros_utils/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/jsk_perception/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/jsk_recognition_utils/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_robot/jsk_robot_common/jsk_robot_startup/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_common/jsk_topic_tools/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_3rdparty/jsk_ros_patch/laser_filters_jsk_patch/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_robot/jsk_pr2_robot/pr2_base_trajectory_action/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_recognition/resized_image_transport/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/aerial_robot/aerial_robot_nerve/spinal_ros_bridge/include/**",
+        "/home/sktometometo/ros/ws_jsk_spot/src/jsk-ros-pkg/jsk_common/jsk_coordination_system/tf_relay/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS"
+    }
+  ],
+  "version": 4
+}

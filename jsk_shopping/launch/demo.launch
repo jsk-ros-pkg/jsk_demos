@@ -1,0 +1,5 @@
+<launch>
+  <include file="trashcan_edge_detection.launch" />
+  <include file="trash_mark.launch" />
+  <include file="spot_mark.launch" />
+</launch>

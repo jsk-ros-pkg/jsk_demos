@@ -1,0 +1,4 @@
+<launch>
+  <!-- <node name="spot_trash_take_away" pkg="jsk_spot_take_out_trash" type="take-out-trash.l"/> -->
+  <node name="demo" pkg="jsk_spot_take_out_trash" type="demo.l" />
+</launch>

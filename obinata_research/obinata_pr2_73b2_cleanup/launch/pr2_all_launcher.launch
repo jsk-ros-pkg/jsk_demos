@@ -1,0 +1,3 @@
+<launch>
+    <include file="$(find obinata_pr2_73b2_cleanup)/launch/obinata-pr2-73b2world.launch" />
+</launch>

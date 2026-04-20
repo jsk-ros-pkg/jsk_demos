@@ -1,0 +1,35 @@
+<launch>
+  <group ns="/head_camera/rgb">
+  <!-- <group ns="/l515_head/color"> -->
+    <node name="image_siftnode" pkg="imagesift" type="imagesift" output="screen">
+      <!-- <param name="image_transport" value="compressed" /> -->
+      <remap from="camera_info" to="camera_info"/>
+      <!-- <remap from="image" to="image_raw" /> -->
+      <remap from="image" to="image_rect_color" />
+    </node>
+
+    <node name="point_pose_extractor" pkg="jsk_perception" type="point_pose_extractor" output="screen">
+      <param name="child_frame_name" value="trashmark"/>
+      <param name="template_filename" value="$(find jsk_shopping)/images/plastic.png" />
+      <!-- <param name="object_width" value="0.177" /> -->
+      <!-- <param name="object_height" value="0.240" /> -->
+      <param name="object_width" value="0.200" />
+      <param name="object_height" value="0.258" /> <!--0.271-->
+      <param name="reprojection_threshold" value="3.0" />
+      <param name="distanceratio_threshold" value="0.60" />
+      <param name="relative_pose" value="0 0 0 0 0 0 1" />    <!-- quaternion expression -->
+      <!-- param name="relative_pose" value="0 0 0 0 0 0" / --> <!-- you can also use rpy expression. -->
+      <param name="error_threshold" value="70.0" />
+      <param name="window_name" value="trashmark" />
+      <param name="viewer_window" value="false" />
+      <!-- <param name="publish_tf" value="true" /> -->
+    </node>
+
+    <node name="objectdetection_tf_publisher" pkg="checkerboard_detector" type="objectdetection_tf_publisher.py">
+      <rosparam>
+        use_simple_tf: true
+      </rosparam>
+    </node>
+
+  </group>
+</launch>

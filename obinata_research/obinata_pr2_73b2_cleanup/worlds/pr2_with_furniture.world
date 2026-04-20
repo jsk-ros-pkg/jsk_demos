@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="pr2_with_furniture">
+    <!-- A global light source -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <!-- A ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <name>room73b2-hitachi-fiesta-refrigerator_0</name>
+      <!-- 最初にeusurdfのtexturedmodelsが読み込まれて，そこになかったらmodels？ -->
+      <uri>model://room73b2-hitachi-fiesta-refrigerator_fixed</uri>
+      <pose>2.0 0.0 0.0 0.0 0.0 3.14159</pose>
+    </include>
+  </world>
+</sdf>

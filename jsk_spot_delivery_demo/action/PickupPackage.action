@@ -1,0 +1,6 @@
+duration timeout
+---
+bool success
+string message
+jsk_spot_delivery_demo/DeliveryTask task
+---

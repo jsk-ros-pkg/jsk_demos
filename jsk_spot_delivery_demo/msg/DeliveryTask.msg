@@ -1,0 +1,3 @@
+string target_node_id
+string package_content
+string sender
