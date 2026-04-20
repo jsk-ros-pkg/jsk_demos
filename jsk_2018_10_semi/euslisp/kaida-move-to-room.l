@@ -1,0 +1,21 @@
+(defun go-room-A nil)
+(defun go-room-B nil)
+(defun go-room-C nil)
+
+
+(defun kaida-move-to-room nil
+  (setq number_red (ros::get-param "/box_number/red"))
+  (setq number_green (ros::get-param "/box_number/green")) 
+  (setq number_blue (ros::get-param "/box_number/blue"))
+  (if (and (/= number_red 0.0) (/= number_green 0.0) (/= number_blue 0.0))
+      (if (> number_red number_green)
+          (if (> number_red number_blue)
+              (go-room-A)
+              (go-room-B))
+          (if (> number_green number_blue)
+              (go-room-C)
+              (go-room-B)
+          )
+      )
+  )
+)

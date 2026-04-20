@@ -1,0 +1,10 @@
+<launch>
+  <node pkg="jsk_pcl_ros" type="organized_multi_plane_segmentation" name="multi_plane_estimate">
+    <remap from="~input" to="head_camera/depth_registered/points"/>
+    <rosparam>
+      max_curvature: 0.01
+      estimate_normal: true
+    </rosparam>
+  </node>
+  <node pkg="rviz" type="rviz" name="door_detector_rviz" args="-d $(find jsk_2018_10_semi)/rviz/door_detection.rviz"/>
+</launch>
