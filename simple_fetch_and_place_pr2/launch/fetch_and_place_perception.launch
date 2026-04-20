@@ -1,0 +1,17 @@
+<launch>
+  <arg name="manager" default="pr2_tabletop_detector_nodelet_manager" />
+  <arg name="machine" default="localhost" />
+  <arg name="launch_tracking" default="false" />
+  <arg name="publish_objects_tf" default="true" />
+
+  <include file="$(find jsk_pcl_ros)/sample/tabletop_object_detector.launch">
+    <arg name="input" value="/kinect_head_c2/depth_registered/points_throttle" />
+    <arg name="sensor_frame" value="/head_mount_kinect_rgb_optical_frame" />
+    <arg name="manager" value="$(arg manager)" />
+    <arg name="machine" value="$(arg machine)" />
+    <arg name="launch_openni" value="false" />
+    <arg name="launch_tracking" value="$(arg launch_tracking)" />
+    <arg name="launch_rviz" value="false" />
+    <arg name="publish_tf" value="$(arg publish_objects_tf)" />
+  </include>
+</launch>

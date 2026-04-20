@@ -1,0 +1,21 @@
+<launch>
+  <arg name="gazebo_robot_frame_id" default="pr2" />
+  <arg name="ros_robot_frame_id" default="base_footprint" />
+  <arg name="offset_x" default="0.0" />
+  <arg name="offset_y" default="0.0" />
+  <arg name="offset_z" default="0.0" />
+
+  <node name="gazebo_groundtruth_perception"
+        pkg="simple_fetch_and_place_pr2" type="gazebo_groundtruth_perception.py"
+        output="screen"
+        ns="/kinect_head_c2/rgb">
+    <rosparam subst_value="true">
+      gazebo_robot_frame_id: $(arg gazebo_robot_frame_id)
+      ros_robot_frame_id: $(arg ros_robot_frame_id)
+      offset_x: $(arg offset_x)
+      offset_y: $(arg offset_y)
+      offset_z: $(arg offset_z)
+      near_threshold: 2.0
+    </rosparam>
+  </node>
+</launch>

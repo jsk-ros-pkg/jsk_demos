@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>simple_fetch_and_place_pr2</name>
+  <version>0.0.0</version>
+  <description>The simple_fetch_and_place_pr2 package</description>
+
+  <maintainer email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</maintainer>
+  <license>BSD</license>
+  <author email="furushchev@jsk.imi.i.u-tokyo.ac.jp">Yuki Furuta</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>gazebo</build_depend>
+  <build_depend>jsk_pr2_startup</build_depend>
+  <build_depend>pddl_planner</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>smach_viewer</build_depend>
+
+  <run_depend>gazebo</run_depend>
+  <run_depend>gazebo_ros</run_depend>
+  <run_depend>jsk_pr2_startup</run_depend>
+  <run_depend>pddl_planner</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>smach_viewer</run_depend>
+
+  <export>
+    <gazebo_ros gazebo_model_path="${prefix}/models" />
+  </export>
+</package>
