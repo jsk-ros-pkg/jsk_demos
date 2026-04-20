@@ -1,0 +1,85 @@
+<?xml version="1.0"?>
+<robot name="kettle" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:include filename="$(find quick_tutorial)/urdf/kettle.gazebo" />
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry> <cylinder length="0.2" radius="0.1"/> </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry> <cylinder length="0.2" radius="0.095"/> </geometry>
+        </collision>
+        <!--
+             Izz = 0.5 * M * r^2, Ixx = Iyy = , Ixx = Iyy = 0.25*M*r^2 + 1/12*M*L^2
+        -->
+        <inertial>
+          <mass value="1.0" />
+          <origin xyz="0 0 0" rpy="0 -0 0"/>
+          <inertia ixx="0.006" ixy="0" ixz="0" iyy="0.006" iyz="0" izz="0.005"/>
+        </inertial>
+    </link>
+
+
+    <joint name="kettle_joint" type="revolute">
+        <parent link="base_link"/>
+        <child link="handle"/>
+        <limit lower="-1.2" upper="1.2" effort="1000000" velocity="10000" />
+        <dynamics damping="0.0001" friction="0" />
+        <origin xyz="0 0 0.1" rpy="0 -0 0 "/>
+        <axis   xyz="0 1 0"/>
+    </joint>
+
+    <link name="handle">
+        <visual>
+            <origin xyz="0 0 0.1" rpy="0 0 0"/>
+            <geometry><box size="0.02 0.21 0.01"/></geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.1" rpy="0 0 0"/>
+            <geometry><box size="0.02 0.185 0.01"/></geometry>
+        </collision>
+        <inertial>
+          <mass value="0.2" />
+          <origin xyz="0 0 0" rpy="0 -0 0"/>
+          <inertia ixx="0.0033" ixy="0" ixz="0" iyy="1e-05" iyz="0" izz="0.0033"/>
+        </inertial>
+    </link>
+
+    <joint name="dummy1" type="fixed">
+        <parent link="handle"/>
+        <child link="side1"/>
+        <origin xyz="0 0.1 -0.05" rpy="0 -0 0 "/>
+    </joint>
+
+    <link name="side1">
+        <visual>
+            <origin xyz="0 0.0 0.1" rpy="0 0 0"/>
+            <geometry><box size="0.02 0.01 0.1"/></geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0.0 0.1" rpy="0 0 0"/>
+            <geometry><box size="0.02 0.01 0.1"/></geometry>
+        </collision>
+    </link>
+
+    <joint name="dummy2" type="fixed">
+        <parent link="handle"/>
+        <child link="side2"/>
+        <origin xyz="0 -0.1 -0.05" rpy="0 -0 0 "/>
+    </joint>
+
+    <link name="side2">
+        <visual>
+            <origin xyz="0 0.0 0.1" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.02 0.01 0.1"/>
+            </geometry>
+        </visual>
+        <collision>
+            <origin xyz="0 0.0 0.1" rpy="0 0 0"/>
+            <geometry><box size="0.02 0.01 0.1"/></geometry>
+        </collision>
+    </link>
+</robot>

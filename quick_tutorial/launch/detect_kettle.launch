@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <arg name="input" default="/head_camera/depth_registered/points"/>
+
+  <node name="attention_clipper" pkg="nodelet" type="nodelet"
+    args="standalone jsk_pcl/AttentionClipper"
+    output="screen">
+    <remap from="~input/points" to="$(arg input)"/>
+    <rosparam>
+      use_multiple_attention: false
+      dimension_x: 1.8
+      dimension_y: 1.5
+      dimension_z: 0.8
+      initial_pos: 
+        - 1.0
+        - 0.0
+        - 1.0
+    </rosparam>
+  </node> 
+
+  <node name="ExtractIndices" pkg="nodelet" type="nodelet"
+    args="standalone jsk_pcl/ExtractIndices"
+    output="screen">
+    <remap from="~input" to="$(arg input)"/>
+    <remap from="~indices" to="attention_clipper/output/point_indices"/>
+    <rosparam>
+      keep_organized: true
+    </rosparam>
+  </node>
+
+
+  <node name="multi_plane_estimate" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/OrganizedMultiPlaneSegmentation"
+        output="screen">
+        <remap from="~input" to="ExtractIndices/output" />
+    <rosparam>
+      max_curvature: 0.005
+      estimate_normal: true
+      min_size: 10000
+    </rosparam>
+  </node>
+
+
+  <!--
+  <arg name="input" default="/head_camera/depth_registered/points"/>
+
+  <node name="multi_plane_estimate" pkg="nodelet" type="nodelet" args="standalone jsk_pcl/OrganizedMultiPlaneSegmentation"
+        output="screen">
+    <remap from="~input" to="$(arg input)" />
+    <rosparam>
+      max_curvature: 0.005
+      estimate_normal: true
+      min_size: 3000
+    </rosparam>
+  </node>
+
+  <include file="$(find jsk_pcl_ros)/sample/tabletop_object_detector.launch">
+    <arg name="input" value="$(arg input)" />
+    <arg name="sensor_frame" value="/head_mount_kinect_rgb_optical_frame" />
+    <arg name="manager" value="$(arg manager)" />
+    <arg name="machine" value="$(arg machine)" />
+    <arg name="launch_openni" value="false" />
+    <arg name="launch_tracking" value="true" />
+    <arg name="launch_rviz" value="false" />
+    <arg name="publish_tf" value="false" />
+  </include>
+-->
+
+  <!--
+  <node name="multi_plane_extraction" pkg="nodelet" type="nodelet"
+    args="standalone jsk_pcl/MultiPlaneExtraction"
+    output="screen">
+    <remap from="~input" to="input_relay/output"/>
+    <remap from="~input_polygons" to="multi_plane_estimate/output_polygon"/>
+    <remap from="~input_coefficients" to="multi_plane_estimate/output_coefficuents"/>
+    <remap from="~indices" to="multi_plane_estimate/output"/>
+    <rosparam>
+      min_height: 0.01
+      max_height: 0.3
+    </rosparam>
+  </node>-->
+
+</launch>
+
+

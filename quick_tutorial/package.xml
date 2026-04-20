@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>quick_tutorial</name>
+  <version>0.0.0</version>
+  <description>The quick_tutorial package</description>
+
+  <maintainer email="hiro@todo.todo">hiro</maintainer>
+
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- get this from source -->
+  <exec_depend>fetcheus</exec_depend>
+  <exec_depend>eusurdf</exec_depend>
+  <exec_depend>fetch_gazebo_demo</exec_depend>
+
+  <!-- rosdep -->
+  <exec_depend>robot_state_pubclisher</exec_depend>
+  <exec_depend>fetch_gazebo</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>fetch_gazebo</exec_depend>
+  <exec_depend>fetch_moveit_config</exec_depend>
+  <exec_depend>fetch_navigation</exec_depend>
+  <exec_depend>moveit_commander</exec_depend>
+  <exec_depend>moveit_python</exec_depend>
+
+</package>
