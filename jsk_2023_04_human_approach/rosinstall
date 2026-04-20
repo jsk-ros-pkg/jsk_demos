@@ -1,0 +1,14 @@
+- git:
+# It can be checked out to origin/master after https://github.com/jsk-ros-pkg/coral_usb_ros/pull/130 has been merged
+    local-name: coral_usb_ros
+    uri: https://github.com/mqcmd196/coral_usb_ros.git
+    version: PR/publish_skel
+- git:
+    local-name: jsk_demos
+    uri: git@github.com:heissereal/jsk_demos.git
+    version: master
+- git:
+# It can be checked out to origin/master after https://github.com/jsk-ros-pkg/jsk_recognition/pull/2769 has been merged
+    local-name: jsk_recognition
+    uri: https://github.com/iory/jsk_recognition.git
+    version: skeleton-with-depth
