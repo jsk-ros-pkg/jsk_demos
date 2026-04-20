@@ -1,0 +1,36 @@
+<launch>
+  <!-- procedure -->
+  <!--
+      # Make sure that /etc/network/interfaces is correctly editted
+      # On raspberry pi (connected by LAN cable)
+      ssh 10.0.0.1
+      cd ~
+      rossetip 10.0.0.1
+      rossetmaster 10.0.0.1
+      roslaunch mic_and_motor.launch
+      # On this PC
+      cd ~
+      rossetip 10.0.0.2
+      rossetmaster 10.0.0.1
+      roslaunch si2019.launch
+-->
+
+  <!-- publish spectrogram  -->
+  <include file="$(find sound_classification)/launch/microphone.launch" >
+    <arg name="use_microphone" default="false" />
+    <arg name="classification" default="true" />
+    <arg name="publish_spectrogram" default="true" />
+    <arg name="rqt" default="true" />
+  </include>
+
+  <!-- visualize strength of vibration -->
+  <node pkg="plotjuggler" type="PlotJuggler" name="PlotJuggler"
+        args="--layout $(find decopin_hand)/config/si2019_layout.xml" />
+
+  <!-- move robot hand via nanoKONTROL2 -->
+  <!-- https://github.com/jsk-ros-pkg/jsk_control/blob/master/jsk_teleop_joy/scripts/nanokontrol_joy.py -->
+  <node pkg="decopin_hand" type="nanokontrol_joy.py" name="nanokontrol_joy" args="3" />
+
+  <node pkg="decopin_hand" type="decopin-kontrol.l" name="decopin_kontrol" output="screen"/>
+
+</launch>
