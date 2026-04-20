@@ -1,0 +1,7 @@
+<launch>
+
+  <node name="stamp_demo_rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find jsk_2018_10_22_stamp)/launch/rviz/stamp_demo.rviz" />
+
+</launch>

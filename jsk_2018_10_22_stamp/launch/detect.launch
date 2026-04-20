@@ -1,0 +1,195 @@
+<launch>
+  <arg name="input_image" default="/kinect_head_remote/rgb/image_rect_color" />
+  <arg name="input_depth_image" default="/kinect_head_remote/depth_registered/image_raw" />
+  <arg name="input_camera_info" default="/kinect_head_remote/rgb/camera_info" />
+  <arg name="input_cloud" default="/kinect_head_remote/depth_registered/points" />
+  <arg name="manager" default="/kinect_head_remote/kinect_head_remote_nodelet_manager" />
+  <arg name="gpu" default="0" />
+  <arg name="respawn" default="true" />
+  <arg name="visualization_map" default="true" />
+
+  <include file="$(find jsk_2018_10_22_stamp)/launch/tabletop_simple.launch" >
+    <arg name="input_image" default="/kinect_head_remote/rgb/image_rect_color" />
+    <arg name="input_depth_image" default="/kinect_head_remote/depth_registered/image_raw" />
+    <arg name="input_camera_info" default="/kinect_head_remote/rgb/camera_info" />
+    <arg name="input_cloud" default="/kinect_head_remote/depth_registered/points" />
+  </include>
+  <include file="$(find jsk_2018_10_22_stamp)/jsk_2018_10_22_stamp.machine" />
+
+  <arg name="machine" default="manju" />
+  <arg name="gpu_machine" default="manju" />
+
+  <node name="attention_clipper"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/AttentionClipper $(arg manager)">
+    <remap from="~input/points" to="$(arg input_cloud)" />
+    <rosparam subst_value="true" >
+      frame_id: "base_footprint"
+      use_multiple_attention: false
+      dimension_x: 1.0
+      dimension_y: 2.0
+      dimension_z: 0.8
+      initial_pos: [0.7, 0.0, 1.0]
+    </rosparam>
+  </node>
+
+  <node name="pass_through"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ExtractIndices $(arg manager)">
+    <remap from="~input" to="$(arg input_cloud)" />
+    <remap from="~indices" to="attention_clipper/output/point_indices" />
+    <rosparam subst_value="true" >
+      keep_organized: true
+      max_queue_size: 10
+    </rosparam>
+  </node>
+
+  <node name="people_pose_estimation_2d"
+        pkg="jsk_perception" type="people_pose_estimation_2d.py"
+        respawn="$(arg respawn)"
+        output="screen"
+        machine="$(arg gpu_machine)" >
+    <remap from="~input" to="$(arg input_image)" />
+    <remap from="~input/depth" to="$(arg input_depth_image)"/>
+    <remap from="~input/info" to="$(arg input_camera_info)" />
+    <rosparam subst_value="true">
+      gpu: $(arg gpu)
+      model_file: /etc/ros/jsk_data/jsk_perception/pose_estimation_2d_chainermodel.pkl
+      hand:
+        enable: true
+        model_file: /etc/ros/jsk_data/jsk_perception/pose_estimation_2d_hand.chainermodel
+        width_offset: 50
+      with_depth: true
+      scales: [0.38]
+      stride: 8
+      gpu: 0
+      queue_size: 100
+      buff_size: 268435456
+    </rosparam>
+  </node>
+
+  <node name="mask_rcnn_instance_segmentation"
+        pkg="jsk_perception" type="mask_rcnn_instance_segmentation.py"
+        clear_params="true"
+        respawn="$(arg respawn)"
+        output="screen"
+        machine="$(arg gpu_machine)" >
+    <remap from="~input" to="$(arg input_image)" />
+    <rosparam subst_value="true">
+      gpu: $(arg gpu)
+      score_thresh: 0.9
+      pretrained_model: /etc/ros/jsk_data/jsk_perception/hanko_maskrcnn.npz
+      fg_class_names:
+        - hanko
+        - hanko_case
+        - shuin
+        - shuin_case
+        - boat
+        - bottle
+        - bus
+        - car
+        - cat
+        - chair
+        - cow
+        - diningtable
+        - dog
+        - horse
+        - motorbike
+        - person
+        - pottedplant
+        - sheep
+        - sofa
+        - train
+    </rosparam>
+  </node>
+
+  <!-- use cluster_indices and labels -->
+  <node name="image_cluster_indices_decomposer"
+        pkg="jsk_perception" type="image_cluster_indices_decomposer.py"
+        clear_params="true"
+        machine="$(arg machine)" >
+    <remap from="~input" to="$(arg input_image)" />
+    <remap from="~input/cluster_indices"
+           to="mask_rcnn_instance_segmentation/output/cluster_indices" />
+  </node>
+
+  <!-- use lbl_cls and lbl_ins -->
+  <node name="label_cls_to_mask"
+        pkg="jsk_perception" type="label_to_mask_image"
+        clear_params="true"
+        machine="$(arg machine)" >
+    <remap from="~input" to="mask_rcnn_instance_segmentation/output/label_cls" />
+    <rosparam subst_value="true">
+      label_value: 14
+    </rosparam>
+  </node>
+  <node name="apply_mask_image"
+        pkg="jsk_perception" type="apply_mask_image"
+        clear_params="true"
+        machine="$(arg machine)" >
+    <remap from="~input" to="mask_rcnn_instance_segmentation/output/label_ins" />
+    <remap from="~input/mask" to="label_cls_to_mask/output" />
+    <rosparam subst_value="true">
+      clip: false
+      cval: -1
+    </rosparam>
+  </node>
+  <node name="label_image_decomposer"
+        pkg="jsk_perception" type="label_image_decomposer.py"
+        clear_params="true"
+        machine="$(arg machine)" >
+    <remap from="~input" to="$(arg input_image)" />
+    <remap from="~input/label" to="apply_mask_image/output" />
+    <rosparam subst_value="true">
+      bg_label: -1
+    </rosparam>
+  </node>
+
+  <node name="tile_image"
+        pkg="jsk_perception" type="tile_image.py"
+        clear_params="true"
+        machine="$(arg machine)" >
+    <rosparam subst_value="true">
+      input_topics:
+        - $(arg input_image)
+        - mask_rcnn_instance_segmentation/output/viz
+        - image_cluster_indices_decomposer/output
+        - label_image_decomposer/output/label_viz
+      draw_topic_name: true
+      font_scale: 0.8
+      font_thickness: 2
+    </rosparam>
+  </node>
+
+  <node name="mask_rcnn_cluster_point_indices_decomposer"
+        pkg="nodelet" type="nodelet"
+        args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg manager)"
+        machine="$(arg machine)" >
+    <remap from="~input" to="pass_through/output" />
+    <remap from="~target" to="mask_rcnn_instance_segmentation/output/cluster_indices" />
+    <rosparam subst_value="true">
+      use_warn: true
+      approximate_sync: true
+      queue_size: 50
+      align_boxes: true
+      align_boxes_with_plane: false
+      target_frame_id: base_footprint
+      publish_tf: true
+    </rosparam>
+  </node>
+
+  <node name="label_with_geometry_filter"
+        pkg="jsk_2018_10_22_stamp" type="label_with_geometry_filter.py" >
+    <remap from="~input/labels" to="mask_rcnn_instance_segmentation/output/labels" />
+    <remap from="~input/poses" to="mask_rcnn_cluster_point_indices_decomposer/centroid_pose_array" />
+    <rosparam>
+      approximate_sync: true
+      queue_size: 200
+    </rosparam>
+  </node>
+
+  <include if="$(arg visualization_map)"
+           file="$(find jsk_2018_10_22_stamp)/launch/visualization_map.launch" >
+  </include>
+
+</launch>
