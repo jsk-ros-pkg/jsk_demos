@@ -37,14 +37,18 @@
 
 
 (defun restore-params ()
-  (if (boundp '*global-inflation-radius*)
-    (ros::set-dynamic-reconfigure-param
-      "/move_base_node/global_costmap/inflation_layer" "inflation_radius"
-      :double *global-inflation-radius*))
-  (if (boundp '*local-inflation-radius*)
-    (ros::set-dynamic-reconfigure-param
-      "/move_base_node/local_costmap/inflation_layer" "inflation_radius"
-      :double *local-inflation-radius*))
+  (let ((global-costmap-server "/move_base_node/global_costmap/inflation_layer")
+        (local-costmap-server "/move_base_node/local_costmap/inflation_layer"))
+    (if (and (boundp '*global-inflation-radius*)
+             (ros::wait-for-service (format nil "~A/set_parameters" global-costmap-server) 1))
+      (ros::set-dynamic-reconfigure-param
+        global-costmap-server "inflation_radius"
+        :double *global-inflation-radius*))
+    (if (and (boundp '*local-inflation-radius*)
+             (ros::wait-for-service (format nil "~A/set_parameters" local-costmap-server) 1))
+      (ros::set-dynamic-reconfigure-param
+        local-costmap-server "inflation_radius"
+        :double *local-inflation-radius*)))
   t)
 
 
