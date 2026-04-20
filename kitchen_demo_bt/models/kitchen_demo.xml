@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar>
+            <Action ID="Init"/>
+            <Action ID="ReportStartGoToKitchen"/>
+            <Fallback>
+                <Sequence>
+                    <Action ID="GetLightOn"/>
+                    <Action ID="ReportLightOn"/>
+                </Sequence>
+                <Action ID="RoomLightOn"/>
+            </Fallback>
+            <Sequence>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="dock_front"/>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="tv_front"/>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="tv_desk"/>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="desk_back"/>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="desk_front"/>
+                <SubTreePlus ID="MoveAndInspectSpot" __shared_blackboard="true" spot_name="kitchen_door_front"/>
+                <SubTreePlus ID="MoveAndInspectKitchen"/>
+                <Sequence>
+                    <Fallback>
+                        <Action ID="AutoDock"/>
+                        <Action ID="ReportAutoDockFailure"/>
+                    </Fallback>
+                    <Action ID="RoomLightOff"/>
+                </Sequence>
+            </Sequence>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="MoveAndInspectKitchen">
+        <Fallback>
+            <Sequence>
+                <Action ID="MoveToSpot" spot_name="sink_front"/>
+                <Action ID="InspectSpot" spot_name="kitchen"/>
+                <Fallback>
+                    <Sequence>
+                        <Action ID="MoveToSpot" spot_name="trashcan_front"/>
+                        <Action ID="InspectSpot" spot_name="trashcan"/>
+                    </Sequence>
+                    <ForceSuccess>
+                        <Action ID="ReportFailure" spot_name="trashcan_front"/>
+                    </ForceSuccess>
+                </Fallback>
+            </Sequence>
+            <ForceSuccess>
+                <Action ID="ReportFailure" spot_name="sink_front"/>
+            </ForceSuccess>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <BehaviorTree ID="MoveAndInspectSpot">
+        <Fallback>
+            <Sequence>
+                <Action ID="MoveToSpot" spot_name="${spot_name}"/>
+                <Action ID="InspectSpot" spot_name="${spot_name}"/>
+            </Sequence>
+            <ForceSuccess>
+                <Action ID="ReportFailure" spot_name="${spot_name}"/>
+            </ForceSuccess>
+        </Fallback>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="AutoDock" server_name="kitchen_demo/auto_dock"/>
+        <Action ID="Finish" server_name="kitchen_demo/finish"/>
+        <Action ID="GetLightOn" server_name="kitchen_demo/get_light_on"/>
+        <Action ID="Init" server_name="kitchen_demo/init"/>
+        <Action ID="InspectSpot" server_name="kitchen_demo/inspect_spot">
+            <input_port default="${spot_name}" name="spot_name" type="string"/>
+        </Action>
+        <SubTreePlus ID="MoveAndInspectKitchen"/>
+        <SubTreePlus ID="MoveAndInspectSpot">
+            <input_port default="true" name="__shared_blackboard" type=""/>
+            <inout_port name="spot_name" type="string"/>
+        </SubTreePlus>
+        <Action ID="MoveToSpot" server_name="kitchen_demo/move_to_spot">
+            <input_port default="${spot_name}" name="spot_name" type="string"/>
+        </Action>
+        <Action ID="ReportAutoDockFailure" server_name="kitchen_demo/report_auto_dock_failure"/>
+        <Action ID="ReportFailure" server_name="kitchen_demo/report_failure">
+            <input_port default="${spot_name}" name="spot_name" type="string"/>
+        </Action>
+        <Action ID="ReportLightOn" server_name="kitchen_demo/report_light_on"/>
+        <Action ID="ReportStartGoToKitchen" server_name="kitchen_demo/report_start_go_to_kitchen"/>
+        <Action ID="RoomLightOff" server_name="kitchen_demo/room_light_off"/>
+        <Action ID="RoomLightOn" server_name="kitchen_demo/room_light_on"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
