@@ -1,0 +1,13 @@
+repositories:
+  jsk_demos:
+    type: git
+    url: git@github.com:sawada10/jsk_demos.git
+    version: add-codesigned-robot-demos
+  modular_robot_model_zoo:
+    type: git
+    url: git@gitlab.jsk.imi.i.u-tokyo.ac.jp:sawada1/modular_robot_model_zoo.git
+    version: add-kashiwagi-kuromitsu-models
+  rcb4:
+    type: git
+    url: git@github.com:iory/rcb4.git
+    version: 930687bdba6f527b366b5cebb3c807ca2c9182e9
