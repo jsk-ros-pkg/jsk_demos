@@ -49,7 +49,7 @@
 
     (warning-message 3 "grasp tray~%")
     ;; Grasp it
-    (setq grasp-args (send *ri* :start-grasp :arms :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))  ;; stop-grasp wait until gripper motion stops
+    (setq grasp-args (send *ri* :start-grasp :arms :gain 0.08 :objects (list (find *tray* (send *ri* :objects) :test #'(lambda (a b) (string= (send a :name) (send b :name)))))))  ;; stop-grasp wait until gripper motion stops
 	;; check if tray is grasped
     (warning-message 3 "check tray ~A > ~A~%" grasp-args grasp-threshold)
     (when (and (not (send *ri* :simulation-modep))
