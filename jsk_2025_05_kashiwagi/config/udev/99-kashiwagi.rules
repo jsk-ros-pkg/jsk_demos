@@ -1,6 +1,5 @@
-SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", ATTRS{serial}=="F4:12:FA:9D:7E:5C", SYMLINK+="ttyACM-lefteye", GROUP="dialout"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", ATTRS{serial}=="70:04:1D:D3:CB:98", SYMLINK+="ttyACM-righteye", GROUP="dialout"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="B952361293", SYMLINK+="ttyUSB-ume", GROUP="dialout"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="595240C845", SYMLINK+="ttyUSB-cheek", GROUP="dialout"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ENV{ID_SERIAL_SHORT}=="AO007YW8", SYMLINK+="ttyFTDI_AO007YW8"
-
+SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", ATTRS{serial}=="F4:12:FA:9D:7E:5C", SYMLINK+="ttyACM-lefteye", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", ATTRS{serial}=="70:04:1D:D3:CB:98", SYMLINK+="ttyACM-righteye", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="B952361293", SYMLINK+="ttyUSB-ume", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ATTRS{serial}=="595240C845", SYMLINK+="ttyUSB-cheek", GROUP="dialout", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", ENV{ID_SERIAL_SHORT}=="AO007YW8", SYMLINK+="ttyFTDI_AO007YW8", GROUP="dialout", MODE="0660"
