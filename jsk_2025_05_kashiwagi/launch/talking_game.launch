@@ -7,6 +7,8 @@
   <arg name="language" default="ja-JP"/>
   <arg name="self_cancellation" default="false"/>
 
+  <param name="robot_name" value="kashiwagi" />
+
   <!-- respeaker -->
   <node name="respeaker_node"
 	pkg="respeaker_ros" type="respeaker_node.py"
@@ -33,7 +35,7 @@
       language: $(arg language)
       self_cancellation: $(arg self_cancellation)
       tts_tolerance: 0.5
-      google_cloud_credentials_json: /home/leus/config/eternal-byte-236613-4bc6962824d1.json
+      google_cloud_credentials_json: /home/kashiwagi/config/eternal-byte-236613-4bc6962824d1.json
     </rosparam>
   </node>
   
@@ -78,7 +80,7 @@
 
   <!-- Gesture Recognition -->
   <include file="$(find semi2024)/launch/gesture_recognition.launch">
-    <arg name="venv" value="/home/leus/venvs/kashiwagi/bin/python"/>
+    <arg name="venv" value="/home/kashiwagi/ros/kashiwagi_ws/.venv/bin/python"/>
   </include>
   <!-- <!-\- Gesture Recognition -\-> -->
   <!-- <include file="$(find semi2024)/launch/gesture_recognition_light.launch"/> -->
