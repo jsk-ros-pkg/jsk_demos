@@ -62,6 +62,13 @@
   <exec_depend>opencv_apps</exec_depend>
   <exec_depend>message_runtime</exec_depend>
   <exec_depend>speech_recognition_msgs</exec_depend>
+  <exec_depend>voicevox</exec_depend>
+  <exec_depend>eye_display</exec_depend>
+  <exec_depend>jsk_2023_12_codesign</exec_depend>
+  <exec_depend>semi2024</exec_depened>
+  <exec_depend>realsense2_camera</exec_depened>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
