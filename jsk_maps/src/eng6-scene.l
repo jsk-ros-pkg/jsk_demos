@@ -1,4 +1,6 @@
 (load "package://jsk_maps/src/building-model.l")
+(when (find :ros *features*)
+  (require :db-building-model "package://jsk_maps/src/db-building-model.l"))
 
 (load "models/elevator_call_panel-object.l")
 (load "models/elevator_inside_panel-object.l")
@@ -69,10 +71,12 @@
 
 
     (setq scene
-	  (instance building-model :init
-		    :name "/eng6"
-		    :objects maps
-		    ))
+          (instance
+           (if (boundp 'db-building-model) db-building-model building-model)
+           :init
+           :name "/eng6"
+           :objects maps
+           ))
 
     ;; visualize region
     (send-all (send-all maps :map) :set-color #f(0 1 0 0.3))
