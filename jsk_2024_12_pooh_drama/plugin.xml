@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<library path="src">
+  <class name="ActionButton" type="kxr_controller.button.ActionButton" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A GUI to select action trigger
+    </description>
+    <qtgui>
+      <group>
+        <label>Pooh</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to pooh</statustip>
+      </group>
+      <label>ActionButton</label>
+      <icon type="theme">applications-other</icon>
+      <statustip>A GUI to select action trigger</statustip>
+    </qtgui>
+  </class>
+</library>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <!-- 音声再生のために必要 -->
+  <include file="$(find riberry_startup)/launch/sound_play.launch" />
+
+  <!-- 体のサーボ用の基板との通信とかに必要 -->
+  <include file="$(find pooh_kxr_fullbody)/launch/pooh_controller.launch" />
+
+  <!-- serialでarduino nano everyと通信 -->
+  <node name="joint_state_to_arduino"
+        pkg="kxr_controller"
+        type="serial_joint_control.py" />
+  <rosparam param="default_controller">
+    - head_controller
+    - rarm_controller
+    - larm_controller
+  </rosparam>
+  <rosparam file="$(find kxr_controller)/config/pooh_controllers.yaml" />
+
+  <!-- story（どのストーリーか), section（何番目の話者か), trigger(何番目のセリフか)に応じて音声・眉(/eyebrow_status)・体（今は首だけ, /neck_motion）の動きを出す -->
+  <node name="action_trigger_listener_number"
+        pkg="kxr_controller"
+        type="action_trigger_listener_number.py" />
+
+  <!-- action_trigger_listener から/eyebrow_status を受け取り眉を動かす -->
+  <node name="emotion_to_joint_publisher"
+        pkg="eyebrow_control_pkg"
+        type="emotion_to_joint_publisher.py" />
+
+  <!-- action_trigger_listener から/neck_motion を受け取り首を動かす -->
+  <node name="pooh_kxr_command_listener"
+        pkg="kxr_controller"
+        type="pooh_kxr_command_listener.py" />
+
+</launch>

@@ -1,0 +1,32 @@
+head_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+    - head_neck_y
+    - head_neck_p
+    - head_neck_r
+
+  state_publish_rate:  100            # Override default
+  action_monitor_rate: 100            # Override default
+  stop_trajectory_duration: 0        # Override default
+
+rarm_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+    - rarm_shoulder_p
+    - rarm_shoulder_r
+    - rarm_elbow
+
+  state_publish_rate:  100            # Override default
+  action_monitor_rate: 100            # Override default
+  stop_trajectory_duration: 0        # Override default
+
+larm_controller:
+  type: position_controllers/JointTrajectoryController
+  joints:
+    - larm_shoulder_p
+    - larm_shoulder_r
+    - larm_elbow
+
+  state_publish_rate:  100            # Override default
+  action_monitor_rate: 100            # Override default
+  stop_trajectory_duration: 0        # Override default

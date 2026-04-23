@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="raw_audio_topic" default="/audio" doc="Name of audio topic captured from microphone" />
+  <arg name="dummy_audio_topic" default="/dummy_audio" doc="Dummy audio" />
+  <arg name="audio_topic" default="/input_audio" doc="Name of audio topic captured from microphone" />
+  <arg name="depth" default="16" doc="Bit depth of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
+  <arg name="sample_rate" default="16000" doc="Frame rate of audio topic and microphone. '$ pactl list short sinks' to check your hardware"/>
+  <arg name="device" default="bluealsa:DEV=64:B7:08:82:BB:D6,PROFILE=a2dp" doc="Card and device number of microphone (e.g. hw:0,0). you can check card number and device number by '$ arecord -l', then uses hw:[card number],[device number]" />
+  <arg name="n_channel" default="1" doc="Number of channels of audio topic and microphone. '$ pactl list short sinks' to check your hardware" />
+  <arg name="sound_play_respawn" default="true" />
+
+  <node name="sound_play_jp"
+        pkg="sound_play" type="soundplay_node.py"
+        respawn="$(arg sound_play_respawn)"
+        output="screen" >
+    <remap from="robotsound" to="robotsound_jp"/>
+    <remap from="sound_play" to="robotsound_jp"/>
+    <env name="PATH" value="$(find stereo_image_sandbox)/bin/openjtalk:$(env PATH)" />
+    <env name="PYTHONIOENCODING" value="utf-8" />
+    <rosparam subst_value="true" >
+      device: $(arg device)
+    </rosparam>
+  </node>
+
+  <group ns="sound_play_jp" >
+    <node name="is_speaking"
+          pkg="sound_play" type="is_speaking.py"
+          respawn="true">
+      <remap from="~robotsound" to="/robotsound_jp/status" />
+      <remap from="~output/is_speaking" to="/is_speaking" />
+    </node>
+  </group>
+
+</launch>
