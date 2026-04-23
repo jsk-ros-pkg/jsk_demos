@@ -1,0 +1,34 @@
+@startuml
+
+'|検温ロボット|'
+
+start
+
+:頭を回転させ，人を探す;
+
+if (人を見つける) then (登録されていた場合)
+   :顔を認識;
+else (登録されていなかた場合)
+   :その人のところまで移動;
+   :肩の高さまでアームをあげる;
+   :認証カードをかざしてもらう，データを送る;
+   :（体温を計測する）;
+   :（おでこの高さまでアームをあげる）;
+   :顔を認識，登録する;
+endif
+:頭を回転させ，人を探す;
+
+end
+
+@enduml
+
+@startuml
+
+class "登録データ" {
+  {static}userid
+  {static}name
+  {static}timestamp
+  {static}temperature
+}
+
+@enduml

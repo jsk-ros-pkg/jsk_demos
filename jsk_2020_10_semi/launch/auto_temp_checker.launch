@@ -1,0 +1,41 @@
+<launch>
+  <arg name="launch_pointcloud_screenpoint" value="false" />
+  <!-- subscribe /head_camera/rgb/image_rect_color/screenpoint and publish /tf (ray_target) -->
+  <include file="$(find jsk_2020_10_semi)/launch/pointcloud_screenpoint.launch"
+           if="$(arg launch_pointcloud_screenpoint)" >
+    <arg name="machine" value="fetch1075" />
+  </include>
+  <include file="$(find jsk_2020_10_semi)/launch/image_view2.launch" >
+    <arg name="machine" value="fetch1075" />
+  </include>
+
+  <!-- publish /head_camera/rgb/image_rect_color/screenpoint from /edgetpu_human_pose_estimator/output/poses  -->
+  <node name="aws_auto_checkin_app" pkg="jsk_perception"
+        type="aws_auto_checkin_app.py"
+        ns="/head_camera/rgb"
+        output="screen" >
+    <remap from="image" to="image_rect_color" />
+    <param name="use_window" value="true" />
+    <param name="env_path" value="/tmp/env.json" />
+  </node>
+
+  <node name="face_roi_mux"
+        pkg="topic_tools"
+        type="mux"
+        args="poses_mux poses"
+        ns="/edgetpu_human_pose_estimator/output" />
+
+  <node name="search_people"
+        pkg="jsk_2020_10_semi"
+        type="search-people.l"
+        output="screen" >
+    <remap from="/edgetpu_human_pose_estimator/output/poses" to="/edgetpu_human_pose_estimator/output/poses_mux" />
+  </node>
+
+  <node name="battery_visualiation"
+        pkg="topic_tools"
+        type="relay_field"
+        args="/battery_state /battery_charge_level std_msgs/Float32 'data: m.charge_level'"
+        respawn="true" />
+
+</launch>
