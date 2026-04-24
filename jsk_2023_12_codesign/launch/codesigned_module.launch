@@ -8,7 +8,7 @@
     <arg name="port_right" value="/dev/ttyACM-righteye" />
     <arg name="port_left" value="/dev/ttyACM-lefteye" />
     <arg name="baud" value="57600" />
-    <arg name="debug" value="true" />
+    <arg name="debug" value="false" />
   </include>
   
   <!-- Launch serial_node for the ume if robot_name is "kashiwagi" -->
