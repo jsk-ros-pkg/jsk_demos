@@ -65,8 +65,8 @@
   <exec_depend>voicevox</exec_depend>
   <exec_depend>eye_display</exec_depend>
   <exec_depend>jsk_2023_12_codesign</exec_depend>
-  <exec_depend>semi2024</exec_depened>
-  <exec_depend>realsense2_camera</exec_depened>
+  <exec_depend>semi2024</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>position_controllers</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
 
