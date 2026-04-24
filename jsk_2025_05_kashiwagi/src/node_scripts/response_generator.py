@@ -18,7 +18,7 @@ class ResponseGenerator:
         # file path settings
         base_dir = os.path.dirname(__file__)
         self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
-        self.tsv_path = os.path.join(base_dir, "talking_game.tsv")
+        self.tsv_path = os.path.join(base_dir, "talking_game-sample.tsv")
         self.record_path = os.path.join(base_dir, "response_record.json")
         # 追加: eventテキストのファイルパス
         self.event_path = os.path.join(base_dir, "kashiwagi_event.txt")
@@ -53,7 +53,7 @@ class ResponseGenerator:
         self.client = AzureOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key=os.getenv("AZURE_OPENAI_KEY"),
-            api_version="2024-08-01-preview"
+            api_version="2025-01-01-preview"
         )
 
         self.system_prompt = {
@@ -209,7 +209,7 @@ class ResponseGenerator:
                         self.system_prompt,
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=300,
+                    max_completion_tokens=300,
                     temperature=0.9,
                     top_p=0.9,
                     frequency_penalty=0,

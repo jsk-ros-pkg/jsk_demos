@@ -28,7 +28,7 @@ class FreeTalkResponder:
         self.client = AzureOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key=os.getenv("AZURE_OPENAI_KEY"),
-            api_version="2024-08-01-preview"
+            api_version="2025-01-01-preview"
         )
 
         self.system_prompt = {
@@ -44,6 +44,12 @@ class FreeTalkResponder:
                 "言いよどみや間を含む自然な話し方をしてください。"
                 "過去の会話と矛盾がないように答えてください。"
                 "50文字くらいで答えてください。"
+                "音声認識の都合で、「柏木さん」を「高木さん」「押上さん」「うさぎさん」などと聞こえていることがあります。それらは「柏木さん」として処理してください。"
+                " 「方向音痴」や「柏餅」が回答に出過ぎる傾向があるので、必要以上にそれらと回答を関連付けないでください。回答にそれらが出てこなくても構いません。"
+                "新たな情報を想像で追加しても構いません。"
+                "「澤田」「さわだ」の敬称は必ず「さん」でお願いします。"
+                "「鳩」という言葉については「ハト」と書くようにしてください。"
+                "絶対に改行は使わないでください"
             )
         }
 
@@ -143,7 +149,7 @@ class FreeTalkResponder:
             response = self.client.chat.completions.create(
                 model=os.getenv("AZURE_OPENAI_MODEL"),
                 messages=messages,
-                max_tokens=100,
+                max_completion_tokens=100,
                 temperature=0.9,
                 top_p=0.9,
                 stream=False
