@@ -27,7 +27,7 @@ class TimeSignal:
         self.set_state_srv = rospy.ServiceProxy('/set_kashiwagi_state', SetKashiwagiState)
         self.client = actionlib.SimpleActionClient('/robotsound_jp', SoundRequestAction)
         self.schedule_and_soundfile = {
-            "15:00":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1500.wav",
+            # "15:00":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1500.wav",
             "15:50":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1550.wav",
             "16:00":f"{self.path_to_pkg}/data/kashiwagi_time_signal_1600.wav"}
         self.client.wait_for_server()
