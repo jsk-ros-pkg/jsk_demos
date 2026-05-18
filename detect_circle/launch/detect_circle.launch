@@ -1,0 +1,74 @@
+<!--
+<launch>
+    <node pkg="detect_circle" type="detect_circle" name="detect_circle" output="screen">
+        <param name="canny_threshold" type="int" value="100"/>
+        <param name="accumulator_threshold" type="int" value="50"/>
+    </node>
+</launch>
+-->
+
+<launch>
+
+  <node name="image_decompresser"
+       pkg="image_transport" type="republish"
+       args="compressed raw" respawn="true">
+    <remap from="in" to="/kinect_head/rgb/image_rect_color"/>
+    <remap from="out" to="/detect_circle/decompressed_image"/>
+  </node>
+
+  <!-- needs image_transport_plugins/#64 -->
+  <node name="depth_decompresser"
+       pkg="image_transport" type="republish"
+       args="compressedDepth raw" respawn="true">
+    <remap from="in" to="/kinect_head/depth_registered/image"/>
+    <remap from="out" to="/detect_circle/decompressed_depth"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="decompress_points"
+          args="standalone depth_image_proc/point_cloud_xyzrgb">
+      <remap from="rgb/camera_info" to="/kinect_head/depth_registered/camera_info"/>
+      <remap from="rgb/image_rect_color" to="/detect_circle/decompressed_image"/>
+      <remap from="depth_registered/image_rect" to="/detect_circle/decompressed_depth"/>
+      <remap from="depth_registered/points" to="/detect_circle/depth_registered/points"/> 
+      <rosparam>
+        queue_size: 100
+      </rosparam>
+    </node>
+
+    <!-- <include file="$(find opencv_apps)/launch/hls_color_filter.launch">
+        <arg name="image" value="/detect_circle/decompressed_image" />
+        <arg name="h_limit_min" value="0" />
+        <arg name="h_limit_max" value="360" />
+        <arg name="l_limit_min" value="0" />
+        <arg name="l_limit_max" value="60" />
+        <arg name="s_limit_min" value="0" />
+        <arg name="s_limit_max" value="70" />
+    </include> -->
+
+    <!-- <node pkg="jsk_perception" type="mask_image_generator" name="mask_image_generator" output="screen">
+        <remap from="~input" to="/detect_circle/decompressed_image" />
+        <rosparam>
+            offset_x: 100
+            offset_y: 40
+            width: 450
+            height: 300
+        </rosparam>
+    </node> -->
+    <!-- <node pkg="jsk_perception" type="multiply_mask_image" name="multiply_mask_image" output="screen">
+        <remap from="~input/src1" to="hls_color_filter/image" />
+        <remap from="~input/src2" to="mask_image_generator/output" />
+    </node> -->
+
+    <include file="$(find opencv_apps)/launch/hough_circles.launch">
+        <arg name="image" value="/detect_circle/decompressed_image" />
+        <arg name="canny_threshold" value="160" />
+        <arg name="accumulator_threshold" value="100" />
+        <arg name="max_circle_radius" value="50" />
+    </include>
+    <node pkg="detect_circle" type="detect_circle_node" name="convert_hough_circle2point_stamped" output="screen">
+    </node>
+    <node pkg="jsk_pcl_ros" type="pointcloud_screenpoint" name="pointcloud_screenpoint" output="screen">
+        <remap from="~points" to="/detect_circle/depth_registered/points" />
+        <remap from="~point" to="/camera/circle/point" />
+    </node>
+</launch>
