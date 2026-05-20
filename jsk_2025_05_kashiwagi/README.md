@@ -100,6 +100,8 @@ export ROS_VOICEVOX_TEXTTOSPEECH_CACHE_ENABLED=True
 pipをする前に仮想環境を作りactivateする。
 
 ```bash
+source /path/to/jsk_2025_05_kashiwagi/.venv/bin/activate
+cd /path/to/jsk_2025_05_kashiwagi
 pip install -r requirements.txt
 ```
 
