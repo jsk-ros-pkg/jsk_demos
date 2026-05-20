@@ -30,21 +30,21 @@ sudo reboot
 
 ```yaml
 repositories:
-  jsk-ros-pkg/jsk_demos:
+  jsk_demos:
     type: git
     url: git@github.com:sawada10/jsk_demos.git
-    version: kashiwagi
+    version: kashiwagi-call-person-name
   jsk_3rdparty:
     type: git
     url: git@github.com:sawada10/jsk_3rdparty.git
     version: kashiwagi
   kashiwagi_kuromitsu:
     type: git
-    url: [https://github.com/a-ichikura/kashiwagi_kuromitsu.git](https://github.com/a-ichikura/kashiwagi_kuromitsu.git)
+    url: https://github.com/a-ichikura/kashiwagi_kuromitsu.git
     version: kashiwagi
   realsense-ros:
     type: git
-    url: [https://github.com/IntelRealSense/realsense-ros.git](https://github.com/IntelRealSense/realsense-ros.git)
+    url: https://github.com/IntelRealSense/realsense-ros.git
     version: ros1-legacy
   rcb4:
     type: git
