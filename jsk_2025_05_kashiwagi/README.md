@@ -74,6 +74,13 @@ sudo cp /path/to/jsk_2025_05_kashiwagi/config/udev/99-kashiwagi.rules /usr/lib/u
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 ```
+また、以下はrespeakerの設定
+```bash
+sudo cp -f /path/to/respeaker_ros/config/60-respeaker.rules /etc/udev/rules.d/60-respeaker.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+sudo systemctl restart udev
+```
 
 ## 4. 環境変数の設定
 `~/.bashrc` にAPIキーなどの設定を書く。
