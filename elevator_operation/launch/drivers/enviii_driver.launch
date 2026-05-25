@@ -1,0 +1,19 @@
+<launch>
+    <arg name="device" default="/dev/rfcomm1" />
+    <arg name="output_altitude_topic" default="/altitude" />
+
+    <!-- m5stack (barometer) -->
+    <node pkg="rosserial_python" type="serial_node.py" name="m5stack_ros_env3_driver" output="screen">
+        <rosparam subst_value="true">
+            baud: 115200
+            port: $(arg device)
+        </rosparam>
+    </node>
+
+    <!-- calculate altitude from air pressure -->
+    <node pkg="elevator_operation" type="altitude_calculator.py" name="altitude_calculator" output="screen">
+        <remap from="~input_pressure" to="/pressure" />
+        <remap from="~input_temperature" to="/temperature" />
+        <remap from="~output" to="$(arg output_altitude_topic)" />
+    </node>
+</launch>

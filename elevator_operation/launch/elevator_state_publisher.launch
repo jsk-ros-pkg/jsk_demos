@@ -1,0 +1,79 @@
+<launch>
+    <arg name="initial_floor" default="7" />
+    <arg name="device_type" default="" /> <!-- spinal or enviii or fetch1075_enviii -->
+    <arg name="device_name" default="/dev/ttyUSB0" />
+    <arg name="robot_type" default="fetch" /> <!-- fetch -->
+
+    <arg name="output_topic_current_floor" default="/elevator_state_publisher/current_floor" />
+    <arg name="output_topic_elevator_movement" default="/elevator_state_publisher/elevator_movement" />
+    <arg name="output_topic_rest_elevator" default="/elevator_state_publisher/rest_elevator" />
+
+    <!-- elevator operation server -->
+    <node pkg="elevator_operation" type="elevator_state_publisher.py" name="elevator_state_publisher" output="log">
+        <remap from="~input_altitude" to="/elevator_altitude" />
+        <remap from="~input_accel" to="/elevator_accel_filtered" />
+        <remap from="~change_floor" to="/change_floor_server/input" />
+
+        <remap from="~current_floor" to="$(arg output_topic_current_floor)" />
+        <remap from="~elevator_movement" to="$(arg output_topic_elevator_movement)" />
+        <remap from="~rest_elevator" to="$(arg output_topic_rest_elevator)" />
+
+        <rosparam subst_value="true">
+            initial_floor: $(arg initial_floor)
+            threshold_altitude: 1
+            threshold_accel: 0.2
+        </rosparam>
+        <rosparam
+            ns="elevator_config"
+            command="load"
+            file="$(find elevator_operation)/config/config.yaml"
+            />
+    </node>
+
+    <!-- Altitude publisher -->
+    <group>
+        <!-- launch spinal if specified -->
+        <include
+            file="$(find elevator_operation)/launch/drivers/spinal_driver.launch"
+            if="$(eval arg('device_type') == 'spinal')" >
+            <arg name="device" value="$(arg device_name)" />
+            <arg name="output_altitude_topic" value="/elevator_altitude" />
+        </include>
+
+        <!-- launch enviii if specified -->
+        <include
+            file="$(find elevator_operation)/launch/drivers/enviii_driver.launch"
+            if="$(eval arg('device_type') == 'enviii')" >
+            <arg name="device" value="$(arg device_name)" />
+            <arg name="output_altitude_topic" value="/elevator_altitude" />
+        </include>
+
+        <!-- use fetch internal enviii if specified -->
+        <include
+            file="$(find elevator_operation)/launch/drivers/fetch1075_enviii_driver.launch"
+            if="$(eval arg('device_type') == 'fetch1075_enviii')" >
+            <arg name="output_altitude_topic" value="/elevator_altitude" />
+        </include>
+    </group>
+
+    <!-- Acceleration publisher -->
+    <group>
+        <!-- Extract z axis acceleration from sensor_msgs/Imu topic -->
+        <node
+            pkg="topic_tools"
+            type="transform"
+            name="extract_z_acceleration"
+            args="/imu /elevator_accel std_msgs/Float32 'std_msgs.msg.Float32(data=m.linear_acceleration.z)' --import std_msgs"
+            if="$(eval arg('robot_type') == 'fetch')"
+            /> <!-- for fetch -->
+
+        <!-- LPF for acceleration -->
+        <node pkg="elevator_operation" type="lowpass_filter.py" name="lowpass_filter">
+            <remap from="~input" to="/elevator_accel" />
+            <remap from="~output" to="/elevator_accel_filtered" />
+            <rosparam subst_value="true">
+                freq_cutoff: 0.5
+            </rosparam>
+        </node>
+    </group>
+</launch>
