@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="BehaviorTree">
+    <!-- ////////// -->
+    <BehaviorTree ID="BehaviorTree">
+        <SequenceStar>
+            <Action ID="Init" can_name="${can_name}"/>
+            <Fallback>
+                <Sequence>
+                    <Action ID="MoveToFridge"/>
+                    <Action ID="OpenFridge"/>
+                    <Action ID="GraspCan" can_name="${can_name}"/>
+                    <Action ID="CloseFridge"/>
+                    <ForceSuccess>
+                        <Action ID="MoveToInitialPosition"/>
+                    </ForceSuccess>
+                    <Action ID="HandOverCan"/>
+                    <Action ID="Finish"/>
+                </Sequence>
+                <ForceFailure>
+                    <Action ID="FinishFailure"/>
+                </ForceFailure>
+            </Fallback>
+        </SequenceStar>
+    </BehaviorTree>
+    <!-- ////////// -->
+    <TreeNodesModel>
+        <Action ID="CloseFridge" server_name="fridge_demo/close_fridge"/>
+        <Action ID="Finish" server_name="fridge_demo/finish"/>
+        <Action ID="FinishFailure" server_name="fridge_demo/finish_failure"/>
+        <Action ID="GraspCan" server_name="fridge_demo/grasp_can">
+            <input_port default="georgia" name="can_name" type="string">name of can in fridge</input_port>
+        </Action>
+        <Action ID="HandOverCan" server_name="fridge_demo/hand_over_can"/>
+        <Action ID="Init" server_name="fridge_demo/init">
+            <inout_port default="can_name" name="can_name" type="string">name of can in fridge</inout_port>
+        </Action>
+        <Action ID="MoveToFridge" server_name="fridge_demo/move_to_fridge"/>
+        <Action ID="MoveToInitialPosition" server_name="fridge_demo/move_to_initial_position"/>
+        <Action ID="OpenFridge" server_name="fridge_demo/open_frirdge"/>
+    </TreeNodesModel>
+    <!-- ////////// -->
+</root>
