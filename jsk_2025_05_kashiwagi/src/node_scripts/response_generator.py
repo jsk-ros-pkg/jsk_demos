@@ -18,7 +18,7 @@ class ResponseGenerator:
         # file path settings
         base_dir = os.path.dirname(__file__)
         self.path_to_pkg = os.path.join(rospkg.RosPack().get_path("jsk_2025_05_kashiwagi"),)
-        self.tsv_path = os.path.join(base_dir, "talking_game-sample.tsv")
+        self.tsv_path = os.path.join(base_dir, "talking_game.tsv")
         self.record_path = os.path.join(base_dir, "response_record.json")
         # 追加: eventテキストのファイルパス
         self.event_path = os.path.join(base_dir, "kashiwagi_event.txt")
@@ -195,6 +195,7 @@ class ResponseGenerator:
             【出来事】{event_text}
             - 「{self.class_name}」「さわだ」「澤田」は固有名詞なので、変えることなく、そのまま使ってください。ただし回答に無理にそれらの単語を入れる必要はありません。
             - 「方向音痴」や「柏餅」が回答に出過ぎる傾向があるので、必要以上にそれらと回答を関連付けないでください。回答にそれらが出てこなくても構いません。
+            - 誕生日などの重要な情報は勝手に変えないでください。
             - 新たな情報を想像で追加しても構いません。
             - 「澤田」「さわだ」の敬称は必ず「さん」でお願いします。
             - 「鳩」という言葉については「ハト」と書くようにしてください。
