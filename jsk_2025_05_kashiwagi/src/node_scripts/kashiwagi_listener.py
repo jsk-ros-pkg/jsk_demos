@@ -409,6 +409,20 @@ class Listener:
             song = f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3"
             self.sound_file = song
 
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["ルル", "ルール", "るる"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            song = f"{self.path_to_pkg}/data/kashiwagi_song_lulu.mp3"
+            self.sound_file = song
+
+        elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["夜遊び", "YOASOBI", "ヨアソビ", "yoasobi"]):
+            self.during_speech_req_state = "daily:singing"
+            self.after_speech_req_state = "daily:happy"
+            songs = [f"{self.path_to_pkg}/data/kashiwagi_song_idle.mp3",
+                     f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3"
+            ]
+            self.sound_file = random.choice(songs)
+
         elif self.cur_kashiwagi_state == "daily:normal" and self.is_mentioned(spoken_word, ["歌", "歌って"]):
             self.during_speech_req_state = "daily:singing"
             self.after_speech_req_state = "daily:happy"
@@ -422,7 +436,8 @@ class Listener:
                      f"{self.path_to_pkg}/data/kashiwagi_song_usagi.mp3",
                      f"{self.path_to_pkg}/data/kashiwagi_song_kimigayo.mp3",
                      f"{self.path_to_pkg}/data/kashiwagi_song_idle.mp3",
-                     f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3"
+                     f"{self.path_to_pkg}/data/kashiwagi_song_yusha.mp3",
+                     f"{self.path_to_pkg}/data/kashiwagi_song_lulu.mp3"
             ]
             self.sound_file = random.choice(songs)
 
