@@ -167,5 +167,9 @@
 
   <!-- speech filter -->
   <node pkg="jsk_2025_05_kashiwagi" type="speech_filter.py" name="speech_filter" output="screen"/>
+
+  <!-- card interaction -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_card_interaction.py" name="kashiwagi_card_interaction" output="screen"/>
+  
   
 </launch>

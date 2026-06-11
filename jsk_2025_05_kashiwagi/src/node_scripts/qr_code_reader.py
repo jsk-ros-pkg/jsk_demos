@@ -34,8 +34,8 @@ class QRReader:
 
     def image_callback(self, msg):
         # 状態が一致しないときは処理しない
-        if self.current_kashiwagi_state != "talking_game:listening_turn":
-            return
+        # if self.current_kashiwagi_state != "talking_game:listening_turn":
+        #     return
 
         # --- 追加: 0.5秒以内の呼び出しはスキップ ---
         now = time.time()
