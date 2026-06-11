@@ -145,7 +145,7 @@ class ResponseGenerator:
             return
 
         number = int(qr_text)
-        if not (1 <= number <= 100):
+        if not (1 <= number <= 300):
             rospy.logwarn("QR code data is number but out of range")
             return
 
