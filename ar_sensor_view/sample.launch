@@ -1,0 +1,47 @@
+<launch>
+  <arg name="CAMERA_NAME"  default="fixed_camera" />
+  <arg name="IMAGE_TYPE"   default="image_rect_color" />
+  <arg name="ORIGIN_FRAME" default="map" />
+  <arg name="ROBOT_FRAME"  default="BODY" />
+  <arg name="DEBUG"        default="false" />
+
+  <arg name="USE_TARGET_LIST" default="false" />
+  <arg name="TARGET_LIST" default="[]" />
+
+  <!--
+      rtmlaunch hrpsys_choreonoid_tutorials create_environment_sample.launch
+      rosrun rviz rviz -d $(rospack find ar_sensor_view)/jaxon_ar_sample.rviz
+  -->
+
+  <!-- setting depend on the robot -->
+  <!-- create TF named click_target_0 .. click_target_n -->
+  <node name="$(anon target_frame0)" pkg="tf" type="static_transform_publisher"
+        args="0.06 0 0 0 0 0 LLEG_LINK5 click_target_0 100" />
+  <node name="$(anon target_frame1)" pkg="tf" type="static_transform_publisher"
+        args="0.05 0 -0.15 0 0 0 LARM_LINK5 click_target_1 100" />
+  <node name="$(anon target_frame2)" pkg="tf" type="static_transform_publisher"
+        args="0.07 0 0 0 0 0 LARM_LINK2 click_target_2 100" />
+  <node name="$(anon target_frame3)" pkg="tf" type="static_transform_publisher"
+        args="0.07 0 0 0 0 0 RARM_LINK2 click_target_3 100" />
+  <node name="$(anon target_frame4)" pkg="tf" type="static_transform_publisher"
+        args="0.05 0 -0.15 0 0 0 RARM_LINK5 click_target_4 100" />
+  <node name="$(anon target_frame5)" pkg="tf" type="static_transform_publisher"
+        args="0.06 0 0 0 0 0 RLEG_LINK5 click_target_5 100" />
+
+  <node name="$(anon origin)" pkg="tf" type="static_transform_publisher"
+        args="0 0 -1.1 0 0 0 BODY dummy_map 100" />
+  <!-- end of setting (robot depended) -->
+
+  <include file="$(find ar_sensor_view)/ar_sensor_view.launch">
+    <arg name="CAMERA_NAME" default="$(arg CAMERA_NAME)" />
+    <arg name="IMAGE_TYPE"  default="$(arg image_rect_color)" />
+
+    <arg name="ORIGIN_FRAME" default="$(arg ORIGIN_FRAME)" />
+    <arg name="ROBOT_FRAME"  default="$(arg ROBOT_FRAME)" />
+    <arg name="DEBUG"        default="$(arg DEBUG)" />
+
+    <arg name="USE_TARGET_LIST" default="true" />
+    <arg name="TARGET_LIST" default="[click_target_0, click_target_1, click_target_2, click_target_3, click_target_4, click_target_5 ]" />
+  </include>
+
+</launch>

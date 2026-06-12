@@ -1,0 +1,20 @@
+<package>
+  <name>ar_sensor_view</name>
+  <description>
+    calibrate camera position interactively for AR sensor view
+  </description>
+  <author email="youhei@imi.jsk.i.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+  <maintainer email="youhei@imi.jsk.i.u-tokyo.ac.jp">Yohei Kakiuchi</maintainer>
+  <license>BSD</license>
+  <version>0.0.4</version>
+  <!--url>http://ros.org/wiki/ar_sensor_view</url-->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roseus</build_depend>
+  <build_depend>eus_nlopt</build_depend>
+  <build_depend>dynamic_tf_publisher</build_depend>
+
+  <run_depend>roseus</run_depend>
+  <run_depend>eus_nlopt</run_depend>
+  <run_depend>dynamic_tf_publisher</run_depend>
+</package>
