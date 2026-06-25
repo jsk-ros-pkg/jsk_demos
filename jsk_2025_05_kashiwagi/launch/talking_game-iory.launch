@@ -113,7 +113,7 @@
   <node pkg="jsk_2025_05_kashiwagi" type="qr_code_depth_reader.py" name="qr_code_depth_reader" output="screen" />
   
   <!-- response generator  -->
-  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="question_generator" output="screen" />
+  <node pkg="jsk_2025_05_kashiwagi" type="response_generator-iory.py" name="question_generator" output="screen" />
 
   <!-- response speaker -->
   <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" />
@@ -149,7 +149,7 @@
   <node pkg="jsk_2025_05_kashiwagi" type="nearest_depth_publisher.py" name="nearest_depth_publisher" output="screen" />
 
   <!-- katakana response generator -->
-  <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator.py" name="katakanashi_response_generator" output="screen" />
+  <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator-iory.py" name="katakanashi_response_generator" output="screen" />
 
   <!-- kashiwagi state logger -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_logger.py" name="kashiwagi_state_logger" output="screen"/>
@@ -164,7 +164,7 @@
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_signal.py" name="kashiwagi_time_signal" output="screen"/>
 
   <!-- free talk -->
-  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk.py" name="kashiwagi_free_talk" output="screen"/>
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk-iory.py" name="kashiwagi_free_talk" output="screen"/>
 
   <!-- speech filter -->
   <node pkg="jsk_2025_05_kashiwagi" type="speech_filter.py" name="speech_filter" output="screen"/>
