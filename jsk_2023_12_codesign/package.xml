@@ -59,12 +59,14 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
-
   <exec_depend>kxr_controller</exec_depend>
   <exec_depend>kxr_models</exec_depend>
+  <exec_depend>codesigned_robot_2023</exec_depend>
   <exec_depend>joy</exec_depend>
   <exec_depend>teleop_twist_joy</exec_depend>
   <exec_depend>rosserial_python</exec_depend>
+  <exec_depend>python3-filelock</exec_depend>
+  <exec_depend>python3-serial</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
