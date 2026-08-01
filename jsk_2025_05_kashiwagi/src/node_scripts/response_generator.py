@@ -53,7 +53,7 @@ class ResponseGenerator:
         self.client = AzureOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key=os.getenv("AZURE_OPENAI_KEY"),
-            api_version="2025-01-01-preview"
+            api_version="2024-12-01-preview"
         )
 
         self.system_prompt = {
@@ -211,13 +211,10 @@ class ResponseGenerator:
                         {"role": "user", "content": prompt}
                     ],
                     max_completion_tokens=300,
-                    temperature=0.9,
-                    top_p=0.9,
-                    frequency_penalty=0,
-                    presence_penalty=0,
+                    temperature=1.0,
                     stream=False
                 )
-                print(response.choices[0].message.content)
+                print(f"返答 = {response.choices[0].message.content}")
                 reply = response.choices[0].message.content.strip()
                 rospy.loginfo(f"generated response: {reply}")
                 with open(f"{self.path_to_pkg}/data/tmp/tmp_response.txt", "w", encoding="utf-8") as f:

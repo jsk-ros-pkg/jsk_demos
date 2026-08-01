@@ -29,7 +29,7 @@ class KatakanaWordExplainer:
         self.client = AzureOpenAI(
             azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
             api_key=os.getenv("AZURE_OPENAI_KEY"),
-            api_version="2025-01-01-preview"
+            api_version="2024-12-01-preview"
         )
 
         # システムプロンプト
@@ -171,10 +171,7 @@ class KatakanaWordExplainer:
                     {"role": "user", "content": user_prompt}
                 ],
                 max_completion_tokens=150,
-                temperature=0.5,
-                top_p=0.9,
-                frequency_penalty=0,
-                presence_penalty=0,
+                temperature=1.0,
                 stream=False
             )
 
