@@ -1,0 +1,148 @@
+#!/usr/bin/env python3
+import rospy
+from std_msgs.msg import String
+from kashiwagi_module_utils import Modules
+
+class ModuleManager:
+    def __init__(self):
+        rospy.init_node("kashiwagi_module_manager")
+        rospy.sleep(1.0)
+        self.current_state = "unknown"
+        self.prev_state = "unknown"
+        self.modules = Modules()
+
+        self.ume_led_color_map = {
+            "idle": (60, 60, 255),
+            "talking_game:starting": (225, 110, 243),
+            "talking_game:listening_turn": (255, 255, 40),
+            "talking_game:speaking_turn": (0, 225, 78),
+            "talking_game:thinking_turn": (255, 110, 243),
+            "talking_game:happy": (255, 110, 243),
+            "daily:waking_up":  (255, 130, 255),
+            "daily:normal":  (255, 130, 255),
+            "daily:happy":  (255, 110, 243),
+            "daily:goodbye":  (255, 110, 243),
+            "daily:introduction":  (255, 35, 140),
+            "daily:singing":  (255, 35, 140),
+            "move:finding_person":  (0, 163, 255),
+            "move:found_person": (0, 163, 255),
+            "move:approaching_person":  (0, 163, 255),
+            "move:getting_lost":  (0, 163, 255),
+            "move:staying":  (0, 163, 255),
+            "move:surprised":  (0, 163, 255),
+            "move:happy": (0, 163, 255),
+            "move:goal": (0, 163, 255),
+            "katakanashi:starting": (225, 110, 243),
+            "katakanashi:playing": (255, 255, 40),
+            "katakanashi:speaking_turn": (0, 225, 78),
+            "katakanashi:happy": (255, 110, 243),
+            "katakanashi:thinking_turn": (255, 110, 243),
+            "shiritori:starting": (225, 110, 243),
+            "shiritori:listening_turn": (255, 255, 40),
+            "shiritori:speaking_turn": (0, 225, 78),
+            "shiritori:happy": (255, 110, 243),
+            "shiritori:thinking_turn": (255, 110, 243),
+            "free_talk:starting": (225, 110, 243),
+            "free_talk:listening_turn": (255, 255, 40),
+            "free_talk:speaking_turn": (0, 225, 78),
+            "free_talk:happy": (255, 110, 243),
+            "free_talk:thinking_turn": (255, 110, 243),
+        }
+
+        self.cheek_led_color_map = {
+            "talking_game:starting": (225, 110, 243),
+            "talking_game:speaking_turn": (255, 130, 255),
+            "talking_game:happy": (255, 110, 243),
+            "daily:waking_up":  (255, 130, 255),
+            "daily:happy":  (255, 110, 243),
+            "daily:goodbye":  (255, 110, 243),
+            "daily:introduction":  (255, 35, 140),
+            "daily:singing":  (255, 35, 140),
+            "move:found_person": (255, 35, 140),
+            "move:approaching_person":  (255, 35, 140),
+            "move:surprised": (255, 130, 255),
+            "move:happy": (255, 35, 140),
+            "move:goal": (255, 35, 140),
+            "katakanashi:starting": (225, 110, 243),
+            "katakanashi:speaking_turn": (255, 130, 255),
+            "katakanashi:happy": (255, 110, 243),
+            "shiritori:starting": (225, 110, 243),
+            "shiritori:speaking_turn": (255, 130, 255),
+            "shiritori:happy": (255, 110, 243),
+            "free_talk:starting": (225, 110, 243),
+            "free_talk:speaking_turn": (255, 130, 255),
+            "free_talk:happy": (255, 110, 243),
+        }
+
+        self.eye_map = {
+            "idle": "sleepy",
+            "talking_game:starting": "happy",
+            "talking_game:listening_turn": "blink",
+            "talking_game:speaking_turn": "normal",
+            "talking_game:happy": "happy",
+            "daily:waking_up": "surprised",
+            "daily:normal": "normal",
+            "daily:happy": "happy",
+            "daily:goodbye": "happy",
+            "move:finding_person" : "normal",
+            "move:approaching_person" : "expecting",
+            "move:getting_lost" : "troubled",
+            "move:surprised": "surprised",
+            "move:happy": "happy",
+            "move:goal": "happy",
+            "katakanashi:starting": "happy",
+            "katakanashi:listening_turn": "blink",
+            "katakanashi:speaking_turn": "normal",
+            "katakanashi:happy": "happy",
+            "katakanashi:thinking": "normal",
+            "shiritori:starting": "happy",
+            "shiritori:listening_turn": "blink",
+            "shiritori:speaking_turn": "normal",
+            "shiritori:happy": "happy",
+            "shiritori:thinking": "normal",
+            "free_talk:starting": "happy",
+            "free_talk:listening_turn": "blink",
+            "free_talk:speaking_turn": "normal",
+            "free_talk:happy": "happy",
+            "free_talk:thinking": "normal",
+        }
+
+        rospy.Subscriber('/kashiwagi_state', String, self.state_callback, queue_size=1)
+        rospy.loginfo("Launching Module Manager node ....")
+        rospy.spin()
+
+    def state_callback(self, msg):
+        new_state = msg.data
+        if new_state != self.current_state:
+            rospy.loginfo(f"Kashiwagi State Changed: {self.current_state} → {new_state}")
+            self.prev_state = self.current_state
+            self.current_state = new_state
+
+        # Ume LED control
+        ume_color = self.ume_led_color_map.get(self.current_state)
+        if ume_color:
+            ume_r, ume_g, ume_b = ume_color
+            self.modules.ume_led(ume_r, ume_g, ume_b)
+        else:
+            self.modules.ume_led(0, 0, 0, 0)
+
+        # Cheek LED control
+        cheek_color = self.cheek_led_color_map.get(self.current_state)
+        if cheek_color:
+            cheek_r, cheek_g, cheek_b = cheek_color
+            self.modules.cheek_led(cheek_r, cheek_g, cheek_b)
+        else:
+            self.modules.cheek_led(0, 0, 0, 0)
+
+        # Eye expression control
+        eye_status = self.eye_map.get(self.current_state)
+        if eye_status:
+            self.modules.eye(eye_status)
+        else:
+            self.modules.eye("normal")
+
+if __name__ == '__main__':
+    try:
+        ModuleManager()
+    except rospy.ROSInterruptException:
+        pass

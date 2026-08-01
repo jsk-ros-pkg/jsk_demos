@@ -1,0 +1,52 @@
+<launch>
+  <arg name="rosbag" default="$(env HOME)/ros/bags/$(anon kashiwagi)" doc="rosbag file path" />
+  <arg name="compress" default="true" doc="whether compress rosbag or not." />
+  <arg name="use_regex" default="true" doc="whether include regex in topics or not." />
+
+  <arg if="$(arg compress)" name="compress_flag" value="--bz2" />
+  <arg unless="$(arg compress)" name="compress_flag" value="" />
+  <arg if="$(arg use_regex)" name="regex_flag" value="--regex" />
+  <arg unless="$(arg use_regex)" name="regex_flag" value="" />
+
+  <node name="rosbag_record" pkg="rosbag" type="record"
+	args="-q $(arg compress_flag) -O $(arg rosbag) -b 0 
+	      /audio
+	      /audio_volume
+	      /cheek/led_mode
+	      /cheek/led_rgb
+	      /command_joint_state
+	      /current_joint_states
+	      /diff_drive_controller/cmd_vel
+	      /filtered_speech
+	      /gesture_recognition/hand_position
+	      /gesture_recognition/result
+	      /imu
+	      /joint_states
+	      /kashiwagi_state
+	      /katakana_theme_word
+	      /left/eye_display/eye_status
+	      /left/eye_display/look_at
+	      /nearest_distance
+	      /neck_yaw_angle
+	      /qr_data
+	      /qr_distance
+	      /qr_position
+	      /right/eye_display/eye_status
+	      /right/eye_display/look_at
+	      /robotsound_jp
+	      /robotsound_jp/goal
+	      /robotsound_jp/result
+	      /shiritori_word
+	      /sound_direction
+	      /sound_localization
+	      /speech_to_text
+	      /status_led
+	      /talking_game_response
+	      /tf
+	      /tf_static
+	      /ume/led_mode
+	      /ume/led_rgb
+	      /velocity_command_joint_state"
+	output="screen" />
+
+</launch>

@@ -1,0 +1,50 @@
+<launch>
+  <!-- <!-\- RealSense RGBD camera -\-> -->
+  <!-- <include file="$(find realsense2_camera)/launch/rs_rgbd.launch" /> -->
+
+  <!-- <!-\- respeaker -\-> -->
+  <!-- <include file="$(find respeaker_ros)/launch/sample_respeaker.launch"> -->
+  <!--   <arg name="language" value="ja-JP"/> -->
+  <!-- </include> -->
+
+  <!-- voicevox with docker -->
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+    <arg name="use_docker" value="true"/>
+    <arg name="host" value="20.243.205.82"/>
+    <!-- <arg name="device" value="uac_demo"/> -->
+    <arg name="device" value="respeaker"/>
+  </include>
+
+  <!-- <!-\- QR code reader -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="qr_code_reader.py" name="qr_code_reader" output="screen" /> -->
+  <!-- <!-\- QR code depth reader -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="qr_code_depth_reader.py" name="qr_code_depth_reader" output="screen" /> -->
+  
+  <!-- <!-\- response generator  -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="question_generator" output="screen" /> -->
+
+  <!-- <!-\- response speaker -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" /> -->
+
+  <!-- <!-\- state manager -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_manager.py" name="kashiwagi_state_manager" output="screen" /> -->
+
+  <!-- <!-\- motion manager -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_motion_manager.py" name="kashiwagi_motion_manager" output="screen" /> -->
+
+  <!-- <!-\- module manager -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_module_manager.py" name="kashiwagi_module_manager" output="screen" /> -->
+  
+  <!-- <!-\- look at direction  -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="look_at_sound_direction.py" name="look_at_sound_direction" output="screen" /> -->
+
+  <!-- <!-\- audio volume publisher  -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="audio_volume_publisher.py" name="audio_volume_publisher" output="screen" /> -->
+
+  <!-- <!-\- listener -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_listener.py" name="kashiwagi_listener" output="screen" /> -->
+
+  <!-- <!-\- time manager -\-> -->
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_manager.py" name="kashiwagi_time_manager" output="screen" /> -->
+  
+</launch>

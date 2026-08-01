@@ -1,0 +1,8 @@
+<launch>
+  <arg name="use_realsense_cam" default="true" doc="set true to use USB camera image as input"/>
+
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch"
+        if="$(arg use_realsense_cam)" >
+    <remap from="/camera/color/image_raw" to="/camera/rgb/image_raw" />
+  </include>
+</launch>

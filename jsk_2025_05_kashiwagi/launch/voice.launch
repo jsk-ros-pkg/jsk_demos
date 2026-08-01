@@ -1,0 +1,9 @@
+<launch>
+  <!-- voicevox with docker -->
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+    <arg name="use_docker" value="false"/>
+    <arg name="host" value="20.243.205.82"/>
+    <arg name="device" value="plughw:0,0"/>
+  </include>
+  
+</launch>

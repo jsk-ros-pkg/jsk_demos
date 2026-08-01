@@ -1,0 +1,30 @@
+<launch>
+  <!-- Define the robot name argument -->
+  <arg name="robot_name" default="kashiwagi" />
+  <arg name="debug" default="false"/>
+
+  <!-- Launch serial_node for dual eyes -->
+  <include file="$(find eye_display)/launch/kashiwagi_dual.launch">
+    <arg name="port_right" value="/dev/ttyACM-righteye" />
+    <arg name="port_left" value="/dev/ttyACM-lefteye" />
+    <arg name="baud" value="57600" />
+    <arg name="debug" value="false" />
+  </include>
+  
+  <!-- Launch serial_node for the ume if robot_name is "kashiwagi" -->
+  <group if="$(eval robot_name == 'kashiwagi')">
+    <node pkg="rosserial_python" name="led_ume" type="serial_node.py">
+      <param name="~port" value="/dev/ttyUSB-ume"/>
+      <param name="~baud" value="57600"/>
+    </node>
+  </group>
+
+  <group if="$(arg debug)">
+    <node
+        pkg="rosservice"
+        type="rosservice"
+        name="set_debug_mode"
+        args="call --wait /eye_display/set_logger_level rosout DEBUG"
+        />
+  </group>
+</launch>
