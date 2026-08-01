@@ -27,7 +27,7 @@
     <remap from="audio_data" to="$(arg audio_topic)" />
     <remap from="audio_info" to="$(arg audio_info_topic)" />
   </node>
-  
+  nnnn
   <node name="speech_to_text" pkg="respeaker_ros" type="speech_to_text.py"
         output="screen">
     <remap from="audio" to="webrtcvad_ros/speech_audio"  />    
@@ -42,8 +42,9 @@
   <!-- voicevox with docker -->
   <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
     <arg name="use_docker" value="true"/>
+    <arg name="host" value="localhost"/>
     <!-- <arg name="host" value="20.243.128.11"/> -->
-    <arg name="host" value="100.106.214.63"/>
+    <!-- <arg name="host" value="100.106.214.63"/> -->
     <!-- <arg name="device" value="plughw:2,0"/> -->
     <arg name="device" value="uac_demo"/>
   </include>
@@ -81,7 +82,7 @@
 
   <!-- Gesture Recognition -->
   <include file="$(find semi2024)/launch/gesture_recognition.launch">
-    <arg name="venv" value="/home/kashiwagi/ros/kashiwagi_ws/.venv/bin/python"/>
+    <arg name="venv" value="/home/kashiwagi/ros/kashiwagi_ws/src/jsk_demos/jsk_2025_05_kashiwagi/venvs/.venv12/bin/python"/>
   </include>
   <!-- <!-\- Gesture Recognition -\-> -->
   <!-- <include file="$(find semi2024)/launch/gesture_recognition_light.launch"/> -->
@@ -113,7 +114,8 @@
   <node pkg="jsk_2025_05_kashiwagi" type="qr_code_depth_reader.py" name="qr_code_depth_reader" output="screen" />
   
   <!-- response generator  -->
-  <node pkg="jsk_2025_05_kashiwagi" type="response_generator-iory.py" name="question_generator" output="screen" />
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="response_generator-iory.py" name="question_generator" output="screen" /> -->
+  <node pkg="jsk_2025_05_kashiwagi" type="response_generator.py" name="question_generator" output="screen" />
 
   <!-- response speaker -->
   <node pkg="jsk_2025_05_kashiwagi" type="response_speaker.py" name="response_speaker" output="screen" />
@@ -149,7 +151,8 @@
   <node pkg="jsk_2025_05_kashiwagi" type="nearest_depth_publisher.py" name="nearest_depth_publisher" output="screen" />
 
   <!-- katakana response generator -->
-  <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator-iory.py" name="katakanashi_response_generator" output="screen" />
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator-iory.py" name="katakanashi_response_generator" output="screen" /> -->
+  <node pkg="jsk_2025_05_kashiwagi" type="katakanashi_response_generator.py" name="katakanashi_response_generator" output="screen" />
 
   <!-- kashiwagi state logger -->
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_state_logger.py" name="kashiwagi_state_logger" output="screen"/>
@@ -164,7 +167,8 @@
   <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_time_signal.py" name="kashiwagi_time_signal" output="screen"/>
 
   <!-- free talk -->
-  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk-iory.py" name="kashiwagi_free_talk" output="screen"/>
+  <!-- <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk-iory.py" name="kashiwagi_free_talk" output="screen"/> -->
+  <node pkg="jsk_2025_05_kashiwagi" type="kashiwagi_free_talk.py" name="kashiwagi_free_talk" output="screen"/>
 
   <!-- speech filter -->
   <node pkg="jsk_2025_05_kashiwagi" type="speech_filter.py" name="speech_filter" output="screen"/>
