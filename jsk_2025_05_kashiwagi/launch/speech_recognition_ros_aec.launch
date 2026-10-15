@@ -76,7 +76,7 @@
   <node name="aec" pkg="jsk_2025_05_kashiwagi" type="aec_node.py"
         output="screen">
     <remap from="~mic" to="/audio" />
-    <remap from="~reference" to="/sound_play/playback_audio" />
+    <remap from="~reference" to="/sound_play_jp/playback_audio" />
     <rosparam subst_value="true">
       delay_ms: $(arg aec_delay_ms)
       output_gain: $(arg aec_output_gain)

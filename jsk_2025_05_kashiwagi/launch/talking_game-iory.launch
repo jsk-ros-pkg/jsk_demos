@@ -45,6 +45,7 @@
   <include file="$(find jsk_2025_05_kashiwagi)/launch/speech_recognition_ros_aec.launch">
     <arg name="raw_voice_topic" value="$(arg raw_voice_topic)"/>
     <arg name="voice_topic" value="$(arg voice_topic)"/>
+    <arg name="launch_sound_play" value="false"/>
   </include>
 
   <node name="corrected_speech_to_text_publisher"
