@@ -1,0 +1,12 @@
+<launch>
+
+  <arg name="namespace" default="" />
+  <arg name="frame_count" default="10" />
+
+  <include file="$(find kxr_controller)/launch/kxr_controller.launch">
+    <arg name="joint_group_description" value="$(find kxreus)/config/kxrl2l2a6h2m.yaml" />
+    <arg name="namespace" value="$(arg namespace)" />
+    <arg name="frame_count" value="$(arg frame_count)" />
+  </include>
+
+</launch>

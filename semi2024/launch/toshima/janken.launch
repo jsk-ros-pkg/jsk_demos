@@ -1,0 +1,19 @@
+<launch>
+
+  <include file="$(find riberry_startup)/launch/sound_play.launch">
+    <arg name="device" value="plughw:0,0"/>
+  </include>
+
+  <include file="$(find semi2024)/launch/d405_light.launch">
+  </include>
+  <include file="$(find semi2024)/launch/gesture_recognition.launch">
+  </include>
+  <include file="$(find jedy_bringup)/launch/jedy_bringup.launch">
+  </include>
+
+
+  <node name="janken"
+        pkg="semi2024" type="janken.py" output="screen">
+  </node>
+
+</launch>

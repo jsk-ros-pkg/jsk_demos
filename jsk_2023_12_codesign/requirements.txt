@@ -1,0 +1,4 @@
+filelock
+pyserial
+scikit-robot
+rcb4

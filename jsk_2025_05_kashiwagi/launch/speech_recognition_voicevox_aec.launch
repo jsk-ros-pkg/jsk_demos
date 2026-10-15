@@ -1,0 +1,125 @@
+<launch>
+  <!--
+    Speech recognition with the robot's own voice cancelled, speaking through
+    VOICEVOX.
+
+        respeaker_node    ..(PyAudio, hw: direct)..>  /audio
+        sound_play_jp     ..(tapped in its pipeline)..>  /sound_play_jp/playback_audio
+                                    |
+                                 aec_node  ..>  /aec/output  ..>  speech_recognition
+
+    VOICEVOX synthesises through an ordinary sound_play node under another
+    name, so the reference tap added to SoundType applies to it unchanged: what
+    is published is the audio VOICEVOX actually produced, at the moment it was
+    played, not the text it was asked to say.
+
+    Speak with:
+        rosrun sound_play say.py "こんにちは" /robotsound_jp
+    or from Python via SoundClient("robotsound_jp").
+
+    Measured on this robot with aec_delay_ms:=20 and a recorded utterance
+    played through the same path: the robot's voice was reduced 45.7 dB and the
+    recogniser transcribed none of what it said, while a person speaking into
+    the microphone was still transcribed.
+  -->
+
+  <arg name="voice_topic" default="/speech_to_text" />
+  <arg name="language" default="ja-JP" />
+  <arg name="google_cloud_credentials_json"
+       default="/home/kashiwagi/config/eternal-byte-236613-4bc6962824d1.json" />
+
+  <arg name="aec_delay_ms" default="20"
+       doc="How far the reference leads the echo, in ms. 20 measured best here;
+            DTLN tolerates the reference arriving early far better than late,
+            so search downwards if cancellation is poor." />
+  <arg name="aec_output_gain" default="1.0"
+       doc="Applied after cancellation. Near-end speech is attenuated along
+            with the echo, so raise this if the recogniser stops hearing
+            people." />
+  <arg name="dtln_bundle" default=""
+       doc="DTLN-aec LV2 bundle. Empty searches the standard LV2 paths;
+            the pipewire-aec package installs it into one of them." />
+
+  <arg name="sound_device" default="plughw:CARD=Device,DEV=0"
+       doc="ALSA device sound_play opens. Named rather than numbered so
+            it survives the cards enumerating in a different order. The
+            uac_demo alias in /etc/alsa/conf.d names UACDemoV10, which
+            this speaker no longer reports, so it cannot be used." />
+
+  <arg name="voicevox_host" default="$(optenv VOICEVOX_TEXTTOSPEECH_URL localhost)" />
+  <arg name="voicevox_port" default="$(optenv VOICEVOX_TEXTTOSPEECH_PORT 50021)" />
+  <arg name="default_speaker" default="$(optenv VOICEVOX_DEFAULT_SPEAKER_ID 2)" />
+  <arg name="launch_voicevox" default="false"
+       doc="Start the bundled voicevox_server. Off by default because
+            voicevox_core is not installed on this robot; the engine runs in
+            the docker container instead, which must already be up:
+              docker run --rm -d -p 50021:50021 \
+                voicevox/voicevox_engine:cpu-ubuntu24.04-0.26.0-dev" />
+  <arg name="launch_respeaker" default="true" />
+
+  <!-- Microphone, direction of arrival, voice activity. -->
+  <node if="$(arg launch_respeaker)"
+        name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
+        respawn="true" respawn_delay="10">
+    <rosparam>
+      sample_duration: 0.03
+    </rosparam>
+  </node>
+
+  <!-- VOICEVOX, and the sound_play instance that plays it. That node is where
+       the reference comes from, so publish_reference has to be set on it. -->
+  <node if="$(arg launch_voicevox)"
+        name="voicevox_server" pkg="voicevox" type="run-voicevox"
+        args="--voicelib_dir=$(find voicevox)/voicevox_core --host $(arg voicevox_host) --port $(arg voicevox_port) --cpu_num_threads=1 --load_all_models"
+        respawn="true" output="screen" />
+
+  <node name="sound_play_jp" pkg="sound_play" type="soundplay_node.py"
+          respawn="true" output="screen">
+    <remap from="robotsound" to="robotsound_jp" />
+    <remap from="sound_play" to="robotsound_jp" />
+    <param name="device" value="$(arg sound_device)" />
+    <param name="publish_reference" value="true" />
+    <env name="VOICEVOX_DEFAULT_SPEAKER_ID" value="$(arg default_speaker)" />
+    <env name="VOICEVOX_TEXTTOSPEECH_URL" value="$(arg voicevox_host)" />
+    <env name="VOICEVOX_TEXTTOSPEECH_PORT" value="$(arg voicevox_port)" />
+    <env name="PATH" value="$(find voicevox)/bin:$(env PATH)" />
+    <env name="PYTHONIOENCODING" value="utf-8" />
+  </node>
+
+  <!-- Cancellation. -->
+  <node name="aec" pkg="jsk_2025_05_kashiwagi" type="aec_node.py"
+        output="screen">
+    <remap from="~mic" to="/audio" />
+    <remap from="~reference" to="/sound_play_jp/playback_audio" />
+    <rosparam subst_value="true">
+      delay_ms: $(arg aec_delay_ms)
+      output_gain: $(arg aec_output_gain)
+      bundle: "$(arg dtln_bundle)"
+    </rosparam>
+  </node>
+
+  <node name="speech_recognition"
+        pkg="ros_speech_recognition" type="speech_recognition_node.py"
+        respawn="true" output="screen">
+    <rosparam subst_value="true">
+      audio_topic: /aec/output
+      voice_topic: $(arg voice_topic)
+      n_channel: 1
+      depth: 16
+      sample_rate: 16000
+      engine: GoogleCloudStream
+      language: $(arg language)
+      continuous: true
+      auto_start: true
+      enable_sound_effect: false
+      self_cancellation: false
+      google_cloud_credentials_json: $(arg google_cloud_credentials_json)
+    </rosparam>
+  </node>
+
+  <node name="speech_recognition_candidates_to_string"
+        pkg="ros_speech_recognition" type="speech_recognition_candidates_to_string.py"
+        output="screen">
+    <remap from="~input" to="$(arg voice_topic)" />
+  </node>
+</launch>

@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="namespace" default="" />
+  <arg name="model_path" default="$(find semi2024)/models/keypoint_classifier.tflite" />
+  <arg name="label_csv" default="$(find semi2024)/models/keypoint_classifier_label.csv" />
+  <arg name="venv" default="" />
+
+  <group if="$(eval len(arg('namespace')) > 0)" ns="$(arg namespace)" >
+    <node name="gesture_recognition"
+          pkg="semi2024" type="gesture_recognition.py"
+          output="screen" launch-prefix = "$(arg venv)">
+      <env name="LD_PRELOAD" value="/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0" />
+      <remap from="~input" to="/$(arg namespace)/camera/color/image_raw" />
+      <rosparam subst_value="true">
+        model_path: $(arg model_path)
+        label_csv: $(arg label_csv)
+      </rosparam>
+    </node>
+  </group>
+
+  <group unless="$(eval len(arg('namespace')) > 0)">
+    <node name="gesture_recognition"
+          pkg="semi2024" type="gesture_recognition.py"
+          output="screen" launch-prefix = "$(arg venv)">
+      <env name="LD_PRELOAD" value="/usr/lib/aarch64-linux-gnu/libGLdispatch.so.0" />
+      <remap from="~input" to="/camera/color/image_raw" />
+      <rosparam subst_value="true">
+        model_path: $(arg model_path)
+        label_csv: $(arg label_csv)
+      </rosparam>
+    </node>
+  </group>
+
+</launch>

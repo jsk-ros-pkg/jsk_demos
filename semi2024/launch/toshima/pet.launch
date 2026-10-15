@@ -1,0 +1,17 @@
+<launch>
+
+  <include file="$(find semi2024)/launch/d405_light.launch">
+  </include>
+
+  <include file="$(find jedy_bringup)/launch/jedy_bringup.launch">
+  </include>
+
+  <include file="$(find semi2024)/launch/toshima/jedy_sample_hsi_color_filter.launch" >
+    <arg name="gui" value="false" />
+  </include>
+
+  <node name="pet_training"
+        pkg="semi2024" type="puppy_training_robot.py" output="screen">
+  </node>
+
+</launch>

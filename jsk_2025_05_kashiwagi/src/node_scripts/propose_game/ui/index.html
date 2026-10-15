@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>かしわぎさんのつくえ</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{background:#eee2c2;color:#29251f}
+#status{position:fixed;top:9px;right:12px;z-index:50;font-family:sans-serif;font-size:11px;opacity:.25}
+.screen{position:relative;width:100%;height:100%;overflow:hidden;background:radial-gradient(circle at 50% 25%,#f8f0d9 0%,#efe2bd 55%,#e5d2a5 100%)}
+.screen::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.13;background-image:repeating-linear-gradient(0deg,rgba(110,80,40,.08) 0,rgba(110,80,40,.08) 1px,transparent 1px,transparent 44px)}
+.desk-label{position:absolute;z-index:5;top:28px;left:50%;transform:translateX(-50%) rotate(-1deg);width:310px;height:92px;background:#fffdf6;border:2px solid #b27642;border-radius:7px;box-shadow:0 5px 12px rgba(80,50,20,.12);display:flex;align-items:center;justify-content:center}
+.desk-label::before,.desk-label::after{content:"";position:absolute;top:-10px;width:72px;height:24px;background:rgba(213,183,116,.72);box-shadow:0 1px 2px rgba(70,40,10,.06)}
+.desk-label::before{left:24px;transform:rotate(-5deg)}
+.desk-label::after{right:24px;transform:rotate(5deg)}
+.label-text{text-align:center;font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;color:#6f3d19;font-weight:600;letter-spacing:.13em;line-height:1.35}
+.label-text .small{display:block;font-size:17px}
+.label-text .main{display:block;margin-top:2px;font-size:25px}
+.label-star{position:absolute;color:#c78c48;font-size:18px;opacity:.8}
+.label-star.left{left:-31px;bottom:12px;transform:rotate(-12deg)}
+.label-star.right{right:-30px;top:8px;transform:rotate(15deg)}
+.doodle-pencil{position:absolute;z-index:4;top:76px;left:calc(50% + 180px);width:66px;height:9px;border-radius:6px;background:#d29a55;transform:rotate(-13deg);opacity:.8}
+.doodle-pencil::before{content:"";position:absolute;left:-10px;top:0;border-top:4.5px solid transparent;border-bottom:4.5px solid transparent;border-right:11px solid #e9c89e}
+.doodle-pencil::after{content:"";position:absolute;left:-14px;top:2.5px;border-top:2px solid transparent;border-bottom:2px solid transparent;border-right:5px solid #53402f}
+#thinkingMark{position:absolute;z-index:6;top:126px;left:50%;transform:translateX(-50%);height:26px;display:flex;align-items:center;gap:7px;opacity:0;transition:opacity .3s ease}
+#thinkingMark.show{opacity:1}
+.thinking-dot{width:7px;height:7px;border-radius:50%;background:#a86c38;animation:thinkingDot 1.1s ease-in-out infinite}
+.thinking-dot:nth-child(2){animation-delay:.15s}
+.thinking-dot:nth-child(3){animation-delay:.3s}
+#cards{position:absolute;left:50%;top:54%;transform:translate(-50%,-50%);width:min(1180px,91vw);display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:30px;transition:opacity .45s ease,transform .45s ease}
+.chunk{display:flex;flex-wrap:nowrap;align-items:center;justify-content:center;gap:5px}
+.card{--angle:0deg;position:relative;width:132px;height:90px;display:flex;align-items:center;justify-content:center;padding:8px 11px 20px;border-radius:5px;text-align:center;line-height:1.2;letter-spacing:.025em;transform:rotate(var(--angle));box-shadow:0 5px 12px rgba(65,45,20,.17);border:1px solid rgba(65,45,20,.15);overflow:hidden;user-select:none;-webkit-user-select:none}
+.card.white{background:#fcfbf5;color:#29251f}
+.card.green{background:#477553;color:#fff;border-color:#365d40}
+.card-text{position:relative;z-index:2;width:100%;font-family:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif JP",serif;font-size:22px;font-weight:600}
+.card.medium .card-text{font-size:18px}
+.card.small .card-text{font-size:15px}
+.card::after{content:"";position:absolute;left:16px;right:16px;bottom:13px;height:1.5px;border-radius:999px;background:currentColor;opacity:.68}
+.card::before{content:"";position:absolute;left:50%;bottom:7px;width:4px;height:4px;border-radius:50%;background:currentColor;transform:translateX(-50%);opacity:.58}
+.scan-appear{animation:scanAppear .42s cubic-bezier(.2,.8,.3,1) both}
+.final-appear{animation:finalAppear .72s cubic-bezier(.15,.75,.25,1) both}
+.fade-out{opacity:0!important;transform:translate(-50%,-56%) scale(.97)!important}
+.thinking .card{animation:thinkingFloat 2.1s ease-in-out infinite}
+.thinking .card:nth-child(2n){animation-delay:-.55s}
+.thinking .card:nth-child(3n){animation-delay:-1.05s}
+@keyframes scanAppear{0%{opacity:0;transform:translateY(24px) scale(.88) rotate(var(--angle))}100%{opacity:1;transform:translateY(0) scale(1) rotate(var(--angle))}}
+@keyframes finalAppear{0%{opacity:0;transform:translateY(34px) scale(.84) rotate(var(--angle))}65%{transform:translateY(-3px) scale(1.035) rotate(var(--angle))}100%{opacity:1;transform:translateY(0) scale(1) rotate(var(--angle))}}
+@keyframes thinkingFloat{0%,100%{transform:translateY(0) rotate(var(--angle))}50%{transform:translateY(-8px) rotate(var(--angle))}}
+@keyframes thinkingDot{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-6px);opacity:1}}
+@media(max-width:700px){
+  .desk-label{top:22px;width:245px;height:75px}
+  .label-text .small{font-size:14px}
+  .label-text .main{font-size:21px}
+  .label-star{font-size:15px}
+  .doodle-pencil{top:65px;left:calc(50% + 135px);width:48px}
+  #thinkingMark{top:104px}
+  #cards{top:55%;width:94vw;gap:19px}
+  .chunk{gap:4px}
+  .card{width:105px;height:73px;padding:6px 7px 17px}
+  .card-text{font-size:18px}
+  .card.medium .card-text{font-size:15px}
+  .card.small .card-text{font-size:12px}
+  .card::after{left:12px;right:12px;bottom:11px}
+  .card::before{bottom:6px}
+}
+</style>
+</head>
+<body>
+<div id="status">connecting...</div>
+<div class="screen">
+  <div class="desk-label">
+    <div class="label-star left">✦</div>
+    <div class="label-text"><span class="small">かしわぎさんの</span><span class="main">つくえ</span></div>
+    <div class="label-star right">✧</div>
+  </div>
+  <div class="doodle-pencil"></div>
+  <div id="thinkingMark"><span class="thinking-dot"></span><span class="thinking-dot"></span><span class="thinking-dot"></span></div>
+  <div id="cards"></div>
+</div>
+
+<script>
+const statusEl=document.getElementById("status");
+const cardsEl=document.getElementById("cards");
+const thinkingMark=document.getElementById("thinkingMark");
+
+let displayedScanCount=0;
+let thinking=false;
+let finalDisplayed=false;
+let thinkingTimer=null;
+let renderGeneration=0;
+
+const socket=new WebSocket(`ws://${location.hostname}:9090`);
+
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms));}
+function isInitialCard(id){return typeof id==="string"&&id.startsWith("group");}
+
+function textSizeClass(text){
+  const len=[...String(text)].length;
+  if(len>=12)return"small";
+  if(len>=8)return"medium";
+  return"";
+}
+
+function makeCard(text,id,index,animation=""){
+  const card=document.createElement("div");
+  const inner=document.createElement("span");
+  const initial=isInitialCard(id);
+  const angles=[-2.0,1.3,-.9,1.8,-1.5,.7,1.4,-.6,1.0,-1.1];
+  card.className=`card ${initial?"green":"white"} ${textSizeClass(text)} ${animation}`.trim();
+  card.style.setProperty("--angle",`${angles[index%angles.length]}deg`);
+  inner.className="card-text";
+  inner.textContent=text;
+  card.appendChild(inner);
+  return card;
+}
+
+function clearThinkingTimer(){
+  if(thinkingTimer!==null){
+    clearTimeout(thinkingTimer);
+    thinkingTimer=null;
+  }
+}
+
+function stopThinking(){
+  thinking=false;
+  cardsEl.classList.remove("thinking");
+  thinkingMark.classList.remove("show");
+}
+
+function resetScreen(){
+  renderGeneration++;
+  clearThinkingTimer();
+  stopThinking();
+  displayedScanCount=0;
+  finalDisplayed=false;
+  cardsEl.classList.remove("fade-out");
+  cardsEl.innerHTML="";
+}
+
+function startThinking(){
+  if(thinking||finalDisplayed)return;
+  thinking=true;
+  cardsEl.classList.add("thinking");
+  thinkingMark.classList.add("show");
+}
+
+function renderScanProgress(result){
+  if(!result||!Array.isArray(result.cards))return;
+
+  if(result.count===0){
+    resetScreen();
+    return;
+  }
+
+  if(result.count<displayedScanCount||finalDisplayed){
+    renderGeneration++;
+    clearThinkingTimer();
+    stopThinking();
+    displayedScanCount=0;
+    finalDisplayed=false;
+    cardsEl.classList.remove("fade-out");
+    cardsEl.innerHTML="";
+  }
+
+  for(let i=displayedScanCount;i<result.cards.length;i++){
+    const item=result.cards[i];
+    cardsEl.appendChild(makeCard(item.text,item.id,i,"scan-appear"));
+  }
+
+  displayedScanCount=result.cards.length;
+
+  if(result.count>=result.target){
+    clearThinkingTimer();
+    thinkingTimer=setTimeout(()=>{
+      thinkingTimer=null;
+      startThinking();
+    },450);
+  }else{
+    clearThinkingTimer();
+    stopThinking();
+  }
+}
+
+async function renderProposal(result){
+  if(!result)return;
+
+  const myGeneration=++renderGeneration;
+  clearThinkingTimer();
+  stopThinking();
+  finalDisplayed=true;
+  cardsEl.classList.add("fade-out");
+
+  await sleep(520);
+  if(myGeneration!==renderGeneration)return;
+
+  cardsEl.classList.remove("fade-out");
+  cardsEl.innerHTML="";
+
+  let cardIndex=0;
+
+  if(Array.isArray(result.chunks)&&result.chunks.length>0){
+    for(const chunk of result.chunks){
+      const chunkEl=document.createElement("div");
+      chunkEl.className="chunk";
+      const ids=Array.isArray(chunk.ids)?chunk.ids:[];
+      const texts=Array.isArray(chunk.texts)?chunk.texts:[];
+
+      for(let i=0;i<texts.length;i++){
+        const card=makeCard(texts[i],ids[i],cardIndex,"final-appear");
+        card.style.animationDelay=`${cardIndex*90}ms`;
+        chunkEl.appendChild(card);
+        cardIndex++;
+      }
+
+      cardsEl.appendChild(chunkEl);
+    }
+  }else if(Array.isArray(result.ids)){
+    const proposalParts=String(result.proposal||"").match(/"([^"]*)"/g)||[];
+
+    result.ids.forEach((id,i)=>{
+      const text=proposalParts[i]?proposalParts[i].slice(1,-1):String(id);
+      const card=makeCard(text,id,cardIndex,"final-appear");
+      card.style.animationDelay=`${cardIndex*90}ms`;
+      cardsEl.appendChild(card);
+      cardIndex++;
+    });
+  }
+
+  await sleep(cardIndex*90+700);
+  if(myGeneration!==renderGeneration)return;
+}
+
+socket.onopen=()=>{
+  statusEl.textContent="connected";
+  socket.send(JSON.stringify({op:"subscribe",id:"scan_progress",topic:"/propose_game_scan_progress",type:"std_msgs/String"}));
+  socket.send(JSON.stringify({op:"subscribe",id:"proposal_response",topic:"/propose_game_response",type:"std_msgs/String"}));
+};
+
+socket.onmessage=event=>{
+  try{
+    const message=JSON.parse(event.data);
+    if(message.op!=="publish"||!message.msg)return;
+
+    if(message.topic==="/propose_game_scan_progress"){
+      renderScanProgress(JSON.parse(message.msg.data));
+      return;
+    }
+
+    if(message.topic==="/propose_game_response"){
+      renderProposal(JSON.parse(message.msg.data));
+    }
+  }catch(e){
+    console.error(e);
+  }
+};
+
+socket.onerror=()=>{statusEl.textContent="connection error";};
+socket.onclose=()=>{statusEl.textContent="disconnected";};
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<launch>
+
+  <arg name="language" default="ja-JP"/>
+  <arg name="self_cancellation" default="false"/>
+  <node name="speech_to_text" pkg="respeaker_ros" type="speech_to_text.py"
+        output="screen">
+    <remap from="audio" to="webrtcvad_ros/speech_audio"  />    
+    <rosparam subst_value="true">
+      language: $(arg language)
+      self_cancellation: $(arg self_cancellation)
+      tts_tolerance: 0.5
+      google_cloud_credentials_json: /home/ubuntu/eternal-byte-236613-4bc6962824d1.json
+    </rosparam>
+  </node>
+
+</launch>

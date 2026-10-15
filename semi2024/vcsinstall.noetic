@@ -1,0 +1,17 @@
+repositories:
+  rcb4:
+    type: git
+    url: https://github.com/iory/rcb4
+    version: master
+  ros-perception/image_pipeline:
+    type: git
+    url: https://github.com/ros-perception/image_pipeline
+    version: noetic
+  ros-perception/image_transport_plugins:
+    type: git
+    url: https://github.com/ros-perception/image_transport_plugins
+    version: noetic-devel
+  semi2024:
+    type: git
+    url: https://github.com/iory/jsk_demos
+    version: semi2024

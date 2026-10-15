@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package format="2">
+  <name>jsk_2025_05_kashiwagi</name>
+  <version>0.0.0</version>
+  <description>The jsk_2025_05_kashiwagi package</description>
+  <maintainer email="sawada@jsk.imi.i.u-tokyo.ac.jp">sawada</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>jsk_common_msgs</depend>
+  <depend>speech_recognition_msgs</depend>
+  <build_depend>message_generation</build_depend>
+  <exec_depend>opencv_apps</exec_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <exec_depend>voicevox</exec_depend>
+  <exec_depend>eye_display</exec_depend>
+  <exec_depend>jsk_2023_12_codesign</exec_depend>
+  <exec_depend>semi2024</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>respeaker_ros</exec_depend>
+  <exec_depend>riberry_startup</exec_depend>
+  <exec_depend>sound_play</exec_depend>
+  <exec_depend>audio_common_msgs</exec_depend>
+  <exec_depend>gstreamer1.0</exec_depend>
+  <exec_depend>python3-gi</exec_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+  </export>
+</package>

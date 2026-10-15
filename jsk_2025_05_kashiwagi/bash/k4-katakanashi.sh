@@ -1,0 +1,1 @@
+rosrun jsk_2025_05_kashiwagi send_katakana_word.py

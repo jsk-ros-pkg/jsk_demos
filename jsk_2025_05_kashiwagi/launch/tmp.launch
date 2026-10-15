@@ -1,0 +1,89 @@
+<launch>
+
+  <arg name="raw_audio_topic" default="/audio" doc="Name of audio topic captured from respeaker." />
+  <arg name="dummy_audio_topic" default="/dummy_audio" doc="Dummy audio. no Audio" />
+  <arg name="audio_topic" default="/input_audio" doc="Selected audio topic" />
+  <arg name="audio_info_topic" default="/audio_info" doc="Selected audio info topic" />  
+  <arg name="language" default="ja-JP"/>
+  <arg name="self_cancellation" default="false"/>
+  <arg name="aggressiveness" default="1"/>    
+
+  <!-- respeaker -->
+  <node name="respeaker_node"
+	pkg="respeaker_ros" type="respeaker_node.py"
+        respawn="true" respawn_delay="10" >
+    <rosparam>
+      sample_duration: 0.03
+    </rosparam>
+  </node>
+
+  <node name="webrtcvad_ros"
+        pkg="riberry_startup" type="webrtcvad_ros.py"
+        output="screen" >
+    <rosparam subst_value="true">
+      aggressiveness: $(arg aggressiveness)
+    </rosparam>
+    <remap from="audio_data" to="$(arg audio_topic)" />
+    <remap from="audio_info" to="$(arg audio_info_topic)" />
+  </node>
+
+  <node name="speech_to_text_google"
+        pkg="riberry_startup" type="speech_to_text.py"
+        respawn="true"
+        output="screen">
+    <remap from="audio" to="webrtcvad_ros/speech_audio"  />
+    <remap from="audio_info" to="$(arg audio_info_topic)" />    
+    <remap from="speech_to_text" to="speech_to_text"  />
+    <rosparam subst_value="true">
+      language: $(arg language)
+      self_cancellation: $(arg self_cancellation)
+      tts_tolerance: 0.5
+      google_cloud_credentials_json: /home/ubuntu/eternal-byte-236613-4bc6962824d1.json
+    </rosparam>    
+  </node>
+  
+  <!-- <node name="speech_to_text" pkg="respeaker_ros" type="speech_to_text.py" -->
+  <!--       output="screen"> -->
+  <!--   <remap from="audio" to="$(arg audio_topic)"  />     -->
+  <!--   <rosparam subst_value="true"> -->
+  <!--     language: $(arg language) -->
+  <!--     self_cancellation: $(arg self_cancellation) -->
+  <!--     tts_tolerance: 0.5 -->
+  <!--   </rosparam> -->
+  <!-- </node>   -->
+  
+  <!-- voicevox with docker -->
+  <include file="$(find voicevox)/launch/voicevox_texttospeech.launch">
+    <arg name="use_docker" value="true"/>
+    <arg name="host" value="20.243.128.11"/>
+    <!-- <arg name="device" value="plughw:0,0"/> -->
+    <arg name="device" value="uac_demo"/>
+  </include>
+
+  <node name="is_speaking"
+        pkg="sound_play" type="is_speaking.py" >
+    <remap from="~robotsound" to="/robotsound_jp/status" />
+    <remap from="~output/is_speaking" to="is_speaking" />
+  </node>
+
+  <node name="input_audio_mux"
+  	pkg="topic_tools" type="mux"
+        respawn="true"
+	args="$(arg audio_topic) $(arg raw_audio_topic) $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+  </node>
+
+  <node name="input_audio_selector"
+	pkg="riberry_startup" type="mux_selector.py"
+	respawn="true"
+	args="/is_speaking 'm.data is False' $(arg raw_audio_topic) /is_speaking 'm.data is True' $(arg dummy_audio_topic)">
+    <remap from="mux" to="input_audio_mux" />
+    <param name="default_select" value="$(arg dummy_audio_topic)" />
+    <param name="wait" value="true" />
+  </node>
+
+  <node
+      name="speech_test" output="screen"
+      pkg="jsk_2025_05_kashiwagi" type="speech_test.py" />
+
+</launch>

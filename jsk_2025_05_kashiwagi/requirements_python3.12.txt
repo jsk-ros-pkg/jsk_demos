@@ -1,0 +1,37 @@
+# requirements-py312.txt
+
+# 数値計算・ML
+numpy==1.26.4
+mediapipe==0.10.18
+tensorflow==2.18.0
+matplotlib==3.8.4
+
+# 型・API
+typing_extensions==4.13.2
+openai==1.78.0
+
+# 日本語処理
+fugashi==1.4.3
+unidic-lite==1.0.8
+jaconv==0.5.0
+
+# Robotics
+scikit-robot==0.3.10
+
+# QR・音声
+pyzbar==0.1.9
+webrtcvad-wheels==2.0.14
+
+# ROS / catkin
+empy==3.3.4
+catkin_pkg==1.1.0
+rospkg==1.6.1
+
+# 暗号化
+pycryptodomex==3.23.0
+python-gnupg==0.5.6
+
+# GUI・音声入出力
+pycairo==1.29.0
+PyGObject==3.56.3
+PyAudio==0.2.14

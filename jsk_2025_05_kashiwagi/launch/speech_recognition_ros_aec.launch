@@ -1,0 +1,115 @@
+<launch>
+  <!--
+    Speech recognition with the robot's own voice cancelled, entirely in ROS.
+
+        respeaker_node  ..(PyAudio, hw: direct)..>  /audio
+        sound_play      ..(tapped in its pipeline)..>  /sound_play/playback_audio
+                                    |
+                                 aec_node  ..>  /aec/output  ..>  speech_recognition
+
+    Nothing here goes through PipeWire. Every failure while trying to do this
+    with pipewire-aec was in that path: capture stretched 1.5x on the card's
+    six-channel profiles, so speech reached the recogniser 1.5x too fast and was
+    never transcribed with or without cancellation; node names changing on every
+    re-enumeration; card profiles losing their inputs; and a reference taken
+    from the speaker monitor arriving at 39% of the rate the canceller consumed
+    it, so 28% of what the model saw was an invented reference telling it the
+    far end was silent during the echo. Taking the reference from inside
+    sound_play own playback pipeline gives the same samples the speaker gets,
+    and exact silence when the robot is not speaking.
+
+    aec_delay_ms is the one number tied to this robot. The reference is branched
+    off ahead of the sound card, so it leads the echo by the card buffering plus
+    the flight time to the microphone; 20 ms here. DTLN tolerates the reference
+    arriving early far better than late, so if the speaker moves, sweep down
+    from 20 rather than up.
+  -->
+
+  <arg name="voice_topic" default="/speech_to_text" />
+  <arg name="raw_voice_topic" default="/speech_to_text/raw" />
+  <arg name="language" default="ja-JP" />
+  <arg name="google_cloud_credentials_json"
+       default="/home/kashiwagi/config/eternal-byte-236613-4bc6962824d1.json" />
+
+  <arg name="aec_delay_ms" default="20"
+       doc="How far the reference leads the echo, in ms. 20 is what this robot
+            measured with the USB speaker where it sits; a sweep put 45.7 dB of
+            cancellation there. Move the speaker or change the sound card and it
+            changes. DTLN degrades gently when this is too low and collapses
+            when it is too high, so search downwards." />
+  <arg name="aec_output_gain" default="1.0"
+       doc="Applied after cancellation. The canceller attenuates near-end speech
+            as well as the echo, so this may need to be well above 1." />
+  <arg name="dtln_bundle" default=""
+       doc="DTLN-aec LV2 bundle. Empty searches the standard LV2 paths;
+            the pipewire-aec package installs it into one of them." />
+
+  <arg name="sound_device" default="plughw:CARD=Device,DEV=0"
+       doc="ALSA device sound_play opens. Named rather than numbered so
+            it survives the cards enumerating in a different order. The
+            uac_demo alias in /etc/alsa/conf.d names UACDemoV10, which
+            this speaker no longer reports, so it cannot be used." />
+
+  <arg name="launch_respeaker" default="true" />
+  <arg name="launch_sound_play" default="true" />
+
+  <!-- Microphone, direction of arrival, and voice activity. Reads the device
+       with PyAudio; enable_audio stays true because /audio feeds the
+       canceller. -->
+  <node if="$(arg launch_respeaker)"
+        name="respeaker_node" pkg="respeaker_ros" type="respeaker_node.py"
+        respawn="true" respawn_delay="10">
+    <rosparam>
+      sample_duration: 0.03
+    </rosparam>
+  </node>
+
+  <!-- Text to speech, publishing a copy of what it plays. -->
+  <node if="$(arg launch_sound_play)"
+        name="sound_play" pkg="sound_play" type="soundplay_node.py"
+        respawn="true" output="screen">
+    <param name="device" value="$(arg sound_device)" />
+    <param name="publish_reference" value="true" />
+  </node>
+
+  <!-- Cancellation. -->
+  <node name="aec" pkg="jsk_2025_05_kashiwagi" type="aec_node.py"
+        output="screen">
+    <remap from="~mic" to="/audio" />
+    <remap from="~reference" to="/sound_play_jp/playback_audio" />
+    <rosparam subst_value="true">
+      delay_ms: $(arg aec_delay_ms)
+      output_gain: $(arg aec_output_gain)
+      bundle: "$(arg dtln_bundle)"
+    </rosparam>
+  </node>
+
+  <!-- Recognition, on the cancelled audio. self_cancellation stays off: the
+       point of the canceller is that the recogniser can keep listening while
+       the robot talks. -->
+  <node name="speech_recognition"
+        pkg="ros_speech_recognition" type="speech_recognition_node.py"
+        respawn="true" output="screen">
+    <rosparam subst_value="true">
+      audio_topic: /aec/output
+      <!-- voice_topic: $(arg voice_topic) -->
+      voice_topic: $(arg raw_voice_topic)
+      n_channel: 1
+      depth: 16
+      sample_rate: 16000
+      engine: GoogleCloudStream
+      language: $(arg language)
+      continuous: true
+      auto_start: true
+      enable_sound_effect: false
+      self_cancellation: false
+      google_cloud_credentials_json: $(arg google_cloud_credentials_json)
+    </rosparam>
+  </node>
+
+  <node name="speech_recognition_candidates_to_string"
+        pkg="ros_speech_recognition" type="speech_recognition_candidates_to_string.py"
+        output="screen">
+    <remap from="~input" to="$(arg voice_topic)" />
+  </node>
+</launch>
